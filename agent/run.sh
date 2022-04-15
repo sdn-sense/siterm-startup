@@ -1,3 +1,16 @@
+#!/bin/bash
+
+# VERSION:
+#  dev - development branch, often updated, might not be working version
+#  latest - stable working version
+
+VERSION=latest
+if [ $# -eq 1 ]
+  then
+    echo "Argument specified. Will use $1 version from docker hub"
+    VERSION=$1
+fi
+
 docker run \
        -dit --name siteagent \
        -v $(pwd)/conf/etc/dtnrm.yaml:/etc/dtnrm.yaml \
@@ -7,5 +20,6 @@ docker run \
        --cap-add=NET_ADMIN \
        --net=host \
        --log-driver="json-file" --log-opt max-size=10m --log-opt max-file=10 \
-       sdnsense/site-agent-sense
+       sdnsense/site-agent-sense:$VERSION
 
+# For development, add -v /home/jbalcas/siterm/:/opt/dtnrmcode/siterm/ \
