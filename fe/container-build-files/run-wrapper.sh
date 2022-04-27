@@ -17,6 +17,11 @@ rm -f /tmp/*-FE-main.yaml
 rm -f /tmp/*-FE-auth.yaml
 # Remove any PID files left afer reboot/stop.
 rm -f /tmp/dtnrm*.pid
+# Remove remaining git fetch lock files
+rm -f /tmp/siterm-git-fetch-lockfile
+# Precreate log dirs, in case removed, non existing
+mkdir -p /var/log/dtnrm-site-fe/{ProvisioningService,PolicyService,LookUpService}/
+
 
 # As first run, Run Custom CA prefetch and add them to CAs dir.
 sh /etc/cron-scripts/siterm-ca-cron.sh
@@ -66,7 +71,7 @@ if [ $status -ne 0 ]; then
 fi
 
 # Start the second process
-/usr/local/bin/LookUpService-update restart &
+/usr/local/bin/LookUpService-update --action restart --foreground &> /var/log/dtnrm-site-fe/LookUpService/daemon.log
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart LookUpService-update: $status"
@@ -74,7 +79,7 @@ if [ $status -ne 0 ]; then
 fi
 sleep 5
 # Start the third process
-/usr/local/bin/PolicyService-update restart &
+/usr/local/bin/PolicyService-update --action restart --foreground &> /var/log/dtnrm-site-fe/PolicyService/daemon.log
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart PolicyService-update: $status"
@@ -82,7 +87,7 @@ if [ $status -ne 0 ]; then
 fi
 sleep 5
 # Start the fourth process
-/usr/local/bin/ProvisioningService-update restart &
+/usr/local/bin/ProvisioningService-update --action restart --foreground &> /var/log/dtnrm-site-fe/ProvisioningService/daemon.log
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart ProvisioningService-update: $status"
@@ -113,7 +118,7 @@ while sleep 30; do
     echo "httpd: " $PROCESS_1_STATUS
     echo "LookUpService-update:" $PROCESS_2_STATUS
     echo "PolicyService-update:" $PROCESS_3_STATUS
-    echo "ProvisioningService-update:" $PROCESS_4_STATUS 
+    echo "ProvisioningService-update:" $PROCESS_4_STATUS
     exit_code=5
     break;
   fi
