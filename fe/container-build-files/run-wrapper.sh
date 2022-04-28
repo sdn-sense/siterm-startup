@@ -20,8 +20,7 @@ rm -f /tmp/dtnrm*.pid
 # Remove remaining git fetch lock files
 rm -f /tmp/siterm-git-fetch-lockfile
 # Precreate log dirs, in case removed, non existing
-mkdir -p /var/log/dtnrm-site-fe/{ProvisioningService,PolicyService,LookUpService,http-api}/
-
+mkdir -p /var/log/dtnrm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api}/
 
 # As first run, Run Custom CA prefetch and add them to CAs dir.
 sh /etc/cron-scripts/siterm-ca-cron.sh
@@ -96,9 +95,6 @@ fi
 # more than one service in a container. The container exits with an error
 # if it detects that either of the processes has exited.
 # Otherwise it loops forever, waking up every 60 seconds
-sleep 5
-echo "Making apache as owner of $datadir"
-chown apache:apache -R $datadir
 
 while sleep 30; do
   ps aux |grep httpd |grep -q -v grep
