@@ -20,7 +20,7 @@ rm -f /tmp/dtnrm*.pid
 # Remove remaining git fetch lock files
 rm -f /tmp/siterm-git-fetch-lockfile
 # Precreate log dirs, in case removed, non existing
-mkdir -p /var/log/dtnrm-site-fe/{ProvisioningService,PolicyService,LookUpService}/
+mkdir -p /var/log/dtnrm-site-fe/{ProvisioningService,PolicyService,LookUpService,http-api}/
 
 
 # As first run, Run Custom CA prefetch and add them to CAs dir.
@@ -42,18 +42,16 @@ fi
 # Start MariaDB
 sh /root/mariadb.sh
 
-datadir=/opt/config/
-echo "1. Making apache as owner of $datadir"
-chown apache:apache -R $datadir
-# File permissions, recursive
-echo "2. Recursive file permissions to 0644 in $datadir"
-find $datadir -type f -exec chmod 0644 {} \;
-# Dir permissions, recursive
-echo "3. Recursive directory permissions to 0755 in $datadir"
-find $datadir -type d -exec chmod 0755 {} \;
-# TODO:
-# Make a script which loops over the config on GIT and prepares
-# dirs and database. Now it requires to do it manually or restart docker
+# REVIEW!
+#datadir=/opt/siterm/
+#echo "1. Making apache as owner of $datadir"
+#chown apache:apache -R $datadir
+## File permissions, recursive
+#echo "2. Recursive file permissions to 0644 in $datadir"
+#find $datadir -type f -exec chmod 0644 {} \;
+## Dir permissions, recursive
+#echo "3. Recursive directory permissions to 0755 in $datadir"
+#find $datadir -type d -exec chmod 0755 {} \;
 
 # Run crond
 touch /var/log/cron.log

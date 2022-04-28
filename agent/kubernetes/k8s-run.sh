@@ -14,14 +14,20 @@ read namespace
 # Certs need be valid;
 # Config - have real config parameters
 
-# Move config, hostcert, key - to name with hostname 
-cp ../conf/etc/grid-security/hostcert.pem ../conf/etc/grid-security/hostcert.pem-$fqdn
-cp ../conf/etc/grid-security/hostkey.pem ../conf/etc/grid-security/hostkey.pem-$fqdn
-cp ../conf/etc/dtnrm.yaml ../conf/etc/dtnrm.yaml-$fqdn
+# Move config, hostcert, key - to name with hostname
+if [ ! -f "../conf/etc/grid-security/hostcert.pem-$fqdn" ]; then
+  cp ../conf/etc/grid-security/hostcert.pem ../conf/etc/grid-security/hostcert.pem-$fqdn
+fi
+if [ ! -f "../conf/etc/grid-security/hostkey.pem-$fqdn" ]; then
+  cp ../conf/etc/grid-security/hostkey.pem ../conf/etc/grid-security/hostkey.pem-$fqdn
+fi
+if [ ! -f "../conf/etc/dtnrm.yaml-$fqdn" ]; then
+  cp ../conf/etc/dtnrm.yaml ../conf/etc/dtnrm.yaml-$fqdn
+fi
 
 # Copy and Modify the agent=k8s yaml file to include $fqdn
 cp agent-k8s.yaml agent-k8s.yaml-$fqdn
-sed "s|___REPLACEME___|$fqdn|g" agent-k8s.yaml-$fqdn
+sed -i "" "s|___REPLACEME___|$fqdn|g" agent-k8s.yaml-$fqdn
 
 kubectl create secret generic sense-agent-$fqdn --from-file=agent-hostcert=../conf/etc/grid-security/hostcert.pem-$fqdn --from-file=agent-hostkey=../conf/etc/grid-security/hostkey.pem-$fqdn --namespace $namespace --kubeconfig $KUBECONF
 

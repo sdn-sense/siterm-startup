@@ -21,18 +21,14 @@ ARG GITBR=master
 
 RUN adduser apache -U -u 48
 
-RUN mkdir -p /opt/ && mkdir -p /opt/config/fe/ && mkdir -p /opt/dtnrmcode
-RUN mkdir -p /etc/httpd/certs/ && mkdir -p /etc/httpd/conf.d/ && mkdir -p /etc/grid-security/certificates
+RUN mkdir -p /opt/siterm/config && mkdir -p /opt/siterm/dtnrmcode
+RUN mkdir -p /etc/httpd/{certs,conf.d}/ && mkdir -p /etc/grid-security/certificates
 RUN yum -y install git sudo && yum clean all
-RUN cd /opt/dtnrmcode && git clone -b $GITBR https://github.com/$GITORG/$GITREPO
-RUN cd /opt/dtnrmcode/$GITREPO/installers/ && sudo sh ./fresh-siterm-fe-install.sh -R /opt/ -D yes -G $GITREPO -O $GITORG -B $GITBR
+RUN cd /opt/siterm/dtnrmcode && git clone -b $GITBR https://github.com/$GITORG/$GITREPO
+RUN cd /opt/siterm/dtnrmcode/$GITREPO/installers/ && sudo sh ./fresh-siterm-fe-install.sh -R /opt/siterm/ -D yes -G $GITREPO -O $GITORG -B $GITBR
 
 RUN rpm -i https://repo.opensciencegrid.org/osg/3.5/el8/release/x86_64/osg-ca-certs-1.100-1.osg35.el8.noarch.rpm
 
-RUN mkdir -p /opt/config/fe/{LookUpService,PolicyService,ProvisioningService}
-RUN find /opt/config/fe/ -type f -exec chmod 0644 {} \;
-RUN find /opt/config/fe/ -type d -exec chmod 0755 {} \;
-RUN chown apache:apache -R /opt/config/fe/
 RUN rm -f /etc/httpd/conf.d/ssl.conf
 
 EXPOSE 80 443
