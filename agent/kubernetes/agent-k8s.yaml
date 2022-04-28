@@ -20,9 +20,10 @@ spec:
         k8s-app: siterm-agent-___REPLACEME___
     spec:
       hostNetwork: true
+      terminationGracePeriodSeconds: 30
       containers:
       - image: sdnsense/site-agent-sense:dev
-        imagePullPolicy: ""
+        imagePullPolicy: "Always"
         name: siterm-agent
         resources: {}
         securityContext:

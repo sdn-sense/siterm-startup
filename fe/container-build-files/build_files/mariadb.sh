@@ -1,9 +1,9 @@
 #!/bin/sh
-if [ ! -f /var/lib/mysql/site-rm-db-initialization ]; then
+if [ ! -f /opt/siterm/config/mysql/site-rm-db-initialization ]; then
   # First time start of mysql, ensure dirs are present;
-  mkdir -p /var/lib/mysql
+  mkdir -p /opt/siterm/config/mysql/
   mkdir -p /var/log/mariadb
-  chown -R mysql:mysql /var/lib/mysql
+  chown -R mysql:mysql /opt/siterm/config/mysql/
   chown mysql:mysql /var/log/mariadb
 
   # Initialize the mysql data directory and create system tables
@@ -34,7 +34,7 @@ if [ ! -f /var/lib/mysql/site-rm-db-initialization ]; then
 
   # create file under /var/lib/mysql which is only unique for Site-RM. 
   # This ensures that we are not repeating same steps during docker restart
-  echo `date` >> /var/lib/mysql/site-rm-db-initialization
+  echo `date` >> /opt/siterm/config/mysql/site-rm-db-initialization
 else
   echo "Seems this is not the first time start. Will not create DB again"
   mysqld_safe --user mysql &> /var/log/mariadb/startup &
