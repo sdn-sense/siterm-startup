@@ -11,6 +11,7 @@ Main reasons for this script are the following:
           If vlan present on Sonic, adding it again will raise Exception (on Dell/Arista Switches, it is not)
           If vlan not cleaned (has member, ip, or any param) Sonic does not allow to remove vlan. First need to
           clean all members, params, ips and only then remove vlan.
+    4. For BGP - We cant use SONiC config_db.json - as it is not rich enough, and does not support all features (route-map, ip list). Because of this - we have to rely on vtysh
 
 With this script - as input, it get's information from Site-RM for which vlan and routing to configure/unconfigure
 It checks with local configuration and applies the configs on Sonic with config command.
@@ -57,12 +58,18 @@ def strtojson(intxt):
 def loadJson(infile):
     """Load json file and return dictionary"""
     out = {}
+    fout = ""
     if not os.path.isfile(infile):
         print('File does not exist %s. Exiting' % infile)
         sys.exit(2)
     with open(infile, 'r', encoding='utf-8') as fd:
-        out = fd.read()
-    return strtojson(out)
+        fout = fd.readlines()
+    if fout:
+        for line in fout:
+            splline = line.split(': ', 1)
+            if len(splline) == 2:
+                out[splline[0]] = strtojson(splline[1])
+    return out
 
 class SonicCmd():
     """Sonic CMD Executor API"""
@@ -164,7 +171,7 @@ class SonicCmd():
                 kwargs['ip'] = ip
                 self._delIP(**kwargs)
 
-def applyConfig(sensevlans):
+def applyVlanConfig(sensevlans):
     """Loop via sense vlans and check with sonic vlans config"""
     #{'description': 'urn:ogf:network:service+63b10f36-2f66-4db2-9273-493c79b5da35:vt+l2-policy::Connection_1',
     # 'ip6_address': {'ip': 'fc00:0:0:0:0:0:0:38/64', 'state': 'present'}, 'name': 'Vlan 3333', 'state': 'present',
@@ -198,14 +205,19 @@ def applyConfig(sensevlans):
             if tagged['state'] == 'absent':
                 sonicAPI._delMember(**tmpD)
 
+def applyBGPConfig(bgpconfig):
+    # TODO
+    return
+
 def execute(args):
     """Main execute"""
     if len(args) == 1 or len(args) > 2:
         print('Too many or not enough args provided. Args: %s' % args)
         print('Please run ./sonic.py <json_file_config_location>')
         sys.exit(1)
-    sensevlans = loadJson(args[1])
-    applyConfig(sensevlans)
+    senseconfig = loadJson(args[1])
+    applyVlanConfig(senseconfig.get('INTERFACES', {}))
+    applyBGPConfig(senseconfig.get('BGP', {}))
 
 if __name__ == "__main__":
     execute(args=sys.argv)

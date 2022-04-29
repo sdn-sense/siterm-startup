@@ -1,18 +1,40 @@
 #jinja2: lstrip_blocks: "True", trim_blocks: "True"
-{##########################################
-#Purpose:
-#Configure VLAN Interface commands for Azure Sonic devices
-#interface:
-#  Vlan 1798:
-#    description: urn:ogf:network:service+8791cc78-e68c-4d52-9b7c-3c6f3e9d2795:resource+links::Connection_1
-#    ip_address: {ip: 10.251.85.2/24, state: present}
-#    ip6_address: {ip: 'fc00:0:0:0:0:0:0:1d/64', state: present}
-#    name: Vlan 1798
-#    state: present
-#    tagged_members:
-#    - {port: hundredGigE 1/23, state: present}
-#    - {port: hundredGigE 1/9, state: present}
-#########################################}
+#{##########################################
+##Purpose:
+##Configure VLAN Interface commands for Azure Sonic devices
+##interface:
+##  Vlan 3617:
+##    description: urn:ogf:network:service+c486b212-e79e-4edf-8022-8a82001a2768:vt+l2-policy::Connection_1
+##    ip6_address: {ip: 'fc00:0:0:0:0:0:0:59/124', state: present}
+##    name: Vlan 3617
+##    state: present
+##    tagged_members:
+##    - {port: Port-channel 102, state: present}
+##sense_bgp:
+##  asn: '64513'
+##  ipv6_network:
+##  - {address: '2605:d9c0:2:fff1::/64', state: present}
+##  neighbor:
+##    ipv6:
+##    - ip: fc00:0:0:0:0:0:0:5a/124
+##      remote_asn: '64512'
+##      route_map: {in: sense-087c394b793044b242393d21f67821c8-mapin, out: sense-087c394b793044b242393d21f67821c8-mapout}
+##      state: present
+##  prefix_list:
+##  - {iprange: '2605:d9c0:2:fff1::/64', iptype: ipv6, name: sense-087c394b793044b242393d21f67821c8-to,
+##    state: present}
+##  - {iprange: '2605:d9c0:2:fff4::/64', iptype: ipv6, name: sense-087c394b793044b242393d21f67821c8-from,
+##    state: present}
+##  route_map:
+##  - {match: sense-087c394b793044b242393d21f67821c8-to, name: sense-087c394b793044b242393d21f67821c8-mapout,
+##    state: present}
+##  - {match: sense-087c394b793044b242393d21f67821c8-from, name: sense-087c394b793044b242393d21f67821c8-mapin,
+##    state: present}
+##  state: present
+##########################################}
 {% if interface is defined and interface %}
-{{ interface }}
+INTERFACE: {{ interface }}
+{% endif %}
+{% if sense_bgp is defined and sense_bgp %}
+BGP: {{ sense_bgp }}
 {% endif %}

@@ -6,7 +6,7 @@ ARG GITBR=master
 
 MAINTAINER Justas Balcas <jbalcas@caltech.edu>
 
-RUN mkdir -p /var/log/dtnrm-site-fe/{Agent,Debugger,Ruler,contentdb}/
+RUN mkdir -p /var/log/dtnrm-agent/{Agent,Debugger,Ruler,contentdb}/
 RUN mkdir -p /opt/siterm/{config,dtnrmcode}
 RUN yum -y install git sudo
 
