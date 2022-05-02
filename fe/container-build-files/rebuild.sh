@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dockerid=`docker ps -a | grep sitefe | awk '{print $1}'`
+dockerid=`docker ps -a | grep site-rm-sense | awk '{print $1}'`
 docker stop $dockerid
 docker rm $dockerid
 
