@@ -68,7 +68,7 @@ if [ $status -ne 0 ]; then
 fi
 
 # Start the second process
-/usr/local/bin/LookUpService-update --action restart --foreground &> /var/log/dtnrm-site-fe/LookUpService/daemon.log
+LookUpService-update --action restart --foreground &> /var/log/dtnrm-site-fe/LookUpService/daemon.log
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart LookUpService-update: $status"
@@ -76,7 +76,7 @@ if [ $status -ne 0 ]; then
 fi
 sleep 5
 # Start the third process
-/usr/local/bin/PolicyService-update --action restart --foreground &> /var/log/dtnrm-site-fe/PolicyService/daemon.log
+PolicyService-update --action restart --foreground &> /var/log/dtnrm-site-fe/PolicyService/daemon.log
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart PolicyService-update: $status"
@@ -84,7 +84,7 @@ if [ $status -ne 0 ]; then
 fi
 sleep 5
 # Start the fourth process
-/usr/local/bin/ProvisioningService-update --action restart --foreground &> /var/log/dtnrm-site-fe/ProvisioningService/daemon.log
+ProvisioningService-update --action restart --foreground &> /var/log/dtnrm-site-fe/ProvisioningService/daemon.log
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart ProvisioningService-update: $status"

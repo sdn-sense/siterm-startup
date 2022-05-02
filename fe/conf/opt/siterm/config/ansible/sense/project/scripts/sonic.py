@@ -11,10 +11,11 @@ Main reasons for this script are the following:
           If vlan present on Sonic, adding it again will raise Exception (on Dell/Arista Switches, it is not)
           If vlan not cleaned (has member, ip, or any param) Sonic does not allow to remove vlan. First need to
           clean all members, params, ips and only then remove vlan.
-    4. For BGP - We cant use SONiC config_db.json - as it is not rich enough, and does not support all features (route-map, ip list). Because of this - we have to rely on vtysh
+    4. For BGP - We cant use SONiC config_db.json - as it is not rich enough, and does not support all features
+       (route-map, ip list). Because of this - we have to rely on vtysh
 
 With this script - as input, it get's information from Site-RM for which vlan and routing to configure/unconfigure
-It checks with local configuration and applies the configs on Sonic with config command.
+It checks with local configuration and applies the configs on Sonic with config command or routing with vtysh
 
 Authors:
   Justas Balcas jbalcas (at) caltech.edu
@@ -22,12 +23,14 @@ Authors:
 Date: 2022/04/14
 """
 import os
+import re
 import ast
 import sys
 import json
 import subprocess
 import shlex
 import ipaddress
+import logging
 
 def normalizeIPAddress(ipInput):
     """Normalize IP Address"""
@@ -167,15 +170,203 @@ class SonicCmd():
             cmd = "sudo config interface ip remove %(vlan)s %(ip)s" % kwargs
             self.__executeCommand(cmd)
         else:
-            for ip in self.config.get(kwargs['vlan'], {}).get('ips', []):
-                kwargs['ip'] = ip
+            for delip in self.config.get(kwargs['vlan'], {}).get('ips', []):
+                kwargs['ip'] = delip
                 self._delIP(**kwargs)
+
+class vtyshParser():
+    def __init__(self):
+        self.running_config = {}
+        self.stdout = ""
+        self.totalLines = 0
+        self.regexes = {'network': r'network ([0-9a-f.:]*)/([0-9]{1,3})',
+                        'neighbor-route-map': r'neighbor ([a-zA-z_:.0-9-]*) route-map ([a-zA-z_:.0-9-]*) (in|out)',
+                        'neighbor-remote-as': r'neighbor ([0-9a-f.:]*) remote-as ([0-9]*)',
+                        'neighbor-act': r'neighbor ([a-zA-z_:.0-9-]*) activate',
+                        'address-family': r'address-family (ipv[46]) ([a-z]*)',
+                        'ipv4-prefix-list': r'ip prefix-list ([a-zA-Z0-9_-]*) seq ([0-9]*) permit ([0-9a-f.:]*)/([0-9]{1,3})',
+                        'ipv6-prefix-list': r'ipv6 prefix-list ([a-zA-Z0-9_-]*) seq ([0-9]*) permit ([0-9a-f.:]*)/([0-9]{1,3})',
+                        'route-map': r'route-map ([a-zA-Z0-9_-]*) permit ([0-9]*)',
+                        'match-ip': r'match ip route-source prefix-list ([a-zA-Z0-9_-]*)',
+                        'router': r'^router bgp ([0-9]*)'}
+
+    def _parseAddressFamily(self, incr, iptype='unset'):
+        """Parse address family from running config"""
+        addrFam = self.running_config.setdefault('bgp', {}).setdefault('address-family', {}).setdefault(iptype, {})
+        networks = addrFam.setdefault('network', {})
+        routeMap = addrFam.setdefault('route-map', {})
+        for i in range(incr, self.totalLines):
+            incr = i
+            if self.stdout[incr].strip() == 'exit-address-family':
+                return incr
+            match = re.search(self.regexes['network'], self.stdout[incr].strip(), re.M)
+            if match:
+                networks[match[1]] = {'ip': match[1], 'range': match[2]}
+                continue
+            match = re.search(self.regexes['neighbor-route-map'], self.stdout[incr].strip(), re.M)
+            if match:
+                routeMap.setdefault(match[1], {}).setdefault(match[2], match[3])
+                continue
+            match = re.search(self.regexes['neighbor-act'], self.stdout[incr].strip(), re.M)
+            if match:
+                routeMap.setdefault(match[1], {}).setdefault('activate', True)
+        return incr
+
+    def parseRouterInfo(self, incr):
+        """Parse Router info from running config"""
+        bgp = self.running_config.setdefault('bgp', {})
+        match = re.search(self.regexes['router'], self.stdout[incr], re.M)
+        if match:
+            bgp['asn'] = match.group(1)
+        for i in range(incr, self.totalLines):
+            incr = i
+            if self.stdout[i] == '!':
+                return i
+            match = re.search(self.regexes['neighbor-remote-as'], self.stdout[i].strip(), re.M)
+            if match:
+                neighbor = bgp.setdefault('neighbor', {})
+                neighbor[match[1]] = {'ip': match[1], 'remote-as': match[2]}
+                continue
+            match = re.search(self.regexes['address-family'], self.stdout[i].strip(), re.M)
+            if match:
+                bgp.setdefault('address-family', {}).setdefault(match[1], {'type': match[2]})
+                i = self._parseAddressFamily(i, match[1])
+        return incr
+
+    def parserPrefixList(self, incr):
+        """Parse Prefix List from running config"""
+        prefList = self.running_config.setdefault('prefix-list', {'ipv4': {}, 'ipv6': {}})
+        match = re.search(self.regexes['ipv4-prefix-list'], self.stdout[incr].strip(), re.M)
+        if match:
+            prefList['ipv4'].setdefault(match[1], {})[match[3]] = match[2]
+            return incr
+        match = re.search(self.regexes['ipv6-prefix-list'], self.stdout[incr].strip(), re.M)
+        if match:
+            prefList['ipv6'].setdefault(match[1], {})[match[3]] = match[2]
+        return incr
+
+    def parserRouteMap(self, incr):
+        """Parse Route map info from running config"""
+        routeMap = self.running_config.setdefault('route-map', {})
+        match = re.search(self.regexes['route-map'], self.stdout[incr].strip(), re.M)
+        if not match:
+            return incr
+        rMap = routeMap.setdefault(match[1], {}).setdefault(match[2], {})
+        for i in range(incr, self.totalLines):
+            incr = i
+            if self.stdout[i] == '!':
+                return i
+            match = re.search(self.regexes['match-ip'], self.stdout[i].strip(), re.M)
+            if match:
+                rMap[match[1]] = ""
+            # What about IPV6 route match?
+        return incr
+
+    def getConfig(self):
+        """Get vtysh running config and parse it to dict format"""
+        with open('vtysh-out', 'r', encoding='utf-8') as fd:
+            self.stdout = fd.read().split('\n')
+        self.totalLines = len(self.stdout)
+        for i in range(self.totalLines):
+            if self.stdout[i].startswith('router bgp'):
+                i = self.parseRouterInfo(i)
+            elif self.stdout[i].startswith('ip prefix-list') or self.stdout[i].startswith('ipv6 prefix-list'):
+                i = self.parserPrefixList(i)
+            elif self.stdout[i].startswith('route-map'):
+                i = self.parserRouteMap(i)
+
+class vtyshConfigure():
+    """vtysh configure"""
+    def __init__(self):
+        self.commands = []
+
+    def _genPrefixList(self, parser, newConf):
+        def genCmd(pItem, noCmd=False):
+            if noCmd:
+                self.commands.append("no %s prefix-list %s permit %s" % ('ip' if pItem['iptype'] == 'ipv4' else pItem['iptype'],
+                                                                      pItem['name'], pItem['iprange']))
+            else:
+                self.commands.append("%s prefix-list %s permit %s" % ('ip' if pItem['iptype'] == 'ipv4' else pItem['iptype'],
+                                                                      pItem['name'], pItem['iprange']))
+        for pItem in newConf.get('prefix_list'):
+            if 'name' not in pItem or 'iprange' not in pItem or 'iptype' not in pItem or 'state' not in pItem:
+                continue
+            if pItem['iprange'] in parser.running_config.get('prefix-list', {}).get(pItem['iptype'], {}).get(pItem['name'], {}):
+                if pItem['state'] == 'absent':
+                    # It is present, but new state is absent. Remove
+                    genCmd(pItem, noCmd=True)
+            elif pItem['state'] == 'present':
+                genCmd(pItem)
+
+    def _genRouteMap(self, parser, newConf):
+        def genCmd(pItem, noCmd=False):
+            if noCmd:
+                self.commands.append("no route-map %s permit 10" % pItem['name'])
+            else:
+                self.commands.append("route-map %s permit 10" % pItem['name'])
+                self.commands.append(" match ip route-source prefix-list %s" % pItem['match'])
+        for rItem in newConf.get('route_map'):
+            if 'match' not in rItem or 'name' not in rItem \
+            or 'state' not in rItem:
+                continue
+            if rItem['match'] in parser.running_config.get('route-map', {}).get(rItem['name'], {}).get('10', {}):
+                if rItem['state'] == 'absent':
+                    genCmd(rItem, noCmd=True)
+            elif rItem['state'] == 'present':
+                genCmd(rItem)
+
+    def _genBGP(self, parser, newConf):
+        senseasn = newConf.get('asn', None)
+        runnasn = parser.running_config.get('bgp', {}).get('asn', None)
+        if runnasn and senseasn != runnasn:
+            print('bad')
+            return
+        # Append only if any new commands are added.
+        self.commands.append("router bgp %s" % runnasn)
+        for key in ['ipv6', 'ipv4']:
+            for netw in newConf.get('%s_network' % key, []):
+                if netw['address'].split('/')[0] in parser.running_config.get('bgp', {}).get('address-family', {}).get(key, {}).get('network', {}):
+                    print("network already defined.")
+                    # Todo check if range is equal and or state present/absent
+                    # Not sure what we should do with absent? Remove? This might break normal routing, so we should leave it as is.
+                    continue
+                # At this point it is not defined
+                if netw['state'] == 'present':
+                    # Aadd it
+                    self.commands.append(' address-family %s unicast' % key)
+                    self.commands.append('  network %s' % netw['address'])
+                    self.commands.append(' exit-address-family')
+            for neigh in newConf.get('neighbor', {}).get(key, []):
+                ip = neigh['ip'].split('/')[0]
+                if ip in parser.running_config.get('bgp', {}).get('neighbor', {}):
+                    if neigh['state'] == 'absent':
+                        # It is present on router, but new state is absent
+                        # TODO removal
+                        print('Remove %s. TODO' % neigh)
+                        continue
+                elif neigh['state'] == 'present':
+                    # It is present in new config, but not present on router. Add it
+                    self.commands.append(' address-family %s unicast' % key)
+                    self.commands.append('  neighbor %s remote-as %s' % (ip, neigh['remote_asn']))
+                    # Adding remote-as will exit address family. Need to enter it again
+                    self.commands.append(' address-family %s unicast' % key)
+                    self.commands.append('  neighbor %s activate' % ip)
+                    for rKey, rName in neigh.get('route_map', {}).items():
+                        self.commands.append('  neighbor %s route-map %s %s' % (ip, rName, rKey))
+                    self.commands.append(' exit-address-family')
+
+
+    def generateCommands(self, parser, newConf):
+        """Check new conf with running conf and generate commands
+           for missing router config commands"""
+        self._genPrefixList(parser, newConf)
+        self._genRouteMap(parser, newConf)
+        self._genBGP(parser, newConf)
+        for command in self.commands:
+            print(command)
 
 def applyVlanConfig(sensevlans):
     """Loop via sense vlans and check with sonic vlans config"""
-    #{'description': 'urn:ogf:network:service+63b10f36-2f66-4db2-9273-493c79b5da35:vt+l2-policy::Connection_1',
-    # 'ip6_address': {'ip': 'fc00:0:0:0:0:0:0:38/64', 'state': 'present'}, 'name': 'Vlan 3333', 'state': 'present',
-    # 'tagged_members': [{'port': 'Ethernet24', 'state': 'present'}]}
     sonicAPI = SonicCmd()
     for key, val in sensevlans.items():
         # Sonic key is without space
@@ -205,9 +396,14 @@ def applyVlanConfig(sensevlans):
             if tagged['state'] == 'absent':
                 sonicAPI._delMember(**tmpD)
 
+
 def applyBGPConfig(bgpconfig):
-    # TODO
-    return
+    """Generate BGP Commands and apply to Router (vtysh)"""
+    parser = vtyshParser()
+    parser.getConfig()
+    vtyConf = vtyshConfigure()
+    vtyConf.generateCommands(parser, bgpconfig)
+
 
 def execute(args):
     """Main execute"""
@@ -216,7 +412,7 @@ def execute(args):
         print('Please run ./sonic.py <json_file_config_location>')
         sys.exit(1)
     senseconfig = loadJson(args[1])
-    applyVlanConfig(senseconfig.get('INTERFACES', {}))
+    #applyVlanConfig(senseconfig.get('INTERFACE', {}))
     applyBGPConfig(senseconfig.get('BGP', {}))
 
 if __name__ == "__main__":

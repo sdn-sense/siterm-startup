@@ -19,7 +19,7 @@ touch /var/log/cron.log
 crontab /etc/cron.d/siterm-crons
 
 # Start agent mon process
-sudo -u root /usr/local/bin/dtnrmagent-update --action restart --foreground &> /var/log/dtnrm-agent/Agent/daemon.log
+dtnrmagent-update --action restart --foreground &> /var/log/dtnrm-agent/Agent/daemon.log
 status=$?
 exit_code=0
 if [ $status -ne 0 ]; then
@@ -28,14 +28,14 @@ if [ $status -ne 0 ]; then
 fi
 sleep 2
 # Start ruler process
-sudo -u root /usr/local/bin/dtnrm-ruler --action restart --foreground &> /var/log/dtnrm-agent/Ruler/daemon.log
+dtnrm-ruler --action restart --foreground &> /var/log/dtnrm-agent/Ruler/daemon.log
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart dtnrm-ruler: $status"
   exit_code=2
 fi
 # Start debugger process
-sudo -u root /usr/local/bin/dtnrm-debugger --action restart --foreground &> /var/log/dtnrm-agent/Debugger/daemon.log
+dtnrm-debugger --action restart --foreground &> /var/log/dtnrm-agent/Debugger/daemon.log
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart dtnrm-debugger: $status"
