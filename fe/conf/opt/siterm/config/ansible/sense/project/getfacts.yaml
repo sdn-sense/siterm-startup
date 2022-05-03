@@ -8,16 +8,16 @@
     dellos9_facts:
       gather_subset: all
     register: facts
-    when: ansible_network_os == "dellos9"
+    when: ansible_network_os is defined and ansible_network_os == "dellos9"
 
   - name: Gather Arista EOS Facts
     arista.eos.eos_facts:
       gather_subset: all
     register: facts
-    when: ansible_network_os == "arista.eos.eos"
+    when: ansible_network_os is defined and ansible_network_os == "arista.eos.eos"
 
   - name: Gather Azure SONiC Facts
     command: show runningconfiguration all
     become: true
     register: facts
-    when: ansible_network_os == "sonic"
+    when: ansible_network_os is defined and ansible_network_os == "sonic"

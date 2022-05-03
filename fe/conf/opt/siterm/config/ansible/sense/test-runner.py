@@ -19,7 +19,7 @@ import ansible_runner
 def runAnsible(playbookFile):
     """Run Ansible Playbook"""
     ansRunner = ansible_runner.run(private_data_dir='/opt/siterm/config/ansible/sense',
-                                   inventory='/opt/siterm/config/ansible/inventory/inventory.yaml',
+                                   inventory='/opt/siterm/config/ansible/sense/inventory/inventory.yaml',
                                    playbook=playbookFile)
     return ansRunner
 
