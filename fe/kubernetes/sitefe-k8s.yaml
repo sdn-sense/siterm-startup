@@ -1,3 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sense-fe-vol-___REPLACEMENODOTS___
+  namespace: ___REPLACEMENAMESPACE___
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
 ---
 apiVersion: v1
 kind: Service
@@ -10,6 +22,7 @@ metadata:
     io.kompose.service: sitefe-___REPLACEME___
   name: sitefe-___REPLACEMENODOTS___
 spec:
+  type: LoadBalancer
   ports:
   - name: "8080"
     port: 8080
@@ -17,8 +30,10 @@ spec:
   - name: "8443"
     port: 8443
     targetPort: 443
+  externalIPs:
+    - ___REPLACEMEEXTERNALIP___
   selector:
-    io.kompose.service: sitefe
+    io.kompose.service: sitefe-___REPLACEME___
 status:
   loadBalancer: {}
 ---
@@ -49,7 +64,7 @@ spec:
     spec:
       containers:
       - image: sdnsense/site-rm-sense:dev
-        imagePullPolicy: ""
+        imagePullPolicy: "Always"
         name: sitefe
         resources:
           requests:
@@ -61,6 +76,8 @@ spec:
         - containerPort: 443
         resources: {}
         volumeMounts:
+        - mountPath: /opt/siterm/
+          name: sense-fe-vol-___REPLACEMENODOTS___
         - mountPath: /etc/dtnrm.yaml
           name: fe-conf
           subPath: sense-siterm-fe.yaml
@@ -94,7 +111,7 @@ spec:
       serviceAccountName: ""
       volumes:
       - configMap:
-          defaultMode: 420
+          defaultMode: 0644
           items:
           - key: sense-siterm-fe
             path: sense-siterm-fe.yaml
@@ -106,40 +123,43 @@ spec:
           items:
           - key: fe-environment
             path: environment.conf
-          defaultMode: 0640
+          defaultMode: 0644
       - name: fe-httpdcert
         secret:
           secretName: sense-fe-___REPLACEME___
           items:
           - key: fe-httpdcert
             path: httpdcert.pem
-          defaultMode: 0640
+          defaultMode: 0644
       - name: fe-httpdprivkey
         secret:
           secretName: sense-fe-___REPLACEME___
           items:
           - key: fe-httpdprivkey
             path: httpdprivkey.pem
-          defaultMode: 0640
+          defaultMode: 0644
       - name: fe-httpdfullchain
         secret:
           secretName: sense-fe-___REPLACEME___
           items:
           - key: fe-httpdfullchain
             path: httpdfullchain.pem
-          defaultMode: 0640
+          defaultMode: 0644
       - name: fe-hostcert
         secret:
           secretName: sense-fe-___REPLACEME___
           items:
           - key: fe-hostcert
             path: hostcert.pem
-          defaultMode: 0640
+          defaultMode: 0644
       - name: fe-hostkey
         secret:
           secretName: sense-fe-___REPLACEME___
           items:
           - key: fe-hostkey
             path: hostkey.pem
-          defaultMode: 0640
+          defaultMode: 0644
+      - name: sense-fe-vol-___REPLACEMENODOTS___
+        persistentVolumeClaim:
+          claimName: sense-fe-vol-___REPLACEMENODOTS___
 status: {}
