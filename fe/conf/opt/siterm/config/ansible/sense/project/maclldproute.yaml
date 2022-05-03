@@ -18,7 +18,7 @@
          - show lldp neighbors detail
          - show running-config
          - show running-config
-    when: ansible_network_os == "dellos9"
+    when: ansible_network_os is defined and ansible_network_os == "dellos9"
 
   - name: "Get Version, lldp, routes from Arista EOS"
     arista.eos.eos_command:
@@ -27,7 +27,7 @@
         - show lldp neighbors detail | json
         - show ip route vrf all | json
         - show ipv6 route vrf all | json
-    when: ansible_network_os == 'arista.eos.eos'
+    when: ansible_network_os is defined and ansible_network_os == 'arista.eos.eos'
 
   - name: "Get version, lldp, routes from  SONiC"
     command: "{{ item }}"
@@ -38,4 +38,4 @@
       - echo This is dummy call. It will use running config. # Sonic module will use configuration for ipv6 routing identification
     become: true
     register: sonic_command
-    when: ansible_network_os == 'sonic'
+    when: ansible_network_os is defined and ansible_network_os == 'sonic'
