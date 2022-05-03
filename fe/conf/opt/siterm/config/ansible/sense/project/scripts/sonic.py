@@ -264,8 +264,8 @@ class vtyshParser():
 
     def getConfig(self):
         """Get vtysh running config and parse it to dict format"""
-        with open('vtysh-out', 'r', encoding='utf-8') as fd:
-            self.stdout = fd.read().split('\n')
+        vtyshProc = externalCommand("vtysh -c 'show running-config'")
+        self.stdout = vtyshProc[0].decode('utf-8').split('\n')
         self.totalLines = len(self.stdout)
         for i in range(self.totalLines):
             if self.stdout[i].startswith('router bgp'):
@@ -288,7 +288,9 @@ class vtyshConfigure():
             else:
                 self.commands.append("%s prefix-list %s permit %s" % ('ip' if pItem['iptype'] == 'ipv4' else pItem['iptype'],
                                                                       pItem['name'], pItem['iprange']))
-        for pItem in newConf.get('prefix_list'):
+        if not newConf:
+            return
+        for pItem in newConf.get('prefix_list', {}):
             if 'name' not in pItem or 'iprange' not in pItem or 'iptype' not in pItem or 'state' not in pItem:
                 continue
             if pItem['iprange'] in parser.running_config.get('prefix-list', {}).get(pItem['iptype'], {}).get(pItem['name'], {}):
@@ -305,7 +307,9 @@ class vtyshConfigure():
             else:
                 self.commands.append("route-map %s permit 10" % pItem['name'])
                 self.commands.append(" match ip route-source prefix-list %s" % pItem['match'])
-        for rItem in newConf.get('route_map'):
+        if not newConf:
+            return
+        for rItem in newConf.get('route_map', {}):
             if 'match' not in rItem or 'name' not in rItem \
             or 'state' not in rItem:
                 continue
@@ -316,6 +320,8 @@ class vtyshConfigure():
                 genCmd(rItem)
 
     def _genBGP(self, parser, newConf):
+        if not newConf:
+            return
         senseasn = newConf.get('asn', None)
         runnasn = parser.running_config.get('bgp', {}).get('asn', None)
         if runnasn and senseasn != runnasn:
