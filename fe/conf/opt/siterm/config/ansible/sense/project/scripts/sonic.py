@@ -47,6 +47,17 @@ def externalCommand(command):
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return proc.communicate()
 
+def sendviaStdIn(maincmd, commands):
+    """Send commands to maincmd stdin"""
+    mainProc = subprocess.Popen([maincmd], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    singlecmd = ""
+    for cmd in commands:
+        singlecmd += "%s\n" % cmd
+    cmdOut = mainProc.communicate(input=singlecmd.encode())[0]
+    print('This is what we get back from vtysh')
+    for out in cmdOut.split(b'\n'):
+        print(out.decode('utf-8'))
+
 def strtojson(intxt):
     """str to json function"""
     out = {}
@@ -201,7 +212,8 @@ class vtyshParser():
                 return incr
             match = re.search(self.regexes['network'], self.stdout[incr].strip(), re.M)
             if match:
-                networks[match[1]] = {'ip': match[1], 'range': match[2]}
+                normIP = normalizeIPAddress(match[1])
+                networks[normIP] = {'ip': normIP, 'range': match[2]}
                 continue
             match = re.search(self.regexes['neighbor-route-map'], self.stdout[incr].strip(), re.M)
             if match:
@@ -225,7 +237,8 @@ class vtyshParser():
             match = re.search(self.regexes['neighbor-remote-as'], self.stdout[i].strip(), re.M)
             if match:
                 neighbor = bgp.setdefault('neighbor', {})
-                neighbor[match[1]] = {'ip': match[1], 'remote-as': match[2]}
+                normIP = normalizeIPAddress(match[1])
+                neighbor[normIP] = {'ip': normIP, 'remote-as': match[2]}
                 continue
             match = re.search(self.regexes['address-family'], self.stdout[i].strip(), re.M)
             if match:
@@ -238,11 +251,11 @@ class vtyshParser():
         prefList = self.running_config.setdefault('prefix-list', {'ipv4': {}, 'ipv6': {}})
         match = re.search(self.regexes['ipv4-prefix-list'], self.stdout[incr].strip(), re.M)
         if match:
-            prefList['ipv4'].setdefault(match[1], {})[match[3]] = match[2]
+            prefList['ipv4'].setdefault(match[1], {})[normalizeIPAddress(match[3])] = match[2]
             return incr
         match = re.search(self.regexes['ipv6-prefix-list'], self.stdout[incr].strip(), re.M)
         if match:
-            prefList['ipv6'].setdefault(match[1], {})[match[3]] = match[2]
+            prefList['ipv6'].setdefault(match[1], {})[normalizeIPAddress(match[3])] = match[2]
         return incr
 
     def parserRouteMap(self, incr):
@@ -293,7 +306,8 @@ class vtyshConfigure():
         for pItem in newConf.get('prefix_list', {}):
             if 'name' not in pItem or 'iprange' not in pItem or 'iptype' not in pItem or 'state' not in pItem:
                 continue
-            if pItem['iprange'] in parser.running_config.get('prefix-list', {}).get(pItem['iptype'], {}).get(pItem['name'], {}):
+            ipInfo = pItem['iprange'].split('/')
+            if normalizeIPAddress(ipInfo[0]) in parser.running_config.get('prefix-list', {}).get(pItem['iptype'], {}).get(pItem['name'], {}):
                 if pItem['state'] == 'absent':
                     # It is present, but new state is absent. Remove
                     genCmd(pItem, noCmd=True)
@@ -331,7 +345,8 @@ class vtyshConfigure():
         self.commands.append("router bgp %s" % runnasn)
         for key in ['ipv6', 'ipv4']:
             for netw in newConf.get('%s_network' % key, []):
-                if netw['address'].split('/')[0] in parser.running_config.get('bgp', {}).get('address-family', {}).get(key, {}).get('network', {}):
+                netwNorm = normalizeIPAddress(netw['address'].split('/')[0])
+                if netwNorm in parser.running_config.get('bgp', {}).get('address-family', {}).get(key, {}).get('network', {}):
                     print("network already defined.")
                     # Todo check if range is equal and or state present/absent
                     # Not sure what we should do with absent? Remove? This might break normal routing, so we should leave it as is.
@@ -368,8 +383,8 @@ class vtyshConfigure():
         self._genPrefixList(parser, newConf)
         self._genRouteMap(parser, newConf)
         self._genBGP(parser, newConf)
-        for command in self.commands:
-            print(command)
+        if self.commands:
+            sendviaStdIn('vtysh', ['configure'] + self.commands)
 
 def applyVlanConfig(sensevlans):
     """Loop via sense vlans and check with sonic vlans config"""
@@ -423,3 +438,4 @@ def execute(args):
 
 if __name__ == "__main__":
     execute(args=sys.argv)
+
