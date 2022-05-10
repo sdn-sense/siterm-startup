@@ -219,7 +219,8 @@ class vtyshParser():
                         'ipv4-prefix-list': r'ip prefix-list ([a-zA-Z0-9_-]*) seq ([0-9]*) permit ([0-9a-f.:]*)/([0-9]{1,3})',
                         'ipv6-prefix-list': r'ipv6 prefix-list ([a-zA-Z0-9_-]*) seq ([0-9]*) permit ([0-9a-f.:]*)/([0-9]{1,3})',
                         'route-map': r'route-map ([a-zA-Z0-9_-]*) permit ([0-9]*)',
-                        'match-ip': r'match ip route-source prefix-list ([a-zA-Z0-9_-]*)',
+                        'match-ipv4': r'match ip address prefix-list ([a-zA-Z0-9_-]*)',
+                        'match-ipv6': r'match ipv6 address prefix-list ([a-zA-Z0-9_-]*)',
                         'router': r'^router bgp ([0-9]*)'}
 
     def _parseAddressFamily(self, incr, iptype='unset'):
@@ -290,10 +291,12 @@ class vtyshParser():
             incr = i
             if self.stdout[i] == '!':
                 return i
-            match = re.search(self.regexes['match-ip'], self.stdout[i].strip(), re.M)
+            match = re.search(self.regexes['match-ipv4'], self.stdout[i].strip(), re.M)
             if match:
                 rMap[match[1]] = ""
-            # What about IPV6 route match?
+            match = re.search(self.regexes['match-ipv6'], self.stdout[i].strip(), re.M)
+            if match:
+                rMap[match[1]] = ""
         return incr
 
     def _dryRunLocalConfig(self):
@@ -352,7 +355,7 @@ class vtyshConfigure():
                 self.commands.append("no route-map %(name)s permit %(permit)s" % pItem)
             else:
                 self.commands.append("route-map %(name)s permit %(permit)s" % pItem)
-                self.commands.append(" match %(iptype)s route-source prefix-list %(match)s" % pItem)
+                self.commands.append(" match %(iptype)s address prefix-list %(match)s" % pItem)
         if not newConf:
             return
         for iptype, rdict in newConf.get('route_map', {}).items():
@@ -385,7 +388,7 @@ class vtyshConfigure():
                 if netstate == 'present':
                     # Aadd it
                     self.commands.append(' address-family %s unicast' % key)
-                    self.commands.append('  network %s' % netwNorm)
+                    self.commands.append('  network %s' % netw)
                     self.commands.append(' exit-address-family')
             for neighIP, neighDict in newConf.get('neighbor', {}).get(key, {}).items():
                 ipNorm = neighIP.split('/')[0]
