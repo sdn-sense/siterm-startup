@@ -27,10 +27,10 @@ import re
 import ast
 import sys
 import json
+import argparse
 import subprocess
 import shlex
 import ipaddress
-import logging
 
 def normalizeIPAddress(ipInput):
     """Normalize IP Address"""
@@ -41,22 +41,30 @@ def normalizeIPAddress(ipInput):
     return longIP
 
 
-def externalCommand(command):
+def externalCommand(command, dryRun=False):
     """Execute External Commands and return stdout and stderr."""
-    command = shlex.split(command)
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return proc.communicate()
+    if not dryRun:
+        command = shlex.split(command)
+        proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return proc.communicate()
+    print('DRY_RUN: %s' % command)
+    return ""
 
-def sendviaStdIn(maincmd, commands):
+def sendviaStdIn(maincmd, commands, dryRun=False):
     """Send commands to maincmd stdin"""
-    mainProc = subprocess.Popen([maincmd], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    singlecmd = ""
-    for cmd in commands:
-        singlecmd += "%s\n" % cmd
-    cmdOut = mainProc.communicate(input=singlecmd.encode())[0]
-    print('This is what we get back from vtysh')
-    for out in cmdOut.split(b'\n'):
-        print(out.decode('utf-8'))
+    if not dryRun:
+        mainProc = subprocess.Popen([maincmd], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        singlecmd = ""
+        for cmd in commands:
+            singlecmd += "%s\n" % cmd
+        cmdOut = mainProc.communicate(input=singlecmd.encode())[0]
+        print('This is what we get back from %s command' % maincmd)
+        for out in cmdOut.split(b'\n'):
+            print(out.decode('utf-8'))
+    else:
+        print('DRY_RUN: Comand to be sent to %s stdin' % maincmd)
+        for cmd in commands:
+            print(cmd)
 
 def strtojson(intxt):
     """str to json function"""
@@ -87,14 +95,25 @@ def loadJson(infile):
 
 class SonicCmd():
     """Sonic CMD Executor API"""
-    def __init__(self):
+    def __init__(self, args):
         self.config = {}
+        self.args = args
         self.needRefresh = True
+
+    def _dryRunLocalConfig(self):
+        """Load config from local file - for debugging purposes"""
+        if self.args.sonicconfig and os.path.isfile(self.args.sonicconfig):
+            with open(self.args.sonicconfig, 'r', encoding='utf-8') as fd:
+                return strtojson(fd.read())
+        return {}
 
     def generateSonicDict(self):
         """Generate all Vlan Info for comparison with SENSE FE Entries"""
-        cmdout = externalCommand('show runningconfiguration all')
-        out = strtojson(cmdout[0])
+        if not self.args.dryrun:
+            cmdout = externalCommand('show runningconfiguration all', self.args.dryrun)
+            out = strtojson(cmdout[0])
+        else:
+            out = self._dryRunLocalConfig()
         for key, _ in out.get('VLAN', {}).items():
             self.config.setdefault(key, {})
         for key, _ in out.get('VLAN_INTERFACE', {}).items():
@@ -186,9 +205,11 @@ class SonicCmd():
                 self._delIP(**kwargs)
 
 class vtyshParser():
-    def __init__(self):
+    """Vtysh running config parser"""
+    def __init__(self, args):
         self.running_config = {}
         self.stdout = ""
+        self.args = args
         self.totalLines = 0
         self.regexes = {'network': r'network ([0-9a-f.:]*)/([0-9]{1,3})',
                         'neighbor-route-map': r'neighbor ([a-zA-z_:.0-9-]*) route-map ([a-zA-z_:.0-9-]*) (in|out)',
@@ -275,10 +296,19 @@ class vtyshParser():
             # What about IPV6 route match?
         return incr
 
+    def _dryRunLocalConfig(self):
+        """Load config from local file - for debugging purposes"""
+        if self.args.vtyshoutput and os.path.isfile(self.args.vtyshoutput):
+            with open(self.args.vtyshoutput, 'r', encoding='utf-8') as fd:
+                self.stdout = fd.read().split('\n')
+
     def getConfig(self):
         """Get vtysh running config and parse it to dict format"""
-        vtyshProc = externalCommand("vtysh -c 'show running-config'")
-        self.stdout = vtyshProc[0].decode('utf-8').split('\n')
+        if not self.args.dryrun:
+            vtyshProc = externalCommand("vtysh -c 'show running-config'")
+            self.stdout = vtyshProc[0].decode('utf-8').split('\n')
+        else:
+            self._dryRunLocalConfig()
         self.totalLines = len(self.stdout)
         for i in range(self.totalLines):
             if self.stdout[i].startswith('router bgp'):
@@ -290,48 +320,50 @@ class vtyshParser():
 
 class vtyshConfigure():
     """vtysh configure"""
-    def __init__(self):
+    def __init__(self, args):
         self.commands = []
+        self.args = args
 
     def _genPrefixList(self, parser, newConf):
+        """Generate Prefix lists"""
         def genCmd(pItem, noCmd=False):
             if noCmd:
-                self.commands.append("no %s prefix-list %s permit %s" % ('ip' if pItem['iptype'] == 'ipv4' else pItem['iptype'],
-                                                                      pItem['name'], pItem['iprange']))
+                self.commands.append("no %(iptype)s prefix-list %(name)s permit %(iprange)s" % pItem)
             else:
-                self.commands.append("%s prefix-list %s permit %s" % ('ip' if pItem['iptype'] == 'ipv4' else pItem['iptype'],
-                                                                      pItem['name'], pItem['iprange']))
+                self.commands.append("%(iptype)s prefix-list %(name)s permit %(iprange)s" % pItem)
         if not newConf:
             return
-        for pItem in newConf.get('prefix_list', {}):
-            if 'name' not in pItem or 'iprange' not in pItem or 'iptype' not in pItem or 'state' not in pItem:
-                continue
-            ipInfo = pItem['iprange'].split('/')
-            if normalizeIPAddress(ipInfo[0]) in parser.running_config.get('prefix-list', {}).get(pItem['iptype'], {}).get(pItem['name'], {}):
-                if pItem['state'] == 'absent':
-                    # It is present, but new state is absent. Remove
-                    genCmd(pItem, noCmd=True)
-            elif pItem['state'] == 'present':
-                genCmd(pItem)
+
+        for iptype, pdict in newConf.get('prefix_list', {}).items():
+            for iprange, prefDict in pdict.items():
+                for prefName, prefState in prefDict.items():
+                    normIP = normalizeIPAddress(iprange)
+                    out = {'iptype': iptype, 'name': prefName, 'iprange': iprange}
+                    if normIP in parser.running_config.get('prefix-list', {}).get(iptype, {}).get(prefName, {}):
+                        if prefState == 'absent':
+                            genCmd(out, noCmd=True)
+                    elif prefState == 'present':
+                        genCmd(out)
 
     def _genRouteMap(self, parser, newConf):
+        """Generate Route-map commands."""
         def genCmd(pItem, noCmd=False):
             if noCmd:
-                self.commands.append("no route-map %s permit 10" % pItem['name'])
+                self.commands.append("no route-map %(name)s permit %(permit)s" % pItem)
             else:
-                self.commands.append("route-map %s permit 10" % pItem['name'])
-                self.commands.append(" match ip route-source prefix-list %s" % pItem['match'])
+                self.commands.append("route-map %(name)s permit %(permit)s" % pItem)
+                self.commands.append(" match %(iptype)s route-source prefix-list %(match)s" % pItem)
         if not newConf:
             return
-        for rItem in newConf.get('route_map', {}):
-            if 'match' not in rItem or 'name' not in rItem \
-            or 'state' not in rItem:
-                continue
-            if rItem['match'] in parser.running_config.get('route-map', {}).get(rItem['name'], {}).get('10', {}):
-                if rItem['state'] == 'absent':
-                    genCmd(rItem, noCmd=True)
-            elif rItem['state'] == 'present':
-                genCmd(rItem)
+        for iptype, rdict in newConf.get('route_map', {}).items():
+            for rMapName, rMapPrios in rdict.items():
+                for prio, rNames in rMapPrios.items():
+                    for rName, rState in rNames.items():
+                        out = {'iptype': iptype, 'permit': prio, 'name': rMapName, 'match': rName}
+                        if rState == 'absent':
+                            genCmd(out, True)
+                        elif rState == 'present':
+                            genCmd(out)
 
     def _genBGP(self, parser, newConf):
         if not newConf:
@@ -339,41 +371,43 @@ class vtyshConfigure():
         senseasn = newConf.get('asn', None)
         runnasn = parser.running_config.get('bgp', {}).get('asn', None)
         if runnasn and senseasn != runnasn:
-            print('bad')
-            return
+            msg = 'Running ASN != SENSE ASN (%s != %s)' % (runnasn, senseasn)
+            print(msg)
+            raise Exception(msg)
         # Append only if any new commands are added.
-        self.commands.append("router bgp %s" % runnasn)
+        self.commands.append("router bgp %s" % senseasn)
         for key in ['ipv6', 'ipv4']:
-            for netw in newConf.get('%s_network' % key, []):
-                netwNorm = normalizeIPAddress(netw['address'].split('/')[0])
+            for netw, netstate in newConf.get('%s_network' % key, {}).items():
+                netwNorm = normalizeIPAddress(netw.split('/')[0])
                 if netwNorm in parser.running_config.get('bgp', {}).get('address-family', {}).get(key, {}).get('network', {}):
-                    print("network already defined.")
-                    # Todo check if range is equal and or state present/absent
-                    # Not sure what we should do with absent? Remove? This might break normal routing, so we should leave it as is.
                     continue
                 # At this point it is not defined
-                if netw['state'] == 'present':
+                if netstate == 'present':
                     # Aadd it
                     self.commands.append(' address-family %s unicast' % key)
-                    self.commands.append('  network %s' % netw['address'])
+                    self.commands.append('  network %s' % netwNorm)
                     self.commands.append(' exit-address-family')
-            for neigh in newConf.get('neighbor', {}).get(key, []):
-                ip = neigh['ip'].split('/')[0]
-                if ip in parser.running_config.get('bgp', {}).get('neighbor', {}):
-                    if neigh['state'] == 'absent':
+            for neighIP, neighDict in newConf.get('neighbor', {}).get(key, {}).items():
+                ipNorm = neighIP.split('/')[0]
+                if ipNorm in parser.running_config.get('bgp', {}).get('neighbor', {}):
+                    if neighDict['state'] == 'absent':
                         # It is present on router, but new state is absent
                         # TODO removal
-                        print('Remove %s. TODO' % neigh)
+                        print('Remove %s. TODO' % neighDict)
                         continue
-                elif neigh['state'] == 'present':
+                elif neighDict['state'] == 'present':
                     # It is present in new config, but not present on router. Add it
                     self.commands.append(' address-family %s unicast' % key)
-                    self.commands.append('  neighbor %s remote-as %s' % (ip, neigh['remote_asn']))
+                    self.commands.append('  neighbor %s remote-as %s' % (ipNorm, neighDict['remote_asn']))
                     # Adding remote-as will exit address family. Need to enter it again
                     self.commands.append(' address-family %s unicast' % key)
-                    self.commands.append('  neighbor %s activate' % ip)
-                    for rKey, rName in neigh.get('route_map', {}).items():
-                        self.commands.append('  neighbor %s route-map %s %s' % (ip, rName, rKey))
+                    self.commands.append('  neighbor %s activate' % ipNorm)
+                    for rtype in ['in', 'out']:
+                        for rName, rState in neighDict.get('route_map', {}).get(rtype, {}).items():
+                            if rState == 'present':
+                                self.commands.append('  neighbor %s route-map %s %s' % (ipNorm, rName, rtype))
+                            elif rState == 'absent':
+                                print('Remove %s. TODO' % rName)
                     self.commands.append(' exit-address-family')
 
 
@@ -384,15 +418,17 @@ class vtyshConfigure():
         self._genRouteMap(parser, newConf)
         self._genBGP(parser, newConf)
         if self.commands:
-            sendviaStdIn('vtysh', ['configure'] + self.commands)
+            sendviaStdIn('vtysh', ['configure'] + self.commands, self.args.dryrun)
 
-def applyVlanConfig(sensevlans):
+def applyVlanConfig(args, sensevlans):
     """Loop via sense vlans and check with sonic vlans config"""
-    sonicAPI = SonicCmd()
+    sonicAPI = SonicCmd(args)
     for key, val in sensevlans.items():
-        # Sonic key is without space
         tmpKey = key.split(' ')
-        tmpD = {'vlan': "".join(tmpKey), 'vlanid': tmpKey[1]}
+        if len(tmpKey) == 1:
+            tmpD = {'vlan': "".join(key), 'vlanid': key[-4:]}
+        else:
+            tmpD = {'vlan': "".join(tmpKey), 'vlanid': tmpKey[1]}
         # Vlan ADD/Remove
         if val['state'] == 'present':
             sonicAPI._addVlan(**tmpD)
@@ -400,42 +436,46 @@ def applyVlanConfig(sensevlans):
             sonicAPI._delVlan(**tmpD)
             continue
         # IP ADD/Remove
-        for ipkey in ['ip6_address', 'ip_address']:
-            ipDict = val.get(ipkey, {})
-            if not ipDict:
-                continue
-            tmpD['ip'] = normalizeIPAddress(ipDict['ip'])
-            if ipDict['state'] == 'present':
-                sonicAPI._addIP(**tmpD)
-            if ipDict['state'] == 'absent':
-                sonicAPI._delIP(**tmpD)
+        for ipkey in ['ipv6_address', 'ipv4_address']:
+            for ipval, ipstate in val.get(ipkey, {}).items():
+                tmpD['ip'] = normalizeIPAddress(ipval)
+                if ipstate == 'present':
+                    sonicAPI._addIP(**tmpD)
+                if ipstate == 'absent':
+                    sonicAPI._delIP(**tmpD)
         # Tagged Members Add/Remove
-        for tagged in val.get('tagged_members', []):
-            tmpD['member'] = tagged['port']
-            if tagged['state'] == 'present':
+        for taggedName, taggedState in val.get('tagged_members', {}).items():
+            tmpD['member'] = taggedName
+            if taggedState == 'present':
                 sonicAPI._addMember(**tmpD)
-            if tagged['state'] == 'absent':
+            if taggedState == 'absent':
                 sonicAPI._delMember(**tmpD)
 
 
-def applyBGPConfig(bgpconfig):
+def applyBGPConfig(args, bgpconfig):
     """Generate BGP Commands and apply to Router (vtysh)"""
-    parser = vtyshParser()
+    parser = vtyshParser(args)
     parser.getConfig()
-    vtyConf = vtyshConfigure()
+    vtyConf = vtyshConfigure(args)
     vtyConf.generateCommands(parser, bgpconfig)
 
 
 def execute(args):
     """Main execute"""
-    if len(args) == 1 or len(args) > 2:
-        print('Too many or not enough args provided. Args: %s' % args)
-        print('Please run ./sonic.py <json_file_config_location>')
-        sys.exit(1)
-    senseconfig = loadJson(args[1])
-    #applyVlanConfig(senseconfig.get('INTERFACE', {}))
-    applyBGPConfig(senseconfig.get('BGP', {}))
+    senseconfig = loadJson(args.config)
+    applyVlanConfig(args, senseconfig.get('INTERFACE', {}))
+    applyBGPConfig(args, senseconfig.get('BGP', {}))
 
 if __name__ == "__main__":
-    execute(args=sys.argv)
+    oparser = argparse.ArgumentParser(description="Azure Sonic SENSE Configuration apply script.",
+                                      prog=os.path.basename(sys.argv[0]), add_help=True)
+    oparser.add_argument('--debug', dest='debug', default=False, help="Debug mode", action='store_true')
+    oparser.add_argument('--dryrun', dest='dryrun', default=False, help="Not apply any commands. Log to console.", action='store_true')
+    oparser.add_argument('--vtyshoutput', dest='vtyshoutput', default=None, help="vtyshoutput. Only used if --nocmd specified. Otherwise will call vtysh")
+    oparser.add_argument('--sonicconfig', dest='sonicconfig', default=None, help="sonicconfig. Only used if --nocmd specified. Otherwise will call show runningconfiguration all")
+    oparser.add_argument('--config', dest='config', default=None, help="config file - provided by SiteRM.")
+    if len(sys.argv) == 1:
+        oparser.print_help()
+    argsCmd = oparser.parse_args(sys.argv[1:])
+    execute(argsCmd)
 
