@@ -114,11 +114,9 @@ router bgp {{ bgp.asn }}
           {% if val == "absent" %}
  {{ addr_fam_v4 }}
   no network {{ key }}
- exit-address-family
           {% else %}
  {{ addr_fam_v4 }}
   network {{ key }}
- exit-address-family
           {% endif %}
         {% endfor %}
       {% endif %}
@@ -127,15 +125,12 @@ router bgp {{ bgp.asn }}
           {% if val == "absent" %}
  {{ addr_fam_v6 }}
   no network {{ key }}
- exit-address-family
           {% else %}
  {# HACK-2 #}
  {{ addr_fam_v4 }}
- exit-address-family
  {# HACK-2 #}
  {{ addr_fam_v6 }}
   network {{ key }}
- exit-address-family
           {% endif %}
         {% endfor %}
       {% endif %}
@@ -147,7 +142,6 @@ router bgp {{ bgp.asn }}
               {% if val.state is defined and val.state == "absent" %}
  {{ addr_fam_v4 }}
   no neighbor {{ neighIP }} remote-as {{ val.remote_asn }}
- exit-address-family
               {% else %}
  {{ addr_fam_v4 }}
   neighbor {{ neighIP }} remote-as {{ val.remote_asn }}
@@ -164,7 +158,6 @@ router bgp {{ bgp.asn }}
                       {% endif %}
                     {% endfor %}
                   {% endfor %}
- exit-address-family
                 {% endif %}
               {% endif %}
             {% endif %}
@@ -178,7 +171,6 @@ router bgp {{ bgp.asn }}
 {# HACK-1 #}
  {{ addr_fam_v4 }}
   no neighbor {{ neighIP }} remote-as {{ val.remote_asn }}
- exit-address-family
 {# HACK-1 #}
               {% else %}
 {# HACK-1 #}
@@ -198,7 +190,6 @@ router bgp {{ bgp.asn }}
                       {% endif %}
                     {% endfor %}
                   {% endfor %}
- exit-address-family
                 {% endif %}
               {% endif %}
             {% endif %}
