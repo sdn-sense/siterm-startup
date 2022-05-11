@@ -90,7 +90,7 @@ interface Vlan {{ vlan_id[1] }}
         {% if val == "absent" %}
  no tagged {{ key }}
         {% else %}
- tagget {{ key }}
+ tagged {{ key }}
         {% endif %}
       {% endfor %}
     {% endif %}
@@ -106,7 +106,7 @@ router bgp {{ bgp.asn }}
       {% set addr_fam_v4 = "address-family ipv4 multicast" %}
       {% set addr_fam_v6 = "address-family ipv6 unicast" %}
       {% if bgp.vrf is defined %}
-        {% set addr_fam_v4 = "address-family ipv4 multicast vrf " ~ bgp.vrf %}
+        {% set addr_fam_v4 = "address-family ipv4 vrf " ~ bgp.vrf %}
         {% set addr_fam_v6 = "address-family ipv6 unicast vrf " ~ bgp.vrf %}
       {% endif %}
       {% if bgp.ipv4_network is defined and bgp.ipv4_network %}
@@ -152,7 +152,6 @@ router bgp {{ bgp.asn }}
  {{ addr_fam_v4 }}
   neighbor {{ neighIP }} remote-as {{ val.remote_asn }}
   neighbor {{ neighIP }} no shutdown
- exit-address-family
                 {% if val.route_map is defined and val.route_map %}
  {{ addr_fam_v4 }}
   neighbor {{ neighIP }} activate
@@ -181,21 +180,11 @@ router bgp {{ bgp.asn }}
   no neighbor {{ neighIP }} remote-as {{ val.remote_asn }}
  exit-address-family
 {# HACK-1 #}
-                {% if val.route_map is defined and val.route_map %}
- {{ addr_fam_v6 }}
-                  {% for direc, vals in val.route_map.items() %}
-                    {% for name, state in vals.items() %}
-  no neighbor {{ neighIP }} route-map {{ name }} {{ direc }}
-                    {% endfor %}
-                  {% endfor %}
- exit-address-family
-                {% endif %}
               {% else %}
 {# HACK-1 #}
  {{ addr_fam_v4 }}
   neighbor {{ neighIP }} remote-as {{ val.remote_asn }}
   neighbor {{ neighIP }} no shutdown
- exit-address-family
 {# HACK-1 #}
                 {% if val.route_map is defined and val.route_map %}
  {{ addr_fam_v6 }}
@@ -266,3 +255,4 @@ route-map {{ rmapname }} permit {{ permitval }}
       {% endif %}
     {% endfor %}
   {% endif %}
+{% endif %}
