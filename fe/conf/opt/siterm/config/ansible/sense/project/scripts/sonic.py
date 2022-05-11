@@ -336,7 +336,6 @@ class vtyshConfigure():
                 self.commands.append("%(iptype)s prefix-list %(name)s permit %(iprange)s" % pItem)
         if not newConf:
             return
-
         for iptype, pdict in newConf.get('prefix_list', {}).items():
             for iprange, prefDict in pdict.items():
                 for prefName, prefState in prefDict.items():
@@ -382,20 +381,27 @@ class vtyshConfigure():
         for key in ['ipv6', 'ipv4']:
             for netw, netstate in newConf.get('%s_network' % key, {}).items():
                 netwNorm = normalizeIPAddress(netw.split('/')[0])
-                if netwNorm in parser.running_config.get('bgp', {}).get('address-family', {}).get(key, {}).get('network', {}):
+                if netwNorm in parser.running_config.get('bgp', {}).get('address-family', {}).get(key, {}).get('network', {}) and netstate == 'present':
                     continue
                 # At this point it is not defined
                 if netstate == 'present':
-                    # Aadd it
+                    # Add it
                     self.commands.append(' address-family %s unicast' % key)
                     self.commands.append('  network %s' % netw)
                     self.commands.append(' exit-address-family')
+                if netstate == 'absent':
+                    print('Not removing network as it might break things for normal routing')
+                    # We need a way to allow sites to control this via simple flag.
+                    # If site does not run bgp - then it is save to delete;
+                    # If they do - then it is better to keep it as is
             for neighIP, neighDict in newConf.get('neighbor', {}).get(key, {}).items():
-                ipNorm = neighIP.split('/')[0]
+                ipNorm = normalizeIPAddress(neighIP.split('/')[0])
                 if ipNorm in parser.running_config.get('bgp', {}).get('neighbor', {}):
                     if neighDict['state'] == 'absent':
                         # It is present on router, but new state is absent
                         # TODO removal
+                        self.commands.append(' address-family %s unicast' % key)
+                        self.commands.append('  no neighbor %s remote-as %s' % (ipNorm, neighDict['remote_asn']))
                         print('Remove %s. TODO' % neighDict)
                         continue
                 elif neighDict['state'] == 'present':
@@ -405,12 +411,13 @@ class vtyshConfigure():
                     # Adding remote-as will exit address family. Need to enter it again
                     self.commands.append(' address-family %s unicast' % key)
                     self.commands.append('  neighbor %s activate' % ipNorm)
+                    self.commands.append('  neighbor %s soft-reconfiguration inbound' % ipNorm)
                     for rtype in ['in', 'out']:
                         for rName, rState in neighDict.get('route_map', {}).get(rtype, {}).items():
                             if rState == 'present':
                                 self.commands.append('  neighbor %s route-map %s %s' % (ipNorm, rName, rtype))
                             elif rState == 'absent':
-                                print('Remove %s. TODO' % rName)
+                                self.commands.append('  no neighbor %s route-map %s %s' % (ipNorm, rName, rtype))
                     self.commands.append(' exit-address-family')
 
 
@@ -481,4 +488,3 @@ if __name__ == "__main__":
         oparser.print_help()
     argsCmd = oparser.parse_args(sys.argv[1:])
     execute(argsCmd)
-
