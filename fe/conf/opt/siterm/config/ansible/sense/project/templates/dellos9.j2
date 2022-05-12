@@ -94,6 +94,7 @@ interface Vlan {{ vlan_id[1] }}
         {% endif %}
       {% endfor %}
     {% endif %}
+ no shutdown
   {% endif %}
 {% endfor %}
 {% endif %}
@@ -149,6 +150,7 @@ router bgp {{ bgp.asn }}
                 {% if val.route_map is defined and val.route_map %}
  {{ addr_fam_v4 }}
   neighbor {{ neighIP }} activate
+ {{ addr_fam_v4 }}
                   {% for direc, vals in val.route_map.items() %}
                     {% for name, state in vals.items() %}
                       {% if state == "absent" %}
@@ -181,6 +183,7 @@ router bgp {{ bgp.asn }}
                 {% if val.route_map is defined and val.route_map %}
  {{ addr_fam_v6 }}
   neighbor {{ neighIP }} activate
+ {{ addr_fam_v6 }}
                   {% for direc, vals in val.route_map.items() %}
                     {% for name, state in vals.items() %}
                       {% if state == "absent" %}
