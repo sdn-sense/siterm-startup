@@ -43,7 +43,7 @@ spec:
           readOnly: true
           subPath: hostkey.pem
       nodeSelector:
-          kubernetes.io/hostname: ___REPLACEME___
+          kubernetes.io/hostname: ___REPLACEMENODESELECTOR___
       restartPolicy: Always
       serviceAccountName: ""
       volumes:

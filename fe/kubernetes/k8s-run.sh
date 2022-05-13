@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 
 function askYesNo () {
   retVal=-1
@@ -58,11 +57,17 @@ read publicip
 echo "Which namespace on Kubernetes to use to deploy service?"
 read namespace
 
-askYesNo "Does your Kubernetes have PersistentVolumeClaim? [Yy]es or [Nn]o:  "
+askYesNo "Does your Kubernetes have PersistentVolumeClaim/Ceph? [Yy]es or [Nn]o:  "
 result=$?
-configfile=sitefe-k8s.yaml
+configfile=default_configs/sitefe-k8s.yaml
 if [ "$result" -ne "0" ]; then
- configfile=sitefe-k8s.yaml-noceph
+ configfile=$configfile"-noceph"
+fi
+
+askYesNo "Does you want to use host Network (In case no Load Balancer)? [Yy]es or [Nn]o:  "
+result=$?
+if [ "$result" -ne "1" ]; then
+ configfile=$configfile"-hostnetwork"
 fi
 
 
@@ -152,7 +157,7 @@ if [ -f "../conf/etc/dtnrm.yaml-$fqdn" ]; then
   askYesNo "Config file is present for $fqdn. Do you want to overwrite it? [Yy]es or [Nn]o:  "
   result=$?
 fi
-if [ "$result" -eq "0"]; then
+if [ "$result" -eq 0 ]; then
   echo "Config Overwrite Requested."
   cp ../conf/etc/dtnrm.yaml ../conf/etc/dtnrm.yaml-$fqdn
   REWRITE_CONFIG_MAP=1
@@ -168,6 +173,8 @@ sed -i ".backup" "s|___REPLACEMENODESELECTOR___|$nodeselector|g" sitefe-k8s.yaml
 sed -i ".backup" "s|___REPLACEMENODOTS___|$fqdnnodots|g" sitefe-k8s.yaml-$fqdn
 sed -i ".backup" "s|___REPLACEMENAMESPACE___|$namespace|g" sitefe-k8s.yaml-$fqdn
 sed -i ".backup" "s|___REPLACEMEEXTERNALIP___|$publicip|g" sitefe-k8s.yaml-$fqdn
+rm -f sitefe-k8s.yaml-$fqdn.backup
+mv sitefe-k8s.yaml-$fqdn deployed_configs/
 
 echo "============================================================"
 echo "  Check if config map/secrets are present in kubernetes"
@@ -180,7 +187,7 @@ if [ "$CONFIG_MAP_PRESENT" -eq 0 ] && [ "$REWRITE_CONFIG_MAP" -eq 1 ]; then
   echo "Config map is present and new config was produced. Deleting old config"
   kubectl delete configmap sense-fe-$fqdn --namespace $namespace --kubeconfig $KUBECONF
 fi
-if [ "$REWRITE_CONFIG_MAP" -eq 1 ]; then
+if [ "$REWRITE_CONFIG_MAP" -eq 1 ] || [ "$CONFIG_MAP_PRESENT" -eq 1 ]; then
   echo "Creating new config map for $fqdn"
   kubectl create configmap sense-fe-$fqdn --from-file=sense-siterm-fe=../conf/etc/dtnrm.yaml-$fqdn \
                                           --namespace $namespace --kubeconfig $KUBECONF
@@ -196,7 +203,7 @@ if [ "$SECRETS_PRESENT" -eq 0 ] && [ "$REWRITE_SECRETS" -eq 1 ]; then
   echo "Secrets are present and new secrets were produced. Deleting old secrets"
   kubectl delete secret sense-fe-$fqdn --namespace $namespace --kubeconfig $KUBECONF
 fi
-if [ "$REWRITE_SECRETS" -eq 1 ]; then
+if [ "$REWRITE_SECRETS" -eq 1 ] || [ "$SECRETS_PRESENT" -eq 1 ]; then
   echo "Creating new secrets for $fqdn"
   kubectl create secret generic sense-fe-$fqdn \
           --from-file=fe-hostcert=../conf/etc/grid-security/hostcert.pem-$fqdn \
@@ -211,13 +218,13 @@ fi
 echo "============================================================"
 echo "============================================================"
 echo " HERE IS KUBERNETES CONFIG FILE"
-cat sitefe-k8s.yaml-$fqdn
+cat deployed_configs/sitefe-k8s.yaml-$fqdn
 
 askYesNo "See Kubernetes config above. Ok to Submit? [Yy]es or [Nn]o:  "
 result=$?
 if [ "$result" -eq "0" ]; then
   echo "Apply config..."
-  kubectl apply -f sitefe-k8s.yaml-$fqdn --namespace $namespace --kubeconfig $KUBECONF
+  kubectl apply -f deployed_configs/sitefe-k8s.yaml-$fqdn --namespace $namespace --kubeconfig $KUBECONF
 else
   echo "Not applying configuration..."
 fi
