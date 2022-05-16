@@ -25,7 +25,13 @@ spec:
       - image: sdnsense/site-agent-sense:dev
         imagePullPolicy: "Always"
         name: siterm-agent
-        resources: {}
+        resources:
+          limits:
+            memory: "3Gi"
+            cpu: "1"
+          requests:
+            memory: "3Gi"
+            cpu: "1"
         securityContext:
           capabilities:
             add:

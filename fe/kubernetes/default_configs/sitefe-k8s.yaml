@@ -69,12 +69,13 @@ spec:
         resources:
           requests:
             memory: "2G"
+            cpu: "1"
           limits:
             memory: "4G"
+            cpu: "1"
         ports:
         - containerPort: 80
         - containerPort: 443
-        resources: {}
         volumeMounts:
         - mountPath: /opt/siterm/
           name: sense-fe-vol-___REPLACEMENODOTS___
