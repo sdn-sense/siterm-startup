@@ -10,7 +10,7 @@ if [ ! -f /opt/siterm/config/mysql/site-rm-db-initialization ]; then
   mysql_install_db --user mysql > /dev/null
 
   # Start mysqld in safe mode and sleep 5 sec
-  mysqld_safe --user mysql &
+  mysqld_safe --user mysql &> /var/log/mariadb/startup &
   sleep 5s
 
   # Replace variables in /root/mariadb.sql with vars from ENV (docker file)
@@ -21,13 +21,6 @@ if [ ! -f /opt/siterm/config/mysql/site-rm-db-initialization ]; then
 
   # Execute /root/mariadb.sql
   mysql -v < /root/mariadb.sql
-  sleep 5s
-
-  # Kill mysql and restart it again
-  ps -wef | grep mysql | grep -v grep | awk '{print $2}' | xargs kill -9
-
-  mysqld_safe --user mysql &> /var/log/mariadb/startup &
-  sleep 5s
 
   # Create all databases needed for SiteRM
   python3 -c 'from DTNRMLibs.DBBackend import DBBackend; db = DBBackend(); db._createdb()'

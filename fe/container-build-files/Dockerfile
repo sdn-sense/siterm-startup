@@ -22,6 +22,8 @@ ARG GITBR=master
 RUN adduser apache -U -u 48
 
 RUN mkdir -p /var/log/dtnrm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api}/
+RUN chown -R apache:apache /var/log/dtnrm-site-fe
+RUN chmod g+s /var/log/dtnrm-site-fe/
 RUN mkdir -p /opt/siterm/config && mkdir -p /opt/siterm/dtnrmcode
 RUN mkdir -p /etc/httpd/{certs,conf.d}/ && mkdir -p /etc/grid-security/certificates
 RUN yum -y install git sudo && yum clean all
