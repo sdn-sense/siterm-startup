@@ -50,6 +50,16 @@ read fqdn
 echo "Which namespace on Kubernetes to use to deploy service?"
 read namespace
 
+result=0
+if [ -f "deployed_configs/agent-k8s.yaml-$fqdn" ]; then
+  askYesNo "Kubernetes config file is already present. Do you want to continue (Any manual changes in yaml file will be overwritten)? [Yy]es or [Nn]o:  "
+  result=$?
+fi
+if [ "$result" -ne "0" ]; then
+  echo "Exiting..."
+  exit $result
+fi
+
 
 # Precheck that such node exists. Needed for
 count=`kubectl get nodes --kubeconfig $KUBECONF | grep $fqdn | wc -l`
@@ -160,7 +170,13 @@ echo "============================================================"
 echo " HERE IS KUBERNETES CONFIG FILE"
 cat deployed_configs/agent-k8s.yaml-$fqdn
 
-askYesNo "See Kubernetes config above. Ok to Submit? [Yy]es or [Nn]o:  "
+echo "------------------------------------------------------------"
+echo "See Kubernetes config above. If you need to make any manual changes,"
+echo "like add tolerations, do not submit and modify this config file:"
+echo "deployed_configs/agent-k8s.yaml-$fqdn"
+echo "and submit manually using this command:"
+echo kubectl apply -f deployed_configs/agent-k8s.yaml-$fqdn --namespace $namespace --kubeconfig $KUBECONF
+askYesNo "Do you want submit config right now? [Yy]es or [Nn]o:  "
 result=$?
 if [ "$result" -eq "0" ]; then
   echo "Apply config..."
