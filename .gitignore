@@ -1,0 +1,8 @@
+agent/conf/etc/grid-security/hostcert.pem*
+agent/conf/etc/grid-security/hostkey.pem*
+fe/conf/etc/grid-security/hostcert.pem*
+fe/conf/etc/grid-security/hostkey.pem*
+fe/conf/etc/httpd/certs/cert.pem*
+fe/conf/etc/httpd/certs/fullchain.pem*
+fe/conf/etc/httpd/certs/privkey.pem*
+fe/conf/environment-*
