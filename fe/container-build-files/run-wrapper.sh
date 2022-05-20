@@ -38,19 +38,15 @@ if [[ -z $MARIA_DB_HOST || -z $MARIA_DB_USER || -z $MARIA_DB_DATABASE || -z $MAR
   fi
 fi
 
+Config-Fetcher --action start --onetimerun --noreporting --logtostdout
+status=$?
+if [ $status -ne 0 ]; then
+  echo "Failed Config Fetch from Github. Fatal Error. Exiting"
+  exit $status
+fi
+
 # Start MariaDB
 sh /root/mariadb.sh
-
-# REVIEW!
-#datadir=/opt/siterm/
-#echo "1. Making apache as owner of $datadir"
-#chown apache:apache -R $datadir
-## File permissions, recursive
-#echo "2. Recursive file permissions to 0644 in $datadir"
-#find $datadir -type f -exec chmod 0644 {} \;
-## Dir permissions, recursive
-#echo "3. Recursive directory permissions to 0755 in $datadir"
-#find $datadir -type d -exec chmod 0755 {} \;
 
 # Run crond
 touch /var/log/cron.log
@@ -90,6 +86,12 @@ if [ $status -ne 0 ]; then
   echo "Failed to restart ProvisioningService-update: $status"
   exit_code=4
 fi
+Config-Fetcher --action restart --foreground
+status=$?
+if [ $status -ne 0 ]; then
+  echo "Failed to restart Config-Fetcher: $status"
+  exit_code=5
+fi
 # Naive check runs checks once a minute to see if either of the processes exited.
 # This illustrates part of the heavy lifting you need to do if you want to run
 # more than one service in a container. The container exits with an error
@@ -97,23 +99,26 @@ fi
 # Otherwise it loops forever, waking up every 60 seconds
 
 while sleep 30; do
-  ps aux |grep httpd |grep -q -v grep
+  ps aux |grep httpd |grep -q -v grep &> /dev/null
   PROCESS_1_STATUS=$?
-  ps aux |grep LookUpService-update |grep -q -v grep
+  ps aux |grep LookUpService-update |grep -q -v grep &> /dev/null
   PROCESS_2_STATUS=$?
-  ps aux |grep PolicyService-update |grep -q -v grep
+  ps aux |grep PolicyService-update |grep -q -v grep &> /dev/null
   PROCESS_3_STATUS=$?
-  ps aux |grep ProvisioningService-update |grep -q -v grep
+  ps aux |grep ProvisioningService-update |grep -q -v grep &> /dev/null
   PROCESS_4_STATUS=$?
+  ps aux |grep Config-Fetcher |grep -q -v grep &> /dev/null
+  PROCESS_5_STATUS=$?
   # If the greps above find anything, they exit with 0 status
   # If they are not both 0, then something is wrong
-  if [ $PROCESS_1_STATUS -ne 0 -o $PROCESS_2_STATUS -ne 0 -o $PROCESS_3_STATUS -ne 0 -o $PROCESS_4_STATUS -ne 0 ]; then
+  if [ $PROCESS_1_STATUS -ne 0 -o $PROCESS_2_STATUS -ne 0 -o $PROCESS_3_STATUS -ne 0 -o $PROCESS_4_STATUS -ne 0 -o $PROCESS_5_STATUS -ne 0 ]; then
     echo "One of the processes has already exited."
     echo "httpd: " $PROCESS_1_STATUS
     echo "LookUpService-update:" $PROCESS_2_STATUS
     echo "PolicyService-update:" $PROCESS_3_STATUS
     echo "ProvisioningService-update:" $PROCESS_4_STATUS
-    exit_code=5
+    echo "Config-Fetcher:" $PROCESS_5_STATUS
+    exit_code=6
     break;
   fi
 done

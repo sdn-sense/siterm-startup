@@ -18,6 +18,13 @@ touch /var/log/cron.log
 /usr/sbin/crond
 crontab /etc/cron.d/siterm-crons
 
+Config-Fetcher --action start --onetimerun --noreporting --logtostdout
+status=$?
+if [ $status -ne 0 ]; then
+  echo "Failed Config Fetch from Github. Fatal Error. Exiting"
+  exit $status
+fi
+
 # Start agent mon process
 dtnrmagent-update --action restart --foreground &> /var/log/dtnrm-agent/Agent/daemon.log
 status=$?
@@ -41,6 +48,14 @@ if [ $status -ne 0 ]; then
   echo "Failed to restart dtnrm-debugger: $status"
   exit_code=2
 fi
+# Start Config Fetcher Service
+Config-Fetcher --action restart --foreground
+status=$?
+if [ $status -ne 0 ]; then
+  echo "Failed to restart Config-Fetcher: $status"
+  exit_code=3
+fi
+
 
 # Naive check runs checks once a minute to see if either of the processes exited.
 # This illustrates part of the heavy lifting you need to do if you want to run
@@ -49,20 +64,23 @@ fi
 # Otherwise it loops forever, waking up every 60 seconds
 
 while sleep 30; do
-  ps aux |grep dtnrmagent-update |grep -q -v grep
+  ps aux |grep dtnrmagent-update |grep -q -v grep &> /dev/null
   PROCESS_1_STATUS=$?
-  ps aux |grep dtnrm-ruler |grep -q -v grep
+  ps aux |grep dtnrm-ruler |grep -q -v grep &> /dev/null
   PROCESS_2_STATUS=$?
-  ps aux |grep dtnrm-debugger |grep -q -v grep
+  ps aux |grep dtnrm-debugger |grep -q -v grep &> /dev/null
   PROCESS_3_STATUS=$?
+  ps aux |grep Config-Fetcher |grep -q -v grep &> /dev/null
+  PROCESS_4_STATUS=$?
 
   # If the greps above find anything, they exit with 0 status
   # If they are not both 0, then something is wrong
-  if [ $PROCESS_1_STATUS -ne 0 -o $PROCESS_2_STATUS -ne 0 -o $PROCESS_3_STATUS -ne 0 ]; then
+  if [ $PROCESS_1_STATUS -ne 0 -o $PROCESS_2_STATUS -ne 0 -o $PROCESS_3_STATUS -ne 0 -o $PROCESS_4_STATUS -ne 0 ]; then
     echo "One of the processes has already exited."
     echo "dtnrmagent-update: " $PROCESS_1_STATUS
     echo "dtnrm-ruler:" $PROCESS_2_STATUS
     echo "dtnrm-debugger:" $PROCESS_3_STATUS
+    echo "Config-Fetcher:" $PROCESS_4_STATUS
     exit_code=5
     break;
   fi
