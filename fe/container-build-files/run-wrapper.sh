@@ -86,7 +86,7 @@ if [ $status -ne 0 ]; then
   echo "Failed to restart ProvisioningService-update: $status"
   exit_code=4
 fi
-Config-Fetcher --action restart --foreground
+Config-Fetcher --action restart --foreground --noreporting
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart Config-Fetcher: $status"
