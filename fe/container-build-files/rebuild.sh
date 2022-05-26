@@ -4,5 +4,9 @@ dockerid=`docker ps -a | grep site-rm-sense | awk '{print $1}'`
 docker stop $dockerid
 docker rm $dockerid
 
-docker build  --no-cache -t sitefe .
-echo "IF BUILD SUCCESSFUL. START IT WITH ./run.sh <VERSION>"
+ARCH=`arch`
+if [ $ARCH = "x86_64" ]; then
+  docker build --no-cache -t sitefe --build-arg ARCH=amd64 .
+elif [ $ARCH = "ppc64le" ]; then
+  docker build --no-cache -t sitefe --build-arg ARCH=ppc64le .
+fi

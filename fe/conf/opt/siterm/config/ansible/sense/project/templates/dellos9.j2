@@ -8,6 +8,8 @@
 #    before address-family ipv6 unicast vrf <NAME> (see HACK-1)
 # 2. neighbors for IPv6 are defined inside ipv4 address-family and not inside ipv6 address family
 #    There is no such option in ipv6 to defined neighbor <IP> remote-as <remote_as> (see HACK-2)
+# 3. Dell OS 9 requires only ipv6 neighbors to be also defined inside the ipv4 address family
+#    but their state must be no activate. activate happens at ipv6 address-family (see HACK-1)
 ansible_become: false
 ansible_network_os: dellos9
 ansible_ssh_pass: SuperDuperPassword
@@ -179,6 +181,7 @@ router bgp {{ bgp.asn }}
  {{ addr_fam_v4 }}
   neighbor {{ neighIP }} remote-as {{ val.remote_asn }}
   neighbor {{ neighIP }} no shutdown
+  no neighbor {{ neighIP }} activate
 {# HACK-1 #}
                 {% if val.route_map is defined and val.route_map %}
  {{ addr_fam_v6 }}
