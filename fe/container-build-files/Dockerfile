@@ -1,11 +1,13 @@
 FROM almalinux:8
+# Architecture argument: amd64 ppc64le
+ARG ARCH
 
 MAINTAINER Justas Balcas <jbalcas@caltech.edu>
 
 RUN yum -y install wget epel-release
 
 # Maria DB Configuration
-ADD build_files/mariadb.repo /etc/yum.repos.d/mariadb.repo
+ADD build_files/mariadb.repo-$ARCH /etc/yum.repos.d/mariadb.repo
 ADD build_files/mariadb.sql /root/mariadb.sql
 ADD build_files/server.cnf /etc/my.cnf.d/server.cnf
 ADD build_files/mariadb.sh /root/mariadb.sh
@@ -20,8 +22,13 @@ ARG GITORG=sdn-sense
 ARG GITBR=master
 
 RUN adduser apache -U -u 48
-
+RUN adduser mysql -U -u 4000
 RUN mkdir -p /var/log/dtnrm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api}/
+
+RUN mkdir -p /var/log/mariadb/
+RUN mkdir -p /opt/siterm/config/mysql/
+RUN chown mysql:mysql /var/log/mariadb/
+RUN chown mysql:mysql /opt/siterm/config/mysql/
 RUN chown -R apache:apache /var/log/dtnrm-site-fe
 RUN chmod g+s /var/log/dtnrm-site-fe/
 RUN mkdir -p /opt/siterm/config && mkdir -p /opt/siterm/dtnrmcode
