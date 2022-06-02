@@ -5,6 +5,6 @@ docker run -d -p 9100:9100 \
   -v "/sys:/host/sys:ro" \
   -v "/:/host:ro,rslave" \
   --log-opt max-size=10m --log-opt max-file=10 \
-  prom/node_exporter \
+  prom/node-exporter \
   --path.rootfs=/host \
   --collector.netdev.address-info
