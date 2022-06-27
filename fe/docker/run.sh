@@ -13,7 +13,7 @@ fi
 # few issues with building ppc64le on x86_64 machine (gcc, mariadb issue)
 # So onyl for ppc64le - we have separate build which is done on ppc64le machine
 ARCH=`arch`
-if [ $ARCH = "ppc64le"]; then
+if [ $ARCH = "ppc64le" ]; then
   echo "This is $ARCH type machine and we will use image built for this type."
   VERSION=$VERSION-$ARCH
 fi
