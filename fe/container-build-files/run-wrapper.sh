@@ -17,9 +17,13 @@ rm -f /tmp/*-FE-main.yaml
 rm -f /tmp/*-FE-auth.yaml
 # Remove any PID files left afer reboot/stop.
 rm -f /tmp/dtnrm*.pid
+rm -f /etc/httpd/run/httpd.pid
 # Remove remaining git fetch lock files
 rm -f /tmp/siterm-git-fetch-lockfile
 # Precreate log dirs, in case removed, non existing
+mkdir -p /var/log/dtnrm-site-fe/
+chown apache:apache /var/log/dtnrm-site-fe/
+chmod g+s /var/log/dtnrm-site-fe/
 mkdir -p /var/log/dtnrm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api}/
 
 # As first run, Run Custom CA prefetch and add them to CAs dir.
