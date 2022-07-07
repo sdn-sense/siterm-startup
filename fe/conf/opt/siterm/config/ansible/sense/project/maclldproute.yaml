@@ -12,7 +12,7 @@
   gather_facts: no
   tasks:
   - name: "Get version, lldp, routes from Dell OS 9"
-    dellos9_command:
+    dellemc.os9.os9_command:
       commands: 
          - show system
          - show lldp neighbors detail

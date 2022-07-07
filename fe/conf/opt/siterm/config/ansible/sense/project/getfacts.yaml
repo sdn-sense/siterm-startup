@@ -5,7 +5,7 @@
   gather_facts: no
   tasks:
   - name: Gather Dell OS 9 Facts
-    dellos9_facts:
+    dellemc.os9.os9_facts:
       gather_subset: all
     register: facts
     when: ansible_network_os is defined and ansible_network_os == "dellos9"

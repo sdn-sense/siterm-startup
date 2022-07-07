@@ -10,7 +10,7 @@
         dest: /var/tmp/{{ inventory_hostname }}.conf
 
     - name: Push Dell OS 9 Config
-      dellos9_config:
+      dellemc.os9.os9_config:
         src: /var/tmp/{{ inventory_hostname }}.conf
         save: yes
         provider:
