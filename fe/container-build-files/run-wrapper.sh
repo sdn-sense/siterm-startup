@@ -1,7 +1,20 @@
 #!/bin/bash
 
-set -x
-set -m
+function stopServices()
+{
+  echo "Received Stop Signal. Stopping Services"
+  set -x
+  kill -SIGTERM `cat /opt/siterm/config/mysql/mariadb.pid`
+  rm -f /opt/siterm/config/mysql/mariadb.pid
+  /usr/sbin/httpd -k stop
+  LookUpService-update --action stop
+  PolicyService-update --action stop
+  ProvisioningService-update --action restart
+  Config-Fetcher --action restart
+  exit 0
+}
+
+trap stopServices INT TERM SIGTERM SIGINT
 
 ARCH=`python3 -c 'import platform; print(platform.processor())'`
 if [[ $ARCH == 'ppc64le' ]]; then
@@ -61,10 +74,8 @@ crontab /etc/cron.d/siterm-crons
 mkdir -p /run/httpd
 /usr/sbin/httpd -k restart
 status=$?
-exit_code=0
 if [ $status -ne 0 ]; then
   echo "Failed to start httpd: $status"
-  exit_code=1
 fi
 
 # Start the second process
@@ -72,7 +83,6 @@ LookUpService-update --action restart --foreground &> /var/log/dtnrm-site-fe/Loo
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart LookUpService-update: $status"
-  exit_code=2
 fi
 sleep 5
 # Start the third process
@@ -80,7 +90,6 @@ PolicyService-update --action restart --foreground &> /var/log/dtnrm-site-fe/Pol
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart PolicyService-update: $status"
-  exit_code=3
 fi
 sleep 5
 # Start the fourth process
@@ -88,43 +97,11 @@ ProvisioningService-update --action restart --foreground &> /var/log/dtnrm-site-
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart ProvisioningService-update: $status"
-  exit_code=4
 fi
 Config-Fetcher --action restart --foreground --noreporting
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart Config-Fetcher: $status"
-  exit_code=5
 fi
-# Naive check runs checks once a minute to see if either of the processes exited.
-# This illustrates part of the heavy lifting you need to do if you want to run
-# more than one service in a container. The container exits with an error
-# if it detects that either of the processes has exited.
-# Otherwise it loops forever, waking up every 60 seconds
 
-while sleep 30; do
-  ps aux |grep httpd |grep -q -v grep &> /dev/null
-  PROCESS_1_STATUS=$?
-  ps aux |grep LookUpService-update |grep -q -v grep &> /dev/null
-  PROCESS_2_STATUS=$?
-  ps aux |grep PolicyService-update |grep -q -v grep &> /dev/null
-  PROCESS_3_STATUS=$?
-  ps aux |grep ProvisioningService-update |grep -q -v grep &> /dev/null
-  PROCESS_4_STATUS=$?
-  ps aux |grep Config-Fetcher |grep -q -v grep &> /dev/null
-  PROCESS_5_STATUS=$?
-  # If the greps above find anything, they exit with 0 status
-  # If they are not both 0, then something is wrong
-  if [ $PROCESS_1_STATUS -ne 0 -o $PROCESS_2_STATUS -ne 0 -o $PROCESS_3_STATUS -ne 0 -o $PROCESS_4_STATUS -ne 0 -o $PROCESS_5_STATUS -ne 0 ]; then
-    echo "One of the processes has already exited."
-    echo "httpd: " $PROCESS_1_STATUS
-    echo "LookUpService-update:" $PROCESS_2_STATUS
-    echo "PolicyService-update:" $PROCESS_3_STATUS
-    echo "ProvisioningService-update:" $PROCESS_4_STATUS
-    echo "Config-Fetcher:" $PROCESS_5_STATUS
-    exit_code=6
-    break;
-  fi
-done
-echo "We just got break. Endlessly sleep for debugging purpose."
-while true; do sleep 120; done
+while true; do sleep 1; done

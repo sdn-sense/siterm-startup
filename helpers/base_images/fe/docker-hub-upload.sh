@@ -8,15 +8,15 @@ if [ $# -eq 1 ]
 fi
 
 # Precheck that image is present (built recently
-count=`docker images | grep sitefe-main | grep latest | awk '{print $3}' | wc -l`
+count=`docker images | grep sitefe-base | grep latest | awk '{print $3}' | wc -l`
 if [ "$count" -ne "1" ]; then
   echo "Count of docker images != 1. Which docker image you want to tag?"
   echo "Here is full list of docker images locally:"
-  docker images | grep -i 'sitefe-main\|REPOSITORY'
+  docker images | grep -i 'sitefe-base\|REPOSITORY'
   echo "Please enter IMAGE ID:"
   read dockerimageid
 else
-  dockerimageid=`docker images | grep sitefe-main | grep latest | awk '{print $3}'`
+  dockerimageid=`docker images | grep sitefe-base | grep latest | awk '{print $3}'`
 fi
 
 docker login
@@ -27,14 +27,14 @@ docker login
 ARCH=`arch`
 today=`date +%Y%m%d`
 if [ $ARCH = "x86_64" ]; then
-  docker tag $dockerimageid sdnsense/site-rm-sense:$TAG-$today
-  docker push sdnsense/site-rm-sense:$TAG-$today
-  docker tag $dockerimageid sdnsense/site-rm-sense:$TAG
-  docker push sdnsense/site-rm-sense:$TAG
+  docker tag $dockerimageid sdnsense/sitefe-base:$TAG-$today
+  docker push sdnsense/sitefe-base:$TAG-$today
+  docker tag $dockerimageid sdnsense/sitefe-base:$TAG
+  docker push sdnsense/sitefe-base:$TAG
 elif [ $ARCH = "ppc64le" ]; then
-  docker tag $dockerimageid sdnsense/site-rm-sense:$TAG-$ARCH-$today
-  docker push sdnsense/site-rm-sense:$TAG-$ARCH-$today
-  docker tag $dockerimageid sdnsense/site-rm-sense:$TAG-$ARCH
-  docker push sdnsense/site-rm-sense:$TAG-$ARCH
+  docker tag $dockerimageid sdnsense/sitefe-base:$TAG-$ARCH-$today
+  docker push sdnsense/sitefe-base:$TAG-$ARCH-$today
+  docker tag $dockerimageid sdnsense/sitefe-base:$TAG-$ARCH
+  docker push sdnsense/sitefe-base:$TAG-$ARCH
 fi
 
