@@ -11,6 +11,7 @@ if [ ! -f /opt/siterm/config/mysql/site-rm-db-initialization ]; then
 
   # Start mysqld in safe mode and sleep 5 sec
   mysqld_safe --user mysql &> /var/log/mariadb/startup &
+  echo $! > /opt/siterm/config/mysql/mariadb.pid
   sleep 5s
 
   # Replace variables in /root/mariadb.sql with vars from ENV (docker file)
@@ -30,7 +31,9 @@ if [ ! -f /opt/siterm/config/mysql/site-rm-db-initialization ]; then
   echo `date` >> /opt/siterm/config/mysql/site-rm-db-initialization
 else
   echo "Seems this is not the first time start. Will not create DB again"
+  chown -R mysql:mysql /opt/siterm/config/mysql/
   mysqld_safe --user mysql &> /var/log/mariadb/startup &
+  echo $! > /opt/siterm/config/mysql/mariadb.pid
   sleep 5s
   # Create all databases if not exists needed for SiteRM
   python3 -c 'from DTNRMLibs.DBBackend import DBBackend; db = DBBackend(); db._createdb()'

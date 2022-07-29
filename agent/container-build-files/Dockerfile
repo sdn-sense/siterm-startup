@@ -1,20 +1,14 @@
-FROM almalinux:8
+FROM siteagent-base:latest
+MAINTAINER Justas Balcas <jbalcas@caltech.edu>
 
+# Configuration which repo to use for build
 ARG GITREPO=siterm
 ARG GITORG=sdn-sense
 ARG GITBR=master
 
-MAINTAINER Justas Balcas <jbalcas@caltech.edu>
-
-RUN mkdir -p /var/log/dtnrm-agent/{Agent,Debugger,Ruler,contentdb}/
-RUN mkdir -p /opt/siterm/{config,dtnrmcode}
-RUN yum -y install git sudo
-
 RUN cd /opt/siterm/dtnrmcode && git clone -b $GITBR https://github.com/$GITORG/$GITREPO
-RUN cd /opt/siterm/dtnrmcode/$GITREPO/installers/ && sudo sh ./fresh-siterm-agent-install.sh -R /opt/siterm/ -D yes -G $GITREPO  -O $GITORG -B $GITBR
-
-RUN rpm -i https://repo.opensciencegrid.org/osg/3.6/el8/release/x86_64/osg-ca-certs-1.94-1.osg36.el8.noarch.rpm
-RUN yum clean all && rm -rf /var/cache/yum
+RUN cd /opt/siterm/dtnrmcode/siterm/ && pip3 install -r requirements-agent.txt || exit $?
+RUN cd /opt/siterm/dtnrmcode/siterm/ && python3 setup-agent.py install || exit $?
 
 COPY run-wrapper.sh /usr/local/bin/run-wrapper.sh
 CMD /usr/local/bin/run-wrapper.sh
