@@ -31,7 +31,7 @@ spec:
     port: 8443
     targetPort: 443
   externalIPs:
-    - 11.1.1.1
+    - ""
   selector:
     io.kompose.service: sitefe-nrp-01.nrp-nautilus.io
 status:
