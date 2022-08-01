@@ -22,7 +22,7 @@ spec:
       hostNetwork: true
       terminationGracePeriodSeconds: 30
       containers:
-      - image: sdnsense/site-agent-sense:dev
+      - image: sdnsense/site-agent-sense:latest
         imagePullPolicy: "Always"
         name: siterm-agent
         resources:

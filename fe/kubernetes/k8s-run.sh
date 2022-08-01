@@ -70,15 +70,15 @@ if [ "$result" -ne "1" ]; then
  configfile=$configfile"-hostnetwork"
 fi
 
-+result=0
-+if [ -f "deployed_configs/sitefe-k8s.yaml-$fqdn" ]; then
-+  askYesNo "Kubernetes config file is already present. Do you want to continue (Any manual changes in yaml file will be overwritten)? [Yy]es or [Nn]o:  "
-+  result=$?
-+fi
-+if [ "$result" -ne "0" ]; then
-+  echo "Exiting..."
-+  exit $result
-+fi
+result=0
+if [ -f "deployed_configs/sitefe-k8s.yaml-$fqdn" ]; then
+  askYesNo "Kubernetes config file is already present. Do you want to continue (Any manual changes in yaml file will be overwritten)? [Yy]es or [Nn]o:  "
+  result=$?
+fi
+if [ "$result" -ne "0" ]; then
+  echo "Exiting..."
+  exit $result
+fi
 
 
 # Precheck that such node exists. Needed for
