@@ -39,14 +39,5 @@ RUN rm -f /etc/httpd/conf.d/ssl.conf
 
 RUN yum clean all && rm -rf /var/cache/yum
 
-
-# TODO
-#ARCH=`arch`
-# if [ $ARCH = "ppc64le" ]; then
-# echo "==================================================================="
-# echo "ppc64le requires Rust to for cryptography library. Install rust"
-# curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf &> rust-install.sh
-# sh rust-install.sh -y
-# source $HOME/.cargo/env
-# rm -f rust-install.sh
-# fi
+RUN if [ $ARCH = "ppc64le" ]; then cd /tmp/ && curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf &> rust-install.sh && sh rust-install.sh -y && source $HOME/.cargo/env && rm -f rust-install.sh; fi
+RUN if [ $ARCH != "ppc64le" ]; then mkdir -p $HOME/.cargo && touch $HOME/.cargo/env; fi
