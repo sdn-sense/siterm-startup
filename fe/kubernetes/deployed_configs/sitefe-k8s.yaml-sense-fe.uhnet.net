@@ -30,8 +30,7 @@ spec:
   - name: "8443"
     port: 8443
     targetPort: 443
-  externalIPs:
-    - 67.58.49.53
+  loadBalancerIP: 67.58.49.53
   selector:
     io.kompose.service: sitefe-sense-fe.uhnet.net
 status:
@@ -63,7 +62,7 @@ spec:
         io.kompose.service: sitefe-sense-fe.uhnet.net
     spec:
       containers:
-      - image: sdnsense/site-rm-sense:dev
+      - image: sdnsense/site-rm-sense:latest
         imagePullPolicy: "Always"
         name: sitefe
         resources:

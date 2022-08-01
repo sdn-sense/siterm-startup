@@ -1,8 +1,8 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: sense-fe-vol-___REPLACEMENODOTS___
-  namespace: ___REPLACEMENAMESPACE___
+  name: sense-fe-vol-ense-fe-nrp-nautilus-io
+  namespace: opennsa
 spec:
   storageClassName: rook-ceph-block
   accessModes:
@@ -19,8 +19,8 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: sitefe-___REPLACEME___
-  name: sitefe-___REPLACEMENODOTS___
+    io.kompose.service: sitefe-sense-fe.nrp-nautilus.io
+  name: sitefe-ense-fe-nrp-nautilus-io
 spec:
   type: LoadBalancer
   ports:
@@ -31,9 +31,9 @@ spec:
     port: 8443
     targetPort: 443
   externalIPs:
-    - ___REPLACEMEEXTERNALIP___
+    - 67.58.49.60
   selector:
-    io.kompose.service: sitefe-___REPLACEME___
+    io.kompose.service: sitefe-sense-fe.nrp-nautilus.io
 status:
   loadBalancer: {}
 ---
@@ -45,13 +45,13 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: sitefe-___REPLACEME___
-  name: sitefe-___REPLACEME___
+    io.kompose.service: sitefe-sense-fe.nrp-nautilus.io
+  name: sitefe-sense-fe.nrp-nautilus.io
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: sitefe-___REPLACEME___
+      io.kompose.service: sitefe-sense-fe.nrp-nautilus.io
   strategy: {}
   template:
     metadata:
@@ -60,7 +60,7 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: sitefe-___REPLACEME___
+        io.kompose.service: sitefe-sense-fe.nrp-nautilus.io
     spec:
       containers:
       - image: sdnsense/site-rm-sense:latest
@@ -78,7 +78,7 @@ spec:
         - containerPort: 443
         volumeMounts:
         - mountPath: /opt/siterm/
-          name: sense-fe-vol-___REPLACEMENODOTS___
+          name: sense-fe-vol-ense-fe-nrp-nautilus-io
         - mountPath: /etc/dtnrm.yaml
           name: fe-conf
           subPath: sense-siterm-fe.yaml
@@ -107,7 +107,7 @@ spec:
           readOnly: true
           subPath: httpdfullchain.pem
       nodeSelector:
-          kubernetes.io/hostname: ___REPLACEMENODESELECTOR___
+          kubernetes.io/hostname: edex.calit2.optiputer.net
       restartPolicy: Always
       serviceAccountName: ""
       volumes:
@@ -116,51 +116,51 @@ spec:
           items:
           - key: sense-siterm-fe
             path: sense-siterm-fe.yaml
-          name: sense-fe-___REPLACEME___
+          name: sense-fe-sense-fe.nrp-nautilus.io
         name: fe-conf
       - name: fe-environment
         secret:
-          secretName: sense-fe-___REPLACEME___
+          secretName: sense-fe-sense-fe.nrp-nautilus.io
           items:
           - key: fe-environment
             path: environment.conf
           defaultMode: 0644
       - name: fe-httpdcert
         secret:
-          secretName: sense-fe-___REPLACEME___
+          secretName: sense-fe-sense-fe.nrp-nautilus.io
           items:
           - key: fe-httpdcert
             path: httpdcert.pem
           defaultMode: 0644
       - name: fe-httpdprivkey
         secret:
-          secretName: sense-fe-___REPLACEME___
+          secretName: sense-fe-sense-fe.nrp-nautilus.io
           items:
           - key: fe-httpdprivkey
             path: httpdprivkey.pem
           defaultMode: 0644
       - name: fe-httpdfullchain
         secret:
-          secretName: sense-fe-___REPLACEME___
+          secretName: sense-fe-sense-fe.nrp-nautilus.io
           items:
           - key: fe-httpdfullchain
             path: httpdfullchain.pem
           defaultMode: 0644
       - name: fe-hostcert
         secret:
-          secretName: sense-fe-___REPLACEME___
+          secretName: sense-fe-sense-fe.nrp-nautilus.io
           items:
           - key: fe-hostcert
             path: hostcert.pem
           defaultMode: 0644
       - name: fe-hostkey
         secret:
-          secretName: sense-fe-___REPLACEME___
+          secretName: sense-fe-sense-fe.nrp-nautilus.io
           items:
           - key: fe-hostkey
             path: hostkey.pem
           defaultMode: 0644
-      - name: sense-fe-vol-___REPLACEMENODOTS___
+      - name: sense-fe-vol-ense-fe-nrp-nautilus-io
         persistentVolumeClaim:
-          claimName: sense-fe-vol-___REPLACEMENODOTS___
+          claimName: sense-fe-vol-ense-fe-nrp-nautilus-io
 status: {}

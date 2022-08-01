@@ -64,7 +64,7 @@ spec:
     spec:
       hostNetwork: true
       containers:
-      - image: sdnsense/site-rm-sense:dev
+      - image: sdnsense/site-rm-sense:latest
         imagePullPolicy: "Always"
         name: sitefe
         resources:

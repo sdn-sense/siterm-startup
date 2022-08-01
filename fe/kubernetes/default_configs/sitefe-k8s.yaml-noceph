@@ -51,7 +51,7 @@ spec:
         io.kompose.service: sitefe-___REPLACEME___
     spec:
       containers:
-      - image: sdnsense/site-rm-sense:dev
+      - image: sdnsense/site-rm-sense:latest
         imagePullPolicy: "Always"
         name: sitefe
         resources:

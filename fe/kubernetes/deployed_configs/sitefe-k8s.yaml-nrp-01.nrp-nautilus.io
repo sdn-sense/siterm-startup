@@ -63,7 +63,7 @@ spec:
         io.kompose.service: sitefe-nrp-01.nrp-nautilus.io
     spec:
       containers:
-      - image: sdnsense/site-rm-sense:dev
+      - image: sdnsense/site-rm-sense:latest
         imagePullPolicy: "Always"
         name: sitefe
         resources:
