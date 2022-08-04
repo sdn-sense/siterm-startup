@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: sense-fe-vol-rp-01-nrp-nautilus-io
+  name: sense-fe-vol-ite-rm-dev-nrp-nautilus-io
   namespace: osg-gil
 spec:
   storageClassName: rook-ceph-block
@@ -19,9 +19,14 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: sitefe-nrp-01.nrp-nautilus.io
-  name: sitefe-rp-01-nrp-nautilus-io
+    io.kompose.service: sitefe-site-rm-dev.nrp-nautilus.io
+  name: sitefe-ite-rm-dev-nrp-nautilus-io
 spec:
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv6
+  ipFamilyPolicy: SingleStack
   type: LoadBalancer
   ports:
   - name: "8080"
@@ -30,10 +35,8 @@ spec:
   - name: "8443"
     port: 8443
     targetPort: 443
-  externalIPs:
-    - ""
   selector:
-    io.kompose.service: sitefe-nrp-01.nrp-nautilus.io
+    io.kompose.service: sitefe-site-rm-dev.nrp-nautilus.io
 status:
   loadBalancer: {}
 ---
@@ -45,13 +48,13 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: sitefe-nrp-01.nrp-nautilus.io
-  name: sitefe-nrp-01.nrp-nautilus.io
+    io.kompose.service: sitefe-site-rm-dev.nrp-nautilus.io
+  name: sitefe-site-rm-dev.nrp-nautilus.io
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: sitefe-nrp-01.nrp-nautilus.io
+      io.kompose.service: sitefe-site-rm-dev.nrp-nautilus.io
   strategy: {}
   template:
     metadata:
@@ -60,7 +63,7 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: sitefe-nrp-01.nrp-nautilus.io
+        io.kompose.service: sitefe-site-rm-dev.nrp-nautilus.io
     spec:
       containers:
       - image: sdnsense/site-rm-sense:latest
@@ -69,15 +72,16 @@ spec:
         resources:
           requests:
             memory: "2G"
+            cpu: "1"
           limits:
             memory: "4G"
+            cpu: "1"
         ports:
         - containerPort: 80
         - containerPort: 443
-        resources: {}
         volumeMounts:
         - mountPath: /opt/siterm/
-          name: sense-fe-vol-rp-01-nrp-nautilus-io
+          name: sense-fe-vol-ite-rm-dev-nrp-nautilus-io
         - mountPath: /etc/dtnrm.yaml
           name: fe-conf
           subPath: sense-siterm-fe.yaml
@@ -115,51 +119,51 @@ spec:
           items:
           - key: sense-siterm-fe
             path: sense-siterm-fe.yaml
-          name: sense-fe-nrp-01.nrp-nautilus.io
+          name: sense-fe-site-rm-dev.nrp-nautilus.io
         name: fe-conf
       - name: fe-environment
         secret:
-          secretName: sense-fe-nrp-01.nrp-nautilus.io
+          secretName: sense-fe-site-rm-dev.nrp-nautilus.io
           items:
           - key: fe-environment
             path: environment.conf
           defaultMode: 0644
       - name: fe-httpdcert
         secret:
-          secretName: sense-fe-nrp-01.nrp-nautilus.io
+          secretName: sense-fe-site-rm-dev.nrp-nautilus.io
           items:
           - key: fe-httpdcert
             path: httpdcert.pem
           defaultMode: 0644
       - name: fe-httpdprivkey
         secret:
-          secretName: sense-fe-nrp-01.nrp-nautilus.io
+          secretName: sense-fe-site-rm-dev.nrp-nautilus.io
           items:
           - key: fe-httpdprivkey
             path: httpdprivkey.pem
           defaultMode: 0644
       - name: fe-httpdfullchain
         secret:
-          secretName: sense-fe-nrp-01.nrp-nautilus.io
+          secretName: sense-fe-site-rm-dev.nrp-nautilus.io
           items:
           - key: fe-httpdfullchain
             path: httpdfullchain.pem
           defaultMode: 0644
       - name: fe-hostcert
         secret:
-          secretName: sense-fe-nrp-01.nrp-nautilus.io
+          secretName: sense-fe-site-rm-dev.nrp-nautilus.io
           items:
           - key: fe-hostcert
             path: hostcert.pem
           defaultMode: 0644
       - name: fe-hostkey
         secret:
-          secretName: sense-fe-nrp-01.nrp-nautilus.io
+          secretName: sense-fe-site-rm-dev.nrp-nautilus.io
           items:
           - key: fe-hostkey
             path: hostkey.pem
           defaultMode: 0644
-      - name: sense-fe-vol-rp-01-nrp-nautilus-io
+      - name: sense-fe-vol-ite-rm-dev-nrp-nautilus-io
         persistentVolumeClaim:
-          claimName: sense-fe-vol-rp-01-nrp-nautilus-io
+          claimName: sense-fe-vol-ite-rm-dev-nrp-nautilus-io
 status: {}
