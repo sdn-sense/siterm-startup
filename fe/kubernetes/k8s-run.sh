@@ -147,6 +147,7 @@ if [ "$result" -eq "0" ]; then
   cp ../conf/etc/httpd/certs/cert.pem ../conf/etc/httpd/certs/cert.pem-$fqdn
   cp ../conf/etc/httpd/certs/privkey.pem ../conf/etc/httpd/certs/privkey.pem-$fqdn
   cp ../conf/etc/httpd/certs/fullchain.pem ../conf/etc/httpd/certs/fullchain.pem-$fqdn
+  cp ../conf/etc/environment ../conf/etc/environment-$fqdn
   REWRITE_SECRETS=1
 else
   echo "NO Certificate Overwrite. Checking that Certs are valid"
@@ -240,7 +241,7 @@ askYesNo "Do you want submit config right now? [Yy]es or [Nn]o:  "
 result=$?
 if [ "$result" -eq "0" ]; then
   echo "Apply config..."
-  kubectl apply -f deployed_configs/sitefe-k8s.yaml-$fqdn --namespace $namespace --kubeconfig $KUBECONF
+  echo kubectl apply -f deployed_configs/sitefe-k8s.yaml-$fqdn --namespace $namespace --kubeconfig $KUBECONF
 else
   echo "Not applying configuration..."
 fi
