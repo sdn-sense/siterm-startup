@@ -8,7 +8,7 @@ fi
 
 ARCH=`arch`
 if [ $ARCH = "x86_64" ]; then
-  docker build --no-cache -t sitefe --build-arg RELEASE=$RELEASE .
+  docker build --no-cache -t sitefe-main --build-arg RELEASE=$RELEASE .
 elif [ $ARCH = "ppc64le" ]; then
-  docker build --no-cache -t sitefe --build-arg RELEASE=$RELEASE"-"$ARCH .
+  docker build --no-cache -t sitefe-main --build-arg RELEASE=$RELEASE"-"$ARCH .
 fi

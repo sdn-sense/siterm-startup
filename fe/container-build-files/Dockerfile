@@ -18,7 +18,9 @@ RUN source $HOME/.cargo/env && cd /opt/siterm/dtnrmcode/siterm/ && pip3 install 
 RUN cd /opt/siterm/dtnrmcode/siterm/ && python3 setup-sitefe.py install || exit $?
 
 RUN ansible-galaxy collection install dellemc.os9
+RUN ansible-galaxy collection install dellemc.os10
 RUN ansible-galaxy collection install arista.eos
+RUN ansible-galaxy collection install git+https://github.com/sdn-sense/rare-freertr-collection,master
 
 EXPOSE 80 443
 COPY run-wrapper.sh /usr/local/bin/run-wrapper.sh
