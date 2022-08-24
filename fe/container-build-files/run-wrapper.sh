@@ -8,7 +8,6 @@ function stopServices()
   rm -f /opt/siterm/config/mysql/mariadb.pid
   /usr/sbin/httpd -k stop
   LookUpService-update --action stop
-  PolicyService-update --action stop
   ProvisioningService-update --action restart
   Config-Fetcher --action restart
   exit 0
@@ -86,13 +85,6 @@ if [ $status -ne 0 ]; then
 fi
 sleep 5
 # Start the third process
-PolicyService-update --action restart --foreground &> /var/log/dtnrm-site-fe/PolicyService/daemon.log
-status=$?
-if [ $status -ne 0 ]; then
-  echo "Failed to restart PolicyService-update: $status"
-fi
-sleep 5
-# Start the fourth process
 ProvisioningService-update --action restart --foreground &> /var/log/dtnrm-site-fe/ProvisioningService/daemon.log
 status=$?
 if [ $status -ne 0 ]; then
