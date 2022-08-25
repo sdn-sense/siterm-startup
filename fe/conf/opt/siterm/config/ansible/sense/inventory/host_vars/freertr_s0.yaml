@@ -1,0 +1,8 @@
+ansible_become: false
+ansible_connection: ansible.netcommon.network_cli
+ansible_network_os: rare.freertr.freertr
+ansible_ssh_pass: MySuperDuperPassword
+ansible_ssh_user: MySuperDuperUsername
+hostname: freertr_s0
+interface: {}
+sense_bgp: {}

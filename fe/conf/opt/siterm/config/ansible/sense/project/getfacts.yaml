@@ -21,3 +21,9 @@
     become: true
     register: facts
     when: ansible_network_os is defined and ansible_network_os == "sonic"
+
+  - name: Gather RARE FreeRTR Facts
+    rare.freertr.freertr_facts:
+      gather_subset: all
+    register: facts
+    when: ansible_network_os is defined and ansible_network_os == "rare.freertr.freertr"
