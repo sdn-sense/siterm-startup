@@ -31,7 +31,7 @@ RUN yum -y install git autoconf sudo libcurl-devel libffi-devel openssl-devel au
 
 RUN pip3 install --upgrade setuptools
 RUN pip3 install --upgrade pip
-
+RUN pip3 install ansible-pylibssh
 
 RUN rpm -i https://repo.opensciencegrid.org/osg/3.6/el8/release/x86_64/osg-ca-certs-1.94-1.osg36.el8.noarch.rpm
 
