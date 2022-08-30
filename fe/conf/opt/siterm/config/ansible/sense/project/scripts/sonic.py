@@ -216,8 +216,8 @@ class vtyshParser():
                         'neighbor-remote-as': r'neighbor ([0-9a-f.:]*) remote-as ([0-9]*)',
                         'neighbor-act': r'neighbor ([a-zA-z_:.0-9-]*) activate',
                         'address-family': r'address-family (ipv[46]) ([a-z]*)',
-                        'ipv4-prefix-list': r'ip prefix-list ([a-zA-Z0-9_-]*) seq ([0-9]*) permit ([0-9a-f.:]*)/([0-9]{1,3})',
-                        'ipv6-prefix-list': r'ipv6 prefix-list ([a-zA-Z0-9_-]*) seq ([0-9]*) permit ([0-9a-f.:]*)/([0-9]{1,3})',
+                        'ipv4-prefix-list': r'ip prefix-list ([a-zA-Z0-9_-]*) seq ([0-9]*) permit ([0-9a-f.:]*/[0-9]{1,2})',
+                        'ipv6-prefix-list': r'ipv6 prefix-list ([a-zA-Z0-9_-]*) seq ([0-9]*) permit ([0-9a-f.:]*/[0-9]{1,3})',
                         'route-map': r'route-map ([a-zA-Z0-9_-]*) permit ([0-9]*)',
                         'match-ipv4': r'match ip address prefix-list ([a-zA-Z0-9_-]*)',
                         'match-ipv6': r'match ipv6 address prefix-list ([a-zA-Z0-9_-]*)',
@@ -361,9 +361,10 @@ class vtyshConfigure():
             for rMapName, rMapPrios in rdict.items():
                 for prio, rNames in rMapPrios.items():
                     for rName, rState in rNames.items():
-                        out = {'iptype': iptype, 'permit': prio, 'name': rMapName, 'match': rName}
-                        if rState == 'absent':
-                            genCmd(out, True)
+                        out = {'iptype': iptype, 'permit': str(prio), 'name': rMapName, 'match': rName}
+                        if out['match'] in parser.running_config.get('route-map', {}).get(out['name'], {}).get(out['permit'], {}):
+                            if rState == 'absent':
+                                genCmd(out, True)
                         elif rState == 'present':
                             genCmd(out)
 
@@ -419,6 +420,9 @@ class vtyshConfigure():
                             elif rState == 'absent':
                                 self.commands.append('  no neighbor %s route-map %s %s' % (ipNorm, rName, rtype))
                     self.commands.append(' exit-address-family')
+        if len(self.commands) == 1:
+            # means only router to configure. Skip it.
+            self.commands = []
 
 
     def generateCommands(self, parser, newConf):
