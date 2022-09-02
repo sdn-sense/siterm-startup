@@ -8,8 +8,8 @@ function stopServices()
   rm -f /opt/siterm/config/mysql/mariadb.pid
   /usr/sbin/httpd -k stop
   LookUpService-update --action stop
-  ProvisioningService-update --action restart
-  Config-Fetcher --action restart
+  ProvisioningService-update --action stop
+  Config-Fetcher --action stop
   exit 0
 }
 
