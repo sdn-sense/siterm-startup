@@ -1,4 +1,5 @@
-FROM siteagent-base:latest
+ARG RELEASE=latest
+FROM sdnsense/siteagent-base:$RELEASE
 MAINTAINER Justas Balcas <jbalcas@caltech.edu>
 
 # Configuration which repo to use for build

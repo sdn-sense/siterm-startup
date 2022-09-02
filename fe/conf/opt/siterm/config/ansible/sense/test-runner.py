@@ -13,13 +13,20 @@ TODO:
     3. Allow to test vlan and IP assignment
 
 """
+import yaml
 import pprint
 import ansible_runner
+
+
+def getInventory(inventoryFile):
+    with open(inventoryFile, 'r', encoding='utf-8') as fd:
+        out = yaml.safe_load(fd.read())
+    return out
 
 def runAnsible(playbookFile):
     """Run Ansible Playbook"""
     ansRunner = ansible_runner.run(private_data_dir='/opt/siterm/config/ansible/sense',
-                                   inventory='/opt/siterm/config/ansible/sense/inventory/inventory.yaml',
+                                   inventory=getInventory('/opt/siterm/config/ansible/sense/inventory/inventory-test.yaml'),
                                    playbook=playbookFile)
     return ansRunner
 
