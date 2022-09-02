@@ -13,10 +13,11 @@ fi
 
 docker run \
        -dit --name siteagent \
-       -v $(pwd)/../conf/etc/dtnrm.yaml:/etc/dtnrm.yaml \
-       -v $(pwd)/../conf/etc/grid-security/hostcert.pem:/etc/grid-security/hostcert.pem \
-       -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem \
+       -v $(pwd)/../conf/etc/dtnrm.yaml:/etc/dtnrm.yaml:ro \
+       -v $(pwd)/../conf/etc/grid-security/hostcert.pem:/etc/grid-security/hostcert.pem:ro \
+       -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem:ro \
        -v $(pwd)/../conf/opt/siterm/config/:/opt/siterm/config/ \
+       -v /etc/iproute2/rt_tables:/etc/iproute2/rt_tables:ro \
        --cap-add=NET_ADMIN \
        --net=host \
        --log-driver="json-file" --log-opt max-size=10m --log-opt max-file=10 \
