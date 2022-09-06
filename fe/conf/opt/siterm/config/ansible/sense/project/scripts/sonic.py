@@ -373,7 +373,7 @@ class vtyshConfigure():
             return
         senseasn = newConf.get('asn', None)
         runnasn = parser.running_config.get('bgp', {}).get('asn', None)
-        if runnasn and senseasn != runnasn:
+        if runnasn and int(senseasn) != int(runnasn):
             msg = 'Running ASN != SENSE ASN (%s != %s)' % (runnasn, senseasn)
             print(msg)
             raise Exception(msg)
