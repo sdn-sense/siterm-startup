@@ -22,7 +22,7 @@ spec:
       hostNetwork: true
       terminationGracePeriodSeconds: 30
       containers:
-      - image: sdnsense/site-agent-sense:latest
+      - image: sdnsense/site-agent-sense:dev
         imagePullPolicy: "Always"
         name: siterm-agent
         resources: {}
@@ -42,6 +42,9 @@ spec:
           name: agent-hostkey
           readOnly: true
           subPath: hostkey.pem
+        - mountPath: /etc/iproute2/rt_tables
+          name: etc-iproute2
+          readOnly: true
       nodeSelector:
           kubernetes.io/hostname: nrp-02.nrp-nautilus.io
       restartPolicy: Always
@@ -68,4 +71,7 @@ spec:
           - key: agent-hostkey
             path: hostkey.pem
           defaultMode: 0644
+      - name: etc-iproute2
+        hostPath:
+          path: /etc/iproute2/rt_tables
 status: {}

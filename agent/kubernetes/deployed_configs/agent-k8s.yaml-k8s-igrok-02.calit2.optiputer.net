@@ -48,6 +48,9 @@ spec:
           name: agent-hostkey
           readOnly: true
           subPath: hostkey.pem
+        - mountPath: /etc/iproute2/rt_tables
+          name: etc-iproute2
+          readOnly: true
       nodeSelector:
           kubernetes.io/hostname: k8s-igrok-02.calit2.optiputer.net
       restartPolicy: Always
@@ -74,4 +77,7 @@ spec:
           - key: agent-hostkey
             path: hostkey.pem
           defaultMode: 0644
+      - name: etc-iproute2
+        hostPath:
+          path: /etc/iproute2/rt_tables
 status: {}
