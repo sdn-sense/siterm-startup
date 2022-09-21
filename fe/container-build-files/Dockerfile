@@ -14,7 +14,9 @@ RUN chmod g+s /var/log/dtnrm-site-fe/
 RUN mkdir -p /opt/siterm/dtnrmcode
 
 RUN cd /opt/siterm/dtnrmcode && git clone -b $GITBR https://github.com/$GITORG/$GITREPO
-RUN source $HOME/.cargo/env && cd /opt/siterm/dtnrmcode/siterm/ && pip3 install -r requirements-sitefe.txt || exit $?
+# Rust is needed only of ppc64le
+RUN if [ $ARCH = "ppc64le" ]; then source $HOME/.cargo/env && cd /opt/siterm/dtnrmcode/siterm/ && pip3 install -r requirements-sitefe.txt || exit $?; fi
+RUN if [ $ARCH != "ppc64le" ]; then cd /opt/siterm/dtnrmcode/siterm/ && pip3 install -r requirements-sitefe.txt || exit $?; fi
 RUN cd /opt/siterm/dtnrmcode/siterm/ && python3 setup-sitefe.py install || exit $?
 
 RUN ansible-galaxy collection install dellemc.os9
