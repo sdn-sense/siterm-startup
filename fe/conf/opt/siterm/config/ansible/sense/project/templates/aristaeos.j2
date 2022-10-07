@@ -23,7 +23,7 @@ no interface Vlan {{ vlan_vars.vlan_id }}
       {% if vlan_vars.tagged_members is defined %}
         {% for key, val in vlan_vars.tagged_members.items() %}
 interface {{ key }}
- no switchport trunk allowed vlan {{ vlan_vars.vlan_id }}
+ switchport trunk allowed vlan remove {{ vlan_vars.vlan_id }}
         {% endfor %}
       {% endif %}
     {% else %}
@@ -61,10 +61,10 @@ interface Vlan {{ vlan_vars.vlan_id }}
         {% for key, val in vlan_vars.tagged_members.items() %}
           {% if val == "absent" %}
 interface {{ key }}
- no switchport trunk allowed vlan {{ vlan_vars.vlan_id }}
+ switchport trunk allowed vlan remove {{ vlan_vars.vlan_id }}
             {% else %}
 interface {{ key }}
- switchport trunk allowed vlan {{ vlan_vars.vlan_id }}
+ switchport trunk allowed vlan add {{ vlan_vars.vlan_id }}
           {% endif %}
         {% endfor %}
       {% endif %}
