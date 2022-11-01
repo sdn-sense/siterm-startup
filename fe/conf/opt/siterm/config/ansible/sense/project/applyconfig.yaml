@@ -21,6 +21,7 @@
     - name: Push Arista EOS Config
       arista.eos.eos_config:
         src: /var/tmp/{{ inventory_hostname }}.conf
+        running_config: "! Command: show running-config"
         provider:
           host: "{{ ansible_host }}"
           timeout: 300
