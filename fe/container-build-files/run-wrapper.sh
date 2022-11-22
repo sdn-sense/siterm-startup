@@ -9,6 +9,7 @@ function stopServices()
   /usr/sbin/httpd -k stop
   LookUpService-update --action stop
   ProvisioningService-update --action stop
+  SNMPMonitoring-update --action stop
   Config-Fetcher --action stop
   exit 0
 }
@@ -96,6 +97,12 @@ Config-Fetcher --action restart --foreground --noreporting
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart Config-Fetcher: $status"
+fi
+
+SNMPMonitoring-update --action restart --foreground
+status=$?
+if [ $status -ne 0 ]; then
+  echo "Failed to restart SNMPMonitoring: $status"
 fi
 
 while true; do sleep 1; done
