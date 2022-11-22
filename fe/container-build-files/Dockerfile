@@ -3,6 +3,7 @@ FROM sdnsense/sitefe-base:$RELEASE
 MAINTAINER Justas Balcas <jbalcas@caltech.edu>
 
 ADD build_files/mariadb.sh /root/mariadb.sh
+ADD build_files/ssh-keygen.py /root/ssh-keygen.py
 RUN chmod +x /root/mariadb.sh
 
 # Configuration which repo to use for build
@@ -25,6 +26,6 @@ RUN ansible-galaxy collection install arista.eos
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/rare-freertr-collection,master
 
 EXPOSE 80 443
-COPY run-wrapper.sh /usr/local/bin/run-wrapper.sh
+COPY build_files/run-wrapper.sh /usr/local/bin/run-wrapper.sh
 ENTRYPOINT ["/usr/local/bin/run-wrapper.sh"]
 

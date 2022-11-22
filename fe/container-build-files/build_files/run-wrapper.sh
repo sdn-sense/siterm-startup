@@ -41,6 +41,9 @@ mkdir -p /var/log/dtnrm-site-fe/{LookUpService,ProvisioningService,PolicyService
 chown apache:apache /var/log/dtnrm-site-fe/*
 chmod g+s /var/log/dtnrm-site-fe/*
 
+# Make sure all ansible hosts are defined in ~/.ssh/known_hosts
+python3 /root/ssh-keygen.py
+
 # As first run, Run Custom CA prefetch and add them to CAs dir.
 sh /etc/cron-scripts/siterm-ca-cron.sh
 
