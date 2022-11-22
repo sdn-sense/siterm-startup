@@ -54,6 +54,9 @@ sense_bgp:
 no interface Vlan {{ vlan_vars.vlanid }}
   {% else %}
 interface Vlan {{ vlan_vars.vlanid }}
+    {% if vlan_vars.mtu is defined %}
+ mtu {{ vlan_vars.mtu }}
+    {% endif %}
     {% if vlan_vars.vrf is defined %}
  ip vrf forwarding {{ vlan_vars.vrf }}
     {% endif %}
