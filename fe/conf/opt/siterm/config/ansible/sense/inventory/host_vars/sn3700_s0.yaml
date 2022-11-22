@@ -1,5 +1,10 @@
 # More detailed documentation: https://docs.ansible.com/ansible/latest/network/index.html
 ansible_become: true
 ansible_network_os: sonic
-ansible_ssh_user: sense
+ansible_user: sense
 hostname: sn3700
+# For snmp monitoring parameters, see Session API parameters: https://easysnmp.readthedocs.io/en/latest/session_api.html
+snmp_monitoring:
+  hostname: 1.2.3.4
+  community: 'community'
+  version: 2
