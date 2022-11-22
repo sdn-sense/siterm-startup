@@ -13,6 +13,7 @@ ARG GITBR=master
 
 RUN chmod g+s /var/log/dtnrm-site-fe/
 RUN mkdir -p /opt/siterm/dtnrmcode
+RUN mkdir -p /root/.ssh/
 
 RUN cd /opt/siterm/dtnrmcode && git clone -b $GITBR https://github.com/$GITORG/$GITREPO
 # Rust is needed only of ppc64le
