@@ -13,7 +13,7 @@
 ansible_become: false
 ansible_network_os: dellos9
 ansible_ssh_pass: SuperDuperPassword
-ansible_ssh_user: SuperDuperUsername
+ansible_user: SuperDuperUsername
 hostname: dellos9_s0
 interface:
   Vlan 3607:
@@ -54,6 +54,9 @@ sense_bgp:
 no interface Vlan {{ vlan_vars.vlanid }}
   {% else %}
 interface Vlan {{ vlan_vars.vlanid }}
+    {% if vlan_vars.mtu is defined %}
+ mtu {{ vlan_vars.mtu }}
+    {% endif %}
     {% if vlan_vars.vrf is defined %}
  ip vrf forwarding {{ vlan_vars.vrf }}
     {% endif %}

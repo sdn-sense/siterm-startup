@@ -9,6 +9,7 @@ function stopServices()
   /usr/sbin/httpd -k stop
   LookUpService-update --action stop
   ProvisioningService-update --action stop
+  SNMPMonitoring-update --action stop
   Config-Fetcher --action stop
   exit 0
 }
@@ -39,6 +40,9 @@ chmod g+s /var/log/dtnrm-site-fe/
 mkdir -p /var/log/dtnrm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api}/
 chown apache:apache /var/log/dtnrm-site-fe/*
 chmod g+s /var/log/dtnrm-site-fe/*
+
+# Make sure all ansible hosts are defined in ~/.ssh/known_hosts
+python3 /root/ssh-keygen.py
 
 # As first run, Run Custom CA prefetch and add them to CAs dir.
 sh /etc/cron-scripts/siterm-ca-cron.sh
@@ -96,6 +100,12 @@ Config-Fetcher --action restart --foreground --noreporting
 status=$?
 if [ $status -ne 0 ]; then
   echo "Failed to restart Config-Fetcher: $status"
+fi
+
+SNMPMonitoring-update --action restart --foreground
+status=$?
+if [ $status -ne 0 ]; then
+  echo "Failed to restart SNMPMonitoring: $status"
 fi
 
 while true; do sleep 1; done

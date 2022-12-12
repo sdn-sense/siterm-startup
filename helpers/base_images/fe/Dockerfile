@@ -27,7 +27,7 @@ RUN chmod g+s /var/log/dtnrm-site-fe/
 RUN mkdir -p /opt/siterm/config && mkdir -p /opt/siterm/dtnrmcode
 RUN mkdir -p /etc/httpd/{certs,conf.d}/ && mkdir -p /etc/grid-security/certificates
 
-RUN yum -y install git autoconf sudo libcurl-devel libffi-devel openssl-devel automake curl gcc libuuid-devel lm_sensors make nc pkgconfig wget zlib-devel python38-devel httpd httpd-devel python38-mod_wsgi mod_ssl cronie python38-pip python38 python3-pyOpenSSL mariadb-server  python3-mysql mariadb-devel fetch-crl procps-ng ansible redhat-rpm-config && yum clean all
+RUN yum -y install git autoconf sudo libcurl-devel libffi-devel openssl-devel automake curl gcc libuuid-devel lm_sensors make nc pkgconfig wget zlib-devel python39-devel httpd httpd-devel python39-mod_wsgi mod_ssl cronie python39-pip python39 python3-pyOpenSSL mariadb-server python3-mysql mariadb-devel fetch-crl procps-ng ansible redhat-rpm-config net-snmp-devel && yum clean all
 
 RUN pip3 install --upgrade setuptools
 RUN pip3 install --upgrade pip
@@ -39,5 +39,5 @@ RUN rm -f /etc/httpd/conf.d/ssl.conf
 
 RUN yum clean all && rm -rf /var/cache/yum
 
-RUN if [ $ARCH = "ppc64le" ]; then cd /tmp/ && curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf &> rust-install.sh && sh rust-install.sh -y && source $HOME/.cargo/env && rm -f rust-install.sh; fi
-RUN if [ $ARCH != "ppc64le" ]; then mkdir -p $HOME/.cargo && touch $HOME/.cargo/env; fi
+RUN if [[ $ARCH == "ppc64le" ]]; then cd /tmp/ && curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf &> rust-install.sh && sh rust-install.sh -y && source $HOME/.cargo/env && rm -f rust-install.sh; fi
+RUN if [[ $ARCH != "ppc64le" ]]; then mkdir -p $HOME/.cargo && touch $HOME/.cargo/env; fi
