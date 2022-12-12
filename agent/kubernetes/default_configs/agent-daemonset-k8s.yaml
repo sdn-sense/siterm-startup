@@ -1,28 +1,25 @@
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   annotations:
   labels:
-    k8s-app: siterm-agent-k8s-gen4-01.sdsc.optiputer.net
-  name: siterm-agent-k8s-gen4-01.sdsc.optiputer.net
+    k8s-app: siterm-agent-___REPLACEME___
+  name: siterm-agent-___REPLACEME___
 spec:
-  replicas: 1
   selector:
     matchLabels:
-      k8s-app: siterm-agent-k8s-gen4-01.sdsc.optiputer.net
-  strategy:
-    type: Recreate
+      k8s-app: siterm-agent-___REPLACEME___
   template:
     metadata:
       annotations:
       labels:
-        k8s-app: siterm-agent-k8s-gen4-01.sdsc.optiputer.net
+        k8s-app: siterm-agent-___REPLACEME___
     spec:
       hostNetwork: true
       terminationGracePeriodSeconds: 30
       containers:
-      - image: sdnsense/site-agent-sense:dev
+      - image: sdnsense/site-agent-sense:latest
         imagePullPolicy: "Always"
         name: siterm-agent
         resources:
@@ -51,8 +48,6 @@ spec:
         - mountPath: /etc/iproute2/rt_tables
           name: etc-iproute2
           readOnly: true
-      nodeSelector:
-          kubernetes.io/hostname: k8s-gen4-01.sdsc.optiputer.net
       restartPolicy: Always
       serviceAccountName: ""
       volumes:
@@ -61,18 +56,18 @@ spec:
           items:
           - key: sense-siterm-agent
             path: sense-siterm-agent.yaml
-          name: sense-agent-k8s-gen4-01.sdsc.optiputer.net
+          name: sense-agent-___REPLACEME___
         name: sitermagent
       - name: agent-hostcert
         secret:
-          secretName: sense-agent-k8s-gen4-01.sdsc.optiputer.net
+          secretName: sense-agent-___REPLACEME___
           items:
           - key: agent-hostcert
             path: hostcert.pem
           defaultMode: 0644
       - name: agent-hostkey
         secret:
-          secretName: sense-agent-k8s-gen4-01.sdsc.optiputer.net
+          secretName: sense-agent-___REPLACEME___
           items:
           - key: agent-hostkey
             path: hostkey.pem
@@ -80,4 +75,3 @@ spec:
       - name: etc-iproute2
         hostPath:
           path: /etc/iproute2/rt_tables
-status: {}

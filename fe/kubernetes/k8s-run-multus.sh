@@ -34,6 +34,8 @@ function certChecker() {
 REWRITE_CONFIG_MAP=0
 REWRITE_SECRETS=0
 
+configfile=default_configs/sitefe-k8s.yaml-multus
+
 echo "Which kube config to use? Provide full path, like /home/username/.kube/config"
 read KUBECONF
 # Remove quotes - kubectl is unhappy with remaining quotes if not full path provided
@@ -44,42 +46,16 @@ else
   exit 1
 fi
 
+echo "What is the Sitename (prefered same as in rm-configs) - Mainly to have separate config files?"
+read fqdn
+
+echo "What is the external IP for Multus?"
+read publicip
+
 echo "Which namespace on Kubernetes to use to deploy service?"
 read namespace
 
-
-echo "Do you want to deploy DaemonSet or Pod?"
-echo "--- DaemonSet - deploys on ALL nodes inside Kubernetes cluster"
-echo "--- Pod - target's only one specific hostname for deployment"
-echo "1 - DaemonSet"
-echo "2 - Pod"
-read kubekind;
-case $kubekind in
-  1) kubekind="daemonset"
-echo "What is the Sitename (prefered same as in rm-configs) - Mainly to have separate config files?"
-read fqdn
-echo "Will deploy DaemonSet targeting all Nodes.";;
-  2) kubekind="pod"
-echo "Which Hostname we are deploying? Please enter full qualified domain name:"
-read fqdn
-# Precheck that such node exists. Needed for
-count=`kubectl get nodes --kubeconfig $KUBECONF | grep $fqdn | wc -l`
-if [ "$count" -ne "1" ]; then
-  echo "Hostname $fqdn does not exists in kubernetes nodes list. (Maybe private name?)"
-  echo "Here is full list of kubernetes nodes:"
-  kubectl get nodes --kubeconfig $KUBECONF
-  echo "On which one you want to deploy service? Needed for nodeSelector: kubernetes.io/hostname parameter. Please enter NAME:"
-  read nodeselector
-else
-  nodeselector=$fqdn
-fi
-echo "Will deploy Pod targeting only selected specific node.";;
-  *) echo "This deploy mode is not available. Please choose a different one.";;
-esac
-
-
-result=0
-if [ -f "deployed_configs/agent-$kubekind-k8s.yaml-$fqdn" ]; then
+if [ -f "deployed_configs/sitefe-k8s.yaml-$fqdn" ]; then
   askYesNo "Kubernetes config file is already present. Do you want to continue (Any manual changes in yaml file will be overwritten)? [Yy]es or [Nn]o:  "
   result=$?
 fi
@@ -87,6 +63,20 @@ if [ "$result" -ne "0" ]; then
   echo "Exiting..."
   exit $result
 fi
+
+# Some fields in yaml require listing without '.' - so we replace it to  '-'
+fqdnnodots=$( echo ${fqdn:1} | tr '.' '-' )
+
+# Get all MULTUS Namespaces available;
+#k8s.cni.cncf.io/v1/network-attachment-definitions
+#___REPLACEMEMULTUSNAME___
+echo "On which Network Namespace you want to deploy it? Available network namespaces below. Please enter NAME"
+kubectl get "network-attachment-definitions" --namespace $namespace --kubeconfig $KUBECONF
+read multusname
+# ___REPLACEMEMULTUSNAME___
+
+
+
 
 echo "============================================================"
 echo "  HOSTCERT and HOSTKEY CHECK/INSTALL"
@@ -114,7 +104,38 @@ else
   certExit=$?
   if [ "$certExit" -ne "0" ]; then
     exit $certExit
+  fi 
+fi
+
+echo "============================================================"
+echo "  HTTPD CERT/KEY/CHAIN CHECK/INSTALL"
+echo "============================================================"
+
+result=0
+# Move config, hostcert, key - to name with hostname
+if [ -f "../conf/etc/httpd/certs/cert.pem-$fqdn" ] || [ -f "../conf/etc/httpd/certs/privkey.pem-$fqdn" ] || [ -f "../conf/etc/httpd/certs/fullchain.pem-$fqdn" ]; then
+  askYesNo "HTTPD CERT/KEY/CHAIN is already present for $fqdn. Do you want to overwrite them with ../conf/etc/httpd/certs/{cert,privkey,fullchain}.pem? [Yy]es or [Nn]o:  "
+  result=$?
+fi
+if [ "$result" -eq "0" ]; then
+  echo "Certificate Overwrite Requested."
+  certChecker ../conf/etc/httpd/certs/cert.pem ../conf/etc/httpd/certs/privkey.pem
+  certExit=$?
+  if [ "$certExit" -ne "0" ]; then
+    exit $certExit
   fi
+  cp ../conf/etc/httpd/certs/cert.pem ../conf/etc/httpd/certs/cert.pem-$fqdn
+  cp ../conf/etc/httpd/certs/privkey.pem ../conf/etc/httpd/certs/privkey.pem-$fqdn
+  cp ../conf/etc/httpd/certs/fullchain.pem ../conf/etc/httpd/certs/fullchain.pem-$fqdn
+  cp ../conf/environment ../conf/environment-$fqdn
+  REWRITE_SECRETS=1
+else
+  echo "NO Certificate Overwrite. Checking that Certs are valid"
+  certChecker ../conf/etc/httpd/certs/cert.pem-$fqdn ../conf/etc/httpd/certs/privkey.pem-$fqdn
+  certExit=$?
+  if [ "$certExit" -ne "0" ]; then
+    exit $certExit
+  fi 
 fi
 
 echo "============================================================"
@@ -133,71 +154,74 @@ if [ "$result" -eq 0 ]; then
   REWRITE_CONFIG_MAP=1
 fi
 
-
 echo "============================================================"
 echo "  CREATE and CONFIGURE Kubernetes yaml file"
 echo "============================================================"
-configfile=default_configs/agent-$kubekind-k8s.yaml
 
-cp $configfile agent-$kubekind-k8s.yaml-$fqdn
-sed -i ".backup" "s|___REPLACEME___|$fqdn|g" agent-$kubekind-k8s.yaml-$fqdn
-sed -i ".backup" "s|___REPLACEMENODESELECTOR___|$nodeselector|g" agent-$kubekind-k8s.yaml-$fqdn
-rm -f agent-$kubekind-k8s.yaml-$fqdn.backup
-mv agent-$kubekind-k8s.yaml-$fqdn deployed_configs/
+cp $configfile sitefe-k8s.yaml-$fqdn
+sed -i ".backup" "s|___REPLACEME___|$fqdn|g" sitefe-k8s.yaml-$fqdn
+sed -i ".backup" "s|___REPLACEMENODOTS___|$fqdnnodots|g" sitefe-k8s.yaml-$fqdn
+sed -i ".backup" "s|___REPLACEMENAMESPACE___|$namespace|g" sitefe-k8s.yaml-$fqdn
+sed -i ".backup" "s|___REPLACEMEEXTERNALIP___|$publicip|g" sitefe-k8s.yaml-$fqdn
+sed -i ".backup" "s|___REPLACEMEMULTUSNAME___|$multusname|g" sitefe-k8s.yaml-$fqdn
+rm -f sitefe-k8s.yaml-$fqdn.backup
+mv sitefe-k8s.yaml-$fqdn deployed_configs/
 
 echo "============================================================"
 echo "  Check if config map/secrets are present in kubernetes"
 echo "============================================================"
 echo "Check config map"
-kubectl get configmap sense-agent-$fqdn --namespace $namespace --kubeconfig $KUBECONF
+kubectl get configmap sense-fe-$fqdn --namespace $namespace --kubeconfig $KUBECONF
 CONFIG_MAP_PRESENT=$?
 echo '------------------------------------------------------------'
 if [ "$CONFIG_MAP_PRESENT" -eq 0 ] && [ "$REWRITE_CONFIG_MAP" -eq 1 ]; then
   echo "Config map is present and new config was produced. Deleting old config"
-  kubectl delete configmap sense-agent-$fqdn --namespace $namespace --kubeconfig $KUBECONF
+  kubectl delete configmap sense-fe-$fqdn --namespace $namespace --kubeconfig $KUBECONF
 fi
 if [ "$REWRITE_CONFIG_MAP" -eq 1 ] || [ "$CONFIG_MAP_PRESENT" -eq 1 ]; then
   echo "Creating new config map for $fqdn"
-  kubectl create configmap sense-agent-$fqdn --from-file=sense-siterm-agent=../conf/etc/dtnrm.yaml-$fqdn \
+  kubectl create configmap sense-fe-$fqdn --from-file=sense-siterm-fe=../conf/etc/dtnrm.yaml-$fqdn \
                                           --namespace $namespace --kubeconfig $KUBECONF
 fi
 
 echo '------------------------------------------------------------'
 echo 'Check secrets'
-kubectl get secret sense-agent-$fqdn --namespace $namespace --kubeconfig $KUBECONF
+kubectl get secret sense-fe-$fqdn --namespace $namespace --kubeconfig $KUBECONF
 SECRETS_PRESENT=$?
 echo '------------------------------------------------------------'
 
 if [ "$SECRETS_PRESENT" -eq 0 ] && [ "$REWRITE_SECRETS" -eq 1 ]; then
   echo "Secrets are present and new secrets were produced. Deleting old secrets"
-  kubectl delete secret sense-agent-$fqdn --namespace $namespace --kubeconfig $KUBECONF
+  kubectl delete secret sense-fe-$fqdn --namespace $namespace --kubeconfig $KUBECONF
 fi
 if [ "$REWRITE_SECRETS" -eq 1 ] || [ "$SECRETS_PRESENT" -eq 1 ]; then
   echo "Creating new secrets for $fqdn"
-  kubectl create secret generic sense-agent-$fqdn \
-          --from-file=agent-hostcert=../conf/etc/grid-security/hostcert.pem-$fqdn \
-          --from-file=agent-hostkey=../conf/etc/grid-security/hostkey.pem-$fqdn \
+  kubectl create secret generic sense-fe-$fqdn \
+          --from-file=fe-hostcert=../conf/etc/grid-security/hostcert.pem-$fqdn \
+          --from-file=fe-hostkey=../conf/etc/grid-security/hostkey.pem-$fqdn \
+          --from-file=fe-httpdcert=../conf/etc/httpd/certs/cert.pem-$fqdn \
+          --from-file=fe-httpdprivkey=../conf/etc/httpd/certs/privkey.pem-$fqdn \
+          --from-file=fe-httpdfullchain=../conf/etc/httpd/certs/fullchain.pem-$fqdn \
+          --from-file=fe-environment=../conf/environment-$fqdn \
           --namespace $namespace --kubeconfig $KUBECONF
 fi
 
 echo "============================================================"
 echo "============================================================"
 echo " HERE IS KUBERNETES CONFIG FILE"
-cat deployed_configs/agent-$kubekind-k8s.yaml-$fqdn
+cat deployed_configs/sitefe-k8s.yaml-$fqdn
 
 echo "------------------------------------------------------------"
 echo "See Kubernetes config above. If you need to make any manual changes,"
 echo "like add tolerations, do not submit and modify this config file:"
-echo "deployed_configs/agent-$kubekind-k8s.yaml-$fqdn"
+echo "deployed_configs/sitefe-k8s.yaml-$fqdn"
 echo "and submit manually using this command:"
-echo kubectl apply -f deployed_configs/agent-$kubekind-k8s.yaml-$fqdn --namespace $namespace --kubeconfig $KUBECONF
+echo kubectl apply -f deployed_configs/sitefe-k8s.yaml-$fqdn --namespace $namespace --kubeconfig $KUBECONF
 askYesNo "Do you want submit config right now? [Yy]es or [Nn]o:  "
 result=$?
 if [ "$result" -eq "0" ]; then
   echo "Apply config..."
-  kubectl apply -f deployed_configs/agent-$kubekind-k8s.yaml-$fqdn --namespace $namespace --kubeconfig $KUBECONF
+  echo kubectl apply -f deployed_configs/sitefe-k8s.yaml-$fqdn --namespace $namespace --kubeconfig $KUBECONF
 else
   echo "Not applying configuration..."
 fi
-
-
