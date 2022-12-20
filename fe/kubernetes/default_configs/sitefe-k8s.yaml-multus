@@ -21,14 +21,6 @@ metadata:
   labels:
     app: sitefe-___REPLACEME___
   name: sitefe-___REPLACEME___
-  annotations:
-    k8s.v1.cni.cncf.io/networks:
-        '[{
-                "name": "___REPLACEMEMULTUSNAME___",
-                "ips": [
-                        "___REPLACEMEEXTERNALIP___"
-                ]
-        }]'
 spec:
   replicas: 1
   selector:
@@ -40,6 +32,13 @@ spec:
       annotations:
         kompose.cmd: kompose convert
         kompose.version: 1.21.0 (992df58d8)
+        k8s.v1.cni.cncf.io/networks:
+            '[{
+                    "name": "___REPLACEMEMULTUSNAME___",
+                    "ips": [
+                            "___REPLACEMEEXTERNALIP___"
+                    ]
+            }]'
       creationTimestamp: null
       labels:
         app: sitefe-___REPLACEME___
