@@ -41,6 +41,16 @@ mkdir -p /var/log/dtnrm-site-fe/{LookUpService,ProvisioningService,PolicyService
 chown apache:apache /var/log/dtnrm-site-fe/*
 chmod g+s /var/log/dtnrm-site-fe/*
 
+# Make sure ansible dir exists (Kubernetes has it empty once PVC is created)
+if [[ ! -d "/opt/siterm/config/ansible" ]]; then
+  echo "Directory /opt/siterm/config/ansible DOES NOT exists."
+  echo "Cloning git repo and add default ansible config."
+  cd /tmp/
+  git clone https://github.com/sdn-sense/siterm-startup
+  mv siterm-startup/fe/conf/opt/siterm/config/ansible /opt/siterm/config/
+  rm -rf /tmp/siterm-startup/
+fi
+
 # Make sure all ansible hosts are defined in ~/.ssh/known_hosts
 python3 /root/ssh-keygen.py
 
