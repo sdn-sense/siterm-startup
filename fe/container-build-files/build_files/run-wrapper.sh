@@ -47,7 +47,8 @@ if [[ ! -d "/opt/siterm/config/ansible" ]]; then
   echo "Cloning git repo and add default ansible config."
   cd /tmp/
   git clone https://github.com/sdn-sense/siterm-startup
-  mv siterm-startup/fe/conf/opt/siterm/config/ansible /opt/siterm/config/
+  mkdir -p /opt/siterm/config/ansible
+  mv siterm-startup/fe/conf/opt/siterm/config/ansible/* /opt/siterm/config/ansible/
   rm -rf /tmp/siterm-startup/
 fi
 

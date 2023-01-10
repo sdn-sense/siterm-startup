@@ -14,56 +14,39 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose convert
-    kompose.version: 1.21.0 (992df58d8)
-  creationTimestamp: null
-  labels:
-    io.kompose.service: sitefe-___REPLACEME___
   name: sitefe-___REPLACEMENODOTS___
 spec:
-  type: LoadBalancer
+  selector:
+    run: sitefe-___REPLACEME___
   ports:
-  - name: "8080"
+  - name: http
+    protocol: TCP
     port: 8080
     targetPort: 80
-  - name: "8443"
+  - name: https
+    protocol: TCP
     port: 8443
     targetPort: 443
-  externalIPs:
-    - ___REPLACEMEEXTERNALIP___
-  selector:
-    io.kompose.service: sitefe-___REPLACEME___
-status:
-  loadBalancer: {}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert
-    kompose.version: 1.21.0 (992df58d8)
-  creationTimestamp: null
   labels:
-    io.kompose.service: sitefe-___REPLACEME___
+    run: sitefe-___REPLACEME___
   name: sitefe-___REPLACEME___
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: sitefe-___REPLACEME___
+      run: sitefe-___REPLACEME___
   strategy: {}
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert
-        kompose.version: 1.21.0 (992df58d8)
-      creationTimestamp: null
       labels:
-        io.kompose.service: sitefe-___REPLACEME___
+        run: sitefe-___REPLACEME___
     spec:
       containers:
-      - image: sdnsense/site-rm-sense:latest
+      - image: sdnsense/site-rm-sense:dev
         imagePullPolicy: "Always"
         name: sitefe
         resources:
@@ -76,6 +59,8 @@ spec:
         ports:
         - containerPort: 80
         - containerPort: 443
+        - containerPort: 8080
+        - containerPort: 8443
         volumeMounts:
         - mountPath: /opt/siterm/
           name: sense-fe-vol-___REPLACEMENODOTS___
@@ -106,8 +91,6 @@ spec:
           name: fe-httpdfullchain
           readOnly: true
           subPath: httpdfullchain.pem
-      nodeSelector:
-          kubernetes.io/hostname: ___REPLACEMENODESELECTOR___
       restartPolicy: Always
       serviceAccountName: ""
       volumes:
@@ -164,3 +147,25 @@ spec:
         persistentVolumeClaim:
           claimName: sense-fe-vol-___REPLACEMENODOTS___
 status: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: sense-fe-ingress-___REPLACEMENODOTS___
+    namespace: ___REPLACEMENAMESPACE___
+    annotations:
+      kubernetes.io/ingress.class: haproxy
+      kubernetes.io/ssl-passthrough: "true"
+spec:
+    rules:
+    - host: "___REPLACEME___"
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: sitefe-___REPLACEMENODOTS___
+              port:
+                number: 8443
+
