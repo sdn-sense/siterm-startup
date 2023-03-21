@@ -25,6 +25,8 @@ RUN ansible-galaxy collection install dellemc.os9
 RUN ansible-galaxy collection install dellemc.os10
 RUN ansible-galaxy collection install arista.eos
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/rare-freertr-collection,master
+# 4.1.0 Needed because of this issue: https://github.com/ansible-collections/ansible.netcommon/issues/512
+RUN ansible-galaxy collection install ansible.netcommon:4.1.0
 
 EXPOSE 80 443
 COPY build_files/run-wrapper.sh /usr/local/bin/run-wrapper.sh
