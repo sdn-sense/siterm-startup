@@ -1,0 +1,11 @@
+ansible_become: false
+ansible_connection: ansible.netcommon.network_cli
+ansible_network_os: cisco.nxos.nxos
+ansible_ssh_pass: MySuperDuperPassword
+ansible_user: MySuperDuperUsername
+hostname: cisconx_s0 
+# For snmp monitoring parameters, see Session API parameters: https://easysnmp.readthedocs.io/en/latest/session_api.html
+snmp_monitoring:
+  hostname: 1.2.3.4
+  community: 'community'
+  version: 2

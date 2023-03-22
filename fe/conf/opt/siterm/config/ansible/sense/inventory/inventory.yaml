@@ -2,6 +2,7 @@
 # dellos9 - Managing Dell OS 9
 # aristaeos - Managing Arista EOS Devices
 # sonic - Managing Azure Sonic
+# Cisco NX - Managinx Cisco NX OS
 # freertr - Managing RARE FreeRTR. Only for visualization at give moment
 # More detailed configuration parameters: https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html
 dellos9:
@@ -25,3 +26,7 @@ freertr:
     freertr_s0:
       ansible_host: 192.168.100.4
       ansible_user: rare
+cisconx:
+  hosts:
+    cisconx_s0:
+      ansible_host: 192.168.100.5

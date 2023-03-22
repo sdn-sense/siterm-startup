@@ -24,6 +24,7 @@ RUN cd /opt/siterm/dtnrmcode/siterm/ && python3 setup-sitefe.py install || exit 
 RUN ansible-galaxy collection install dellemc.os9
 RUN ansible-galaxy collection install dellemc.os10
 RUN ansible-galaxy collection install arista.eos
+RUN ansible-galaxy collection install cisco.nxos
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/rare-freertr-collection,master
 # 4.1.0 Needed because of this issue: https://github.com/ansible-collections/ansible.netcommon/issues/512
 RUN ansible-galaxy collection install ansible.netcommon:4.1.0

@@ -27,3 +27,9 @@
       gather_subset: all
     register: facts
     when: ansible_network_os is defined and ansible_network_os == "rare.freertr.freertr"
+
+  - name: Gather all legacy facts
+    cisco.nxos.nxos_facts:
+      gather_subset: all
+    register: facts
+    when: ansible_network_os is defined and ansible_network_os == "cisco.nxos.nxos"
