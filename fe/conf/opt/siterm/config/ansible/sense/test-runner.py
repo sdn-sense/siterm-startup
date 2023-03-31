@@ -46,12 +46,13 @@ for playbook in playbooks:
         for host_events in r.host_events(host):
             if host_events['event'] != 'runner_on_ok':
                 continue
+            action = host_events['event_data']['task_action']
+            print(action)
             if 'stdout_lines' in host_events['event_data']['res']:
                 for line in host_events['event_data']['res']['stdout_lines']:
                     print(line)
             elif 'ansible_facts' in host_events['event_data']['res'] and  \
                  'ansible_net_interfaces' in host_events['event_data']['res']['ansible_facts']:
-                action = host_events['event_data']['task_action']
                 pprint.pprint(host_events['event_data']['res']['ansible_facts'])
             else:
                 pprint.pprint(host_events)

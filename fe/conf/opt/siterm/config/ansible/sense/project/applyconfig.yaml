@@ -24,6 +24,12 @@
         running_config: "! Command: show running-config"
       when: ansible_network_os == "arista.eos.eos"
 
+    - name: Push Cisco NX Config
+      cisco.nxos.nxos_config:
+        src: /var/tmp/{{ inventory_hostname }}.conf
+        running_config: "! Command: show running-config"
+      when: ansible_network_os == "cisco.nxos.nxos"
+
     - name: Transfer Sonic Script
       copy: src=scripts/sonic.py dest=/var/tmp/sonic.py mode=0755
       when: ansible_network_os is defined and ansible_network_os == "sonic"

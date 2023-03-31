@@ -53,5 +53,4 @@
     cisco.nxos.nxos_command:
       commands:
         - show version
-        - show lldp neighbors detail
     when: ansible_network_os is defined and ansible_network_os == 'cisco.nxos.nxos'
