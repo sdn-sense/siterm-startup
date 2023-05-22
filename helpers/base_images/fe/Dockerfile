@@ -16,9 +16,10 @@ RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-MariaDB
 
 RUN adduser apache -U -u 48
 RUN adduser mysql -U -u 4000
-RUN mkdir -p /var/log/dtnrm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api,SNMPMonitoring}/
 
 # Precreate all directories
+RUN mkdir -p /var/log/dtnrm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api,SNMPMonitoring}/
+RUN touch /var/log/dtnrm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api,SNMPMonitoring}/api.log
 RUN mkdir -p /var/log/mariadb/
 RUN mkdir -p /opt/siterm/config/mysql/
 RUN chown mysql:mysql /var/log/mariadb/
