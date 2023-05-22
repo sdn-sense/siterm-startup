@@ -17,8 +17,8 @@ RUN yum -y install epel-release
 RUN yum -y install git autoconf automake sudo libcurl-devel libffi-devel python3-lxml openssl-devel curl gcc traceroute libuuid-devel lm_sensors ipset make nc pkgconfig python39 python39-pyyaml zlib-devel python39-devel wget tcpdump jq iproute cronie python39-pip wireshark iperf3 iproute-tc diffutils fetch-crl procps-ng mariadb-devel libxml2-devel libxslt-devel
 
 # Install supervisord and superlance to run service, monitor mem usage
-RUN pip3 install --upgrade setuptools pip
-RUN pip3 install supervisor superlance
+RUN pip3 install --no-cache-dir --upgrade setuptools pip
+RUN pip3 install --no-cache-dir supervisor superlance
 RUN mkdir -p /var/log/supervisor
 
 RUN mkdir -p /usr/local/sbin/

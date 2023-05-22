@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Check if all env variables are available and set
-if [[ -z $MARIA_DB_HOST || -z $MARIA_DB_USER || -z $MARIA_DB_DATABASE || -z $MARIA_DB_PASSWORD || -z MARIA_DB_PORT ]]; then
+if [[ -z $MARIA_DB_HOST || -z $MARIA_DB_USER || -z $MARIA_DB_DATABASE || -z $MARIA_DB_PASSWORD || -z $MARIA_DB_PORT ]]; then
   if [ -f "/etc/siterm-mariadb" ]; then
     set -a
     source /etc/siterm-mariadb
@@ -42,7 +42,7 @@ if [ ! -f /opt/siterm/config/mysql/site-rm-db-initialization ]; then
 
   # create file under /var/lib/mysql which is only unique for Site-RM. 
   # This ensures that we are not repeating same steps during docker restart
-  echo `date` >> /opt/siterm/config/mysql/site-rm-db-initialization
+  echo $(date) >> /opt/siterm/config/mysql/site-rm-db-initialization
 else
   echo "Seems this is not the first time start. Will not create DB again"
   chown -R mysql:mysql /opt/siterm/config/mysql/
@@ -53,4 +53,4 @@ else
   python3 -c 'from DTNRMLibs.DBBackend import DBBackend; db = DBBackend(); db._createdb()'
 fi
 
-wait `cat /opt/siterm/config/mysql/mariadb.pid`
+wait $(cat /opt/siterm/config/mysql/mariadb.pid)
