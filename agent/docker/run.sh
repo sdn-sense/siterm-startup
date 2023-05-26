@@ -21,6 +21,6 @@ docker run \
        --cap-add=NET_ADMIN \
        --net=host \
        --log-driver="json-file" --log-opt max-size=10m --log-opt max-file=10 \
-       sdnsense/site-agent-sense:$VERSION
+       docker.io/sdnsense/site-agent-sense:$VERSION
 
 # For development, add -v /home/jbalcas/siterm/:/opt/siterm/dtnrmcode/siterm/ \

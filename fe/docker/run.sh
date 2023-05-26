@@ -22,6 +22,6 @@ docker run \
        -p 8443:443 \
        --env-file $(pwd)/../conf/environment \
        --log-driver="json-file" --log-opt max-size=10m --log-opt max-file=10 \
-       sdnsense/site-rm-sense:$VERSION
+       docker.io/sdnsense/site-rm-sense:$VERSION
 
 # For development, add -v /home/jbalcas/siterm/:/opt/siterm/dtnrmcode/siterm/ \
