@@ -13,6 +13,8 @@ TODO:
     3. Allow to test vlan and IP assignment
 
 """
+import os
+import json
 import yaml
 import pprint
 import ansible_runner
@@ -26,11 +28,28 @@ def getInventory(inventoryFile):
 def runAnsible(playbookFile):
     """Run Ansible Playbook"""
     ansRunner = ansible_runner.run(private_data_dir='/opt/siterm/config/ansible/sense',
-                                   inventory=getInventory('/opt/siterm/config/ansible/sense/inventory/inventory-test.yaml'),
-                                   playbook=playbookFile)
+                                   inventory=getInventory('/opt/siterm/config/ansible/sense/inventory/inventory.yaml'),
+                                   playbook=playbookFile, verbosity=1000)
     return ansRunner
 
+def saveOutput(inJson, filename, outputdir):
+    try:
+        os.makedirs(os.path.join(outputdir, 'json/'), exist_ok = True)
+        os.makedirs(os.path.join(outputdir, 'config/'), exist_ok = True)
+    except OSError as ex:
+        print("Directory '%s' can not be created" % outputdir)
+        raise Exception(ex) from OSError
+    # Dump Json
+    fname = os.path.join(outputdir, "json/", "%s.json" % filename)
+    with open(fname, 'w', encoding='utf-8') as fd:
+        json.dump(inJson, fd)
+    # Save config in txt format
+    fname = os.path.join(outputdir, "config/", "%s.config" % filename)
+    with open(fname, 'w', encoding='utf-8') as fd:
+        fd.writelines(inJson['ansible_net_config'])
 
+
+outputdir="/opt/siterm/config/ansible/sense"
 playbooks = ['getfacts.yaml', 'maclldproute.yaml', 'applyconfig.yaml']
 for playbook in playbooks:
     print("RUNNING PLAYBOOK: %s" % playbook)
@@ -56,4 +75,6 @@ for playbook in playbooks:
                 pprint.pprint(host_events['event_data']['res']['ansible_facts'])
             else:
                 pprint.pprint(host_events)
+            if playbook == 'getfacts.yaml':
+                saveOutput(host_events['event_data']['res']['ansible_facts'], host, outputdir)
         print('-'*100)
