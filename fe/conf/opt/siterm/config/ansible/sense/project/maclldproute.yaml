@@ -41,13 +41,13 @@
     when: ansible_network_os is defined and ansible_network_os == 'sonic'
 
   - name: "Gather RARE FreeRTR Version, LLDP, IP Route, IPv6 Route"
-    rare.freertr.freertr_command:
+    sense.freertr.freertr_command:
       commands:
         - show platform
         - show lldp neighbor
         - show ipv4 route CORE
         - show ipv4 route CORE
-    when: ansible_network_os is defined and ansible_network_os == "rare.freertr.freertr"
+    when: ansible_network_os is defined and ansible_network_os == "sense.freertr.freertr"
 
   - name: "Get Version, lldp, routes from Cisco NX"
     cisco.nxos.nxos_command:
