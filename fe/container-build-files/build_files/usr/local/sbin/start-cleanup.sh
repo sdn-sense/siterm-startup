@@ -25,12 +25,12 @@ chmod g+s /var/log/dtnrm-site-fe/*
 if [[ ! -d "/opt/siterm/config/ansible" ]]; then
   echo "Directory /opt/siterm/config/ansible DOES NOT exists."
   echo "Cloning git repo and add default ansible config."
-  cd /tmp/
-  git clone https://github.com/sdn-sense/siterm-startup
-  mkdir -p /opt/siterm/config/ansible
-  mv siterm-startup/fe/conf/opt/siterm/config/ansible/* /opt/siterm/config/ansible/
-  rm -rf /tmp/siterm-startup/
+  mkdir -p /opt/siterm/config/ansible/sense
+  git clone https://github.com/sdn-sense/ansible-templates /opt/siterm/config/ansible/sense
+else
+  cd /opt/siterm/config/ansible/sense && git pull
 fi
+
 
 # Make sure all ansible hosts are defined in ~/.ssh/known_hosts
 python3 /root/ssh-keygen.py
