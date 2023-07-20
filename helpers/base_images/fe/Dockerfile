@@ -32,7 +32,7 @@ RUN mkdir -p /etc/httpd/{certs,conf.d}/ && mkdir -p /etc/grid-security/certifica
 RUN mkdir -p /root/.ssh/
 
 # Install all required packages
-RUN yum -y install git autoconf sudo libcurl-devel libffi-devel openssl-devel automake curl gcc libuuid-devel lm_sensors make nc pkgconfig wget zlib-devel python39-devel httpd httpd-devel python39-mod_wsgi mod_ssl cronie python39-pip python39 python3-pyOpenSSL mariadb-server python3-mysql mariadb-devel fetch-crl procps-ng redhat-rpm-config net-snmp-devel && yum clean all
+RUN yum -y install git autoconf sudo libcurl-devel libffi-devel openssl-devel automake curl gcc libuuid-devel lm_sensors make nc pkgconfig wget zlib-devel python39-devel httpd httpd-devel python39-mod_wsgi mod_ssl cronie python39-pip python39 python3-pyOpenSSL mariadb-server python3-mysql mariadb-devel fetch-crl procps-ng redhat-rpm-config net-snmp-devel sshpass && yum clean all
 RUN pip3 install --no-cache-dir --upgrade setuptools
 RUN pip3 install --no-cache-dir --upgrade pip
 

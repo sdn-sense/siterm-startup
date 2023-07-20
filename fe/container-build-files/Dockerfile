@@ -22,8 +22,6 @@ RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-ari
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos10-collection,master
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos9-collection,main
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-freertr-collection,master
-# 4.1.0 Needed because of this issue: https://github.com/ansible-collections/ansible.netcommon/issues/512
-RUN ansible-galaxy collection install ansible.netcommon:4.1.0
 
 # Add all supervisord configs
 # Copy Supervisor.d Config, Script files
