@@ -34,7 +34,7 @@ spec:
             add:
             - NET_ADMIN
         volumeMounts:
-        - mountPath: /etc/dtnrm.yaml
+        - mountPath: /etc/siterm.yaml
           name: sitermagent
           subPath: sense-siterm-agent.yaml
         - mountPath: /etc/grid-security/hostcert.pem

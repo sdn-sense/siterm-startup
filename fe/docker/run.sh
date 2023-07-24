@@ -11,7 +11,7 @@ fi
 
 docker run \
        -dit --name site-fe-sense \
-       -v $(pwd)/../conf/etc/dtnrm.yaml:/etc/dtnrm.yaml \
+       -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml \
        -v $(pwd)/../conf/etc/httpd/certs/cert.pem:/etc/httpd/certs/cert.pem \
        -v $(pwd)/../conf/etc/httpd/certs/privkey.pem:/etc/httpd/certs/privkey.pem \
        -v $(pwd)/../conf/etc/httpd/certs/fullchain.pem:/etc/httpd/certs/fullchain.pem \
@@ -24,4 +24,4 @@ docker run \
        --log-driver="json-file" --log-opt max-size=10m --log-opt max-file=10 \
        docker.io/sdnsense/site-rm-sense:$VERSION
 
-# For development, add -v /home/jbalcas/siterm/:/opt/siterm/dtnrmcode/siterm/ \
+# For development, add -v /home/jbalcas/siterm/:/opt/siterm/sitermcode/siterm/ \

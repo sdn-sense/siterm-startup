@@ -9,10 +9,10 @@ sleep_long () {
 rm -f /tmp/*-mapping.yaml
 rm -f /tmp/*Agent-main.yaml
 # Remove any PID files left from reboot/stop.
-rm -f /tmp/dtnrm*-update.pid
+rm -f /tmp/siterm*-update.pid
 # Remove remaining git fetch lock files
 rm -f /tmp/siterm-git-fetch-lockfile
 # Precreate log dirs, in case removed, non existing
-mkdir -p /var/log/dtnrm-agent/{Agent,Debugger,Ruler}/
+mkdir -p /var/log/siterm-agent/{Agent,Debugger,Ruler}/
 
 sleep_long

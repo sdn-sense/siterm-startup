@@ -10,11 +10,11 @@ ARG GITREPO=siterm
 ARG GITORG=sdn-sense
 ARG GITBR=master
 
-RUN cd /opt/siterm/dtnrmcode && git clone -b $GITBR https://github.com/$GITORG/$GITREPO
+RUN cd /opt/siterm/sitermcode && git clone -b $GITBR https://github.com/$GITORG/$GITREPO
 # Rust is needed only of ppc64le
-RUN if [[ $ARCH == "ppc64le" ]]; then source $HOME/.cargo/env && cd /opt/siterm/dtnrmcode/siterm/ && pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?; fi
-RUN if [[ $ARCH != "ppc64le" ]]; then cd /opt/siterm/dtnrmcode/siterm/ && pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?; fi
-RUN cd /opt/siterm/dtnrmcode/siterm/ && python3 setup-sitefe.py install || exit $?
+RUN if [[ $ARCH == "ppc64le" ]]; then source $HOME/.cargo/env && cd /opt/siterm/sitermcode/siterm/ && pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?; fi
+RUN if [[ $ARCH != "ppc64le" ]]; then cd /opt/siterm/sitermcode/siterm/ && pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?; fi
+RUN cd /opt/siterm/sitermcode/siterm/ && python3 setup-sitefe.py install || exit $?
 
 # Install all ansible collections
 RUN ansible-galaxy collection install cisco.nxos

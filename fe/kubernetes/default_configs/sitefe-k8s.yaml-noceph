@@ -65,7 +65,7 @@ spec:
         - containerPort: 80
         - containerPort: 443
         volumeMounts:
-        - mountPath: /etc/dtnrm.yaml
+        - mountPath: /etc/siterm.yaml
           name: fe-conf
           subPath: sense-siterm-fe.yaml
         - mountPath: /etc/siterm-mariadb

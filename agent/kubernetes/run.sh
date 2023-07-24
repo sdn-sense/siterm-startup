@@ -153,13 +153,13 @@ echo "============================================================"
 
 
 result=0
-if [ -f "../conf/etc/dtnrm.yaml-$fqdn" ]; then
+if [ -f "../conf/etc/siterm.yaml-$fqdn" ]; then
   askYesNo "Config file is present for $fqdn. Do you want to overwrite it? [Yy]es or [Nn]o:  "
   result=$?
 fi
 if [ "$result" -eq 0 ]; then
   echo "Config Overwrite Requested."
-  cp ../conf/etc/dtnrm.yaml ../conf/etc/dtnrm.yaml-$fqdn
+  cp ../conf/etc/siterm.yaml ../conf/etc/siterm.yaml-$fqdn
   REWRITE_CONFIG_MAP=1
 fi
 
@@ -189,7 +189,7 @@ if [ "$CONFIG_MAP_PRESENT" -eq 0 ] && [ "$REWRITE_CONFIG_MAP" -eq 1 ]; then
 fi
 if [ "$REWRITE_CONFIG_MAP" -eq 1 ] || [ "$CONFIG_MAP_PRESENT" -eq 1 ]; then
   echo "Creating new config map for $fqdn"
-  kubectl create configmap sense-fe-$fqdn --from-file=sense-siterm-fe=../conf/etc/dtnrm.yaml-$fqdn \
+  kubectl create configmap sense-fe-$fqdn --from-file=sense-siterm-fe=../conf/etc/siterm.yaml-$fqdn \
                                           --namespace $namespace --kubeconfig $KUBECONF
 fi
 

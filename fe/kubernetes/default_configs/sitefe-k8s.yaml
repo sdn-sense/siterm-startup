@@ -64,7 +64,7 @@ spec:
         volumeMounts:
         - mountPath: /opt/siterm/
           name: sense-fe-vol-___REPLACEMENODOTS___
-        - mountPath: /etc/dtnrm.yaml
+        - mountPath: /etc/siterm.yaml
           name: fe-conf
           subPath: sense-siterm-fe.yaml
         - mountPath: /etc/siterm-mariadb

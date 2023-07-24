@@ -9,8 +9,8 @@ ARG GITBR=master
 
 MAINTAINER Justas Balcas <jbalcas@caltech.edu>
 
-RUN mkdir -p /var/log/dtnrm-agent/{Agent,Debugger,Ruler,QOS,contentdb}/
-RUN mkdir -p /opt/siterm/{config,dtnrmcode}
+RUN mkdir -p /var/log/siterm-agent/{Agent,Debugger,Ruler,QOS,contentdb}/
+RUN mkdir -p /opt/siterm/{config,sitermcode}
 
 RUN yum -y install epel-release
 

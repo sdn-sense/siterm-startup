@@ -18,16 +18,16 @@ RUN adduser apache -U -u 48
 RUN adduser mysql -U -u 4000
 
 # Precreate all directories
-RUN mkdir -p /var/log/dtnrm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api,SNMPMonitoring}/
-RUN touch /var/log/dtnrm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api,SNMPMonitoring}/api.log
+RUN mkdir -p /var/log/siterm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api,SNMPMonitoring}/
+RUN touch /var/log/siterm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api,SNMPMonitoring}/api.log
 RUN mkdir -p /var/log/mariadb/
 RUN mkdir -p /opt/siterm/config/mysql/
 RUN chown mysql:mysql /var/log/mariadb/
 RUN chown mysql:mysql /opt/siterm/config/mysql/
-RUN chown -R apache:apache /var/log/dtnrm-site-fe
-RUN chmod g+ws /var/log/dtnrm-site-fe/
-RUN chmod -R g+ws /var/log/dtnrm-site-fe/*
-RUN mkdir -p /opt/siterm/config && mkdir -p /opt/siterm/dtnrmcode
+RUN chown -R apache:apache /var/log/siterm-site-fe
+RUN chmod g+ws /var/log/siterm-site-fe/
+RUN chmod -R g+ws /var/log/siterm-site-fe/*
+RUN mkdir -p /opt/siterm/config && mkdir -p /opt/siterm/sitermcode
 RUN mkdir -p /etc/httpd/{certs,conf.d}/ && mkdir -p /etc/grid-security/certificates
 RUN mkdir -p /root/.ssh/
 
