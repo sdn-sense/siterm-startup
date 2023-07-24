@@ -22,6 +22,7 @@ RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-ari
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos10-collection,master
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos9-collection,main
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-freertr-collection,master
+RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-sonic-collection,master
 
 # Add all supervisord configs
 # Copy Supervisor.d Config, Script files
