@@ -38,7 +38,7 @@ if [ ! -f /opt/siterm/config/mysql/site-rm-db-initialization ]; then
   mysql -v < /root/mariadb.sql
 
   # Create all databases needed for SiteRM
-  python3 -c 'from DTNRMLibs.DBBackend import DBBackend; db = DBBackend(); db._createdb()'
+  python3 -c 'from SiteRMLibs.DBBackend import DBBackend; db = DBBackend(); db._createdb()'
 
   # create file under /var/lib/mysql which is only unique for Site-RM. 
   # This ensures that we are not repeating same steps during docker restart
@@ -50,7 +50,7 @@ else
   echo $! > /opt/siterm/config/mysql/mariadb.pid
   sleep 5s
   # Create all databases if not exists needed for SiteRM
-  python3 -c 'from DTNRMLibs.DBBackend import DBBackend; db = DBBackend(); db._createdb()'
+  python3 -c 'from SiteRMLibs.DBBackend import DBBackend; db = DBBackend(); db._createdb()'
 fi
 
 wait $(cat /opt/siterm/config/mysql/mariadb.pid)
