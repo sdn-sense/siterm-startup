@@ -48,6 +48,9 @@ spec:
         - mountPath: /etc/iproute2/rt_tables
           name: etc-iproute2
           readOnly: true
+        - mountPath: /run/lldpd/lldpd.socket
+          name: lldpd-socket
+          readOnly: true
       restartPolicy: Always
       serviceAccountName: ""
       volumes:
@@ -75,3 +78,6 @@ spec:
       - name: etc-iproute2
         hostPath:
           path: /etc/iproute2/rt_tables
+      - name: lldpd-socket
+        hostPath:
+          path: /run/lldpd/lldpd.socket
