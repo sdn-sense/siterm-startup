@@ -1,0 +1,15 @@
+# List all network devices and login details.
+# For supported devices and devices look here: https://github.com/sdn-sense/sdn-sense.github.io/blob/master/NetControlAnsible.md
+# It must follow the following format:
+inventory:
+  <DEVICE_NAME>:
+    network_os: <DEVICE_NETWORK_OS>
+    host: <IP_ADDRESS_OR_HOSTNAME_OF_DEVICE>
+    pass: <PASSWORD OR USE SSH KEY PARAM BELOW>
+    sshkey: <PATH_TO_SSH_KEY>
+    become: <true|false>
+    snmp_params:
+      session_vars:
+        community: <SNMP COMMUNITY>
+        hostname: <SNMP HOSTNAME>
+        <ANY_OTHER_SNMP_METADATA_PARAMS>

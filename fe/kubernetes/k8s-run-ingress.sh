@@ -208,6 +208,7 @@ if [ "$REWRITE_SECRETS" -eq 1 ] || [ "$SECRETS_PRESENT" -eq 1 ]; then
           --from-file=fe-httpdprivkey=../conf/etc/httpd/certs/privkey.pem-$fqdn \
           --from-file=fe-httpdfullchain=../conf/etc/httpd/certs/fullchain.pem-$fqdn \
           --from-file=fe-environment=../conf/environment-$fqdn \
+          --from-file=ansible-conf=../conf/etc/ansible-conf.yaml \
           --namespace $namespace --kubeconfig $KUBECONF
 fi
 

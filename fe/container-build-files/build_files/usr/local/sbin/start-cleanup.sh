@@ -27,10 +27,11 @@ if [[ ! -d "/opt/siterm/config/ansible" ]]; then
   echo "Cloning git repo and add default ansible config."
   mkdir -p /opt/siterm/config/ansible/sense
   git clone https://github.com/sdn-sense/ansible-templates /opt/siterm/config/ansible/sense
+  python3 /root/ansible-prepare.py
 else
   cd /opt/siterm/config/ansible/sense && git pull
+  python3 /root/ansible-prepare.py
 fi
-
 
 # Make sure all ansible hosts are defined in ~/.ssh/known_hosts
 python3 /root/ssh-keygen.py
