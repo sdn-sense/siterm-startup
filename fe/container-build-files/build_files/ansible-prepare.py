@@ -58,7 +58,7 @@ def prepareNewInventoryFile(inventory):
     for name, params in inventory.get('inventory', {}).items():
         out['sense']['hosts'][name] = {'ansible_host': params['host']}
         prepareNewHostFiles(name, params)
-    dumpYamlContent('/etc/test.yaml', out)
+    dumpYamlContent(f'{ROOTPATH}/inventory.yaml', out)
 
 
 def prepareNewHostFiles(name, params):
