@@ -18,12 +18,12 @@ RUN if [[ $ARCH != "ppc64le" ]]; then cd /opt/siterm/sitermcode/siterm/ && pip3 
 RUN cd /opt/siterm/sitermcode/siterm/ && python3 setup-sitefe.py install || exit $?
 
 # Install all ansible collections
-RUN ansible-galaxy collection install cisco.nxos
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-aristaeos-collection,main
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos10-collection,master
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos9-collection,main
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-freertr-collection,master
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-sonic-collection,master
+RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-cisconx9-collection,main
 
 # Add all supervisord configs
 # Copy Supervisor.d Config, Script files
