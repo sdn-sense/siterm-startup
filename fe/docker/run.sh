@@ -24,7 +24,7 @@ do
        if [ "x$NETMODE" != "xhost" ] && [ "x$NETMODE" != "xport" ]; then
          echo "Parameter -n $NETMODE is not one of: host,port."
          exit 1
-       elif [ "x$NETMODE" == "host" ]; then
+       elif [ "x$NETMODE" == "xhost" ]; then
          DOCKERNET="--net host"
        else
          DOCKERNET="-p 8080:80 -p 8443:443"
