@@ -18,6 +18,7 @@ docker run \
        -v $(pwd)/../conf/etc/httpd/certs/fullchain.pem:/etc/httpd/certs/fullchain.pem \
        -v $(pwd)/../conf/etc/grid-security/hostcert.pem:/etc/grid-security/hostcert.pem \
        -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem \
+       -v $(pwd)/../conf/opt/siterm/config/mysql/:/opt/siterm/config/mysql/ \
        -v $(pwd)/../conf/opt/siterm/config/ssh-keys:/opt/siterm/config/ssh-keys \
        -p 8080:80 \
        -p 8443:443 \
