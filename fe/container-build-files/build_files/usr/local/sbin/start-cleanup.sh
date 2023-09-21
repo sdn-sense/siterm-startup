@@ -21,6 +21,9 @@ mkdir -p /var/log/siterm-site-fe/{LookUpService,ProvisioningService,PolicyServic
 chown apache:apache /var/log/siterm-site-fe/*
 chmod g+s /var/log/siterm-site-fe/*
 
+# Create dynamic directories for apache write/read
+python3 /root/dircreate.py
+
 # Make sure ansible dir exists (Kubernetes has it empty once PVC is created)
 if [[ ! -d "/opt/siterm/config/ansible" ]]; then
   echo "Directory /opt/siterm/config/ansible DOES NOT exists."

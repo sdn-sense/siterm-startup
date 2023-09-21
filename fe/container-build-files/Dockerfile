@@ -5,6 +5,7 @@ MAINTAINER Justas Balcas <jbalcas@caltech.edu>
 
 ADD build_files/ssh-keygen.py /root/ssh-keygen.py
 ADD build_files/ansible-prepare.py /root/ansible-prepare.py
+ADD build_files/dircreate.py /root/dircreate.py
 
 # Configuration which repo to use for build
 ARG GITREPO=siterm
