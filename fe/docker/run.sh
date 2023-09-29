@@ -39,6 +39,15 @@ if [ $ISPODMAN -eq 0 ]; then
   LOGOPTIONS="--log-driver=json-file --log-opt max-size=10m --log-opt max-file=10"
 fi
 
+# Precreate mysql and ssh-keys empty directories if do not exist.
+# That might be an issue of non existing dirs on podman installation
+if [[ ! -d "$(pwd)/../conf/opt/siterm/config/mysql/" ]]; then
+  mkdir -p $(pwd)/../conf/opt/siterm/config/mysql/
+fi
+if [[ ! -d "$(pwd)/../conf/opt/siterm/config/ssh-keys" ]]; then
+  mkdir -p $(pwd)/../conf/opt/siterm/config/ssh-keys
+fi
+
 docker run \
        -dit --name site-fe-sense \
        -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml \
