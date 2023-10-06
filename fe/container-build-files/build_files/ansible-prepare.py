@@ -12,6 +12,7 @@ ROOTPATH = '/opt/siterm/config/ansible/sense/inventory'
 
 
 def template_mapping(network_os):
+    """Template mappings for OS"""
     mappings = {'sense.dellos9.dellos9': 'dellos9.j2',
                 'sense.dellos10.dellos10': 'dellos10.j2',
                 'sense.aristaeos.aristaeos': 'aristaeos.j2',
@@ -25,6 +26,7 @@ def template_mapping(network_os):
 
 
 def key_mac_mappings(network_os):
+    """Key/Mac mapping for MAC monitoring"""
     mappings = {'sense.dellos9.dellos9': {'key_mapping': {'mib': 'mib-2.17.4.3.1.1.',
                                                           'oid': '1.3.6.1.2.1.17.4.3.1.1'},
                                           'mac_mapping': {'mib': 'mib-2.17.7.1.2.2.1.2.',
@@ -36,24 +38,26 @@ def key_mac_mappings(network_os):
 
 def getYamlContent(filename, raiseError=False):
     """Get inventory file"""
-    inventoryFile = filename
+    out = {}
     if not os.path.isfile(filename):
         if raiseError:
             raise Exception(f'ERROR! File {filename} not available.')
-    with open(inventoryFile, 'r', encoding='utf-8') as fd:
+        return out
+    with open(filename, 'r', encoding='utf-8') as fd:
         out = yaml.safe_load(fd.read())
     return out
 
 
 def dumpYamlContent(filename, outContent):
     """Dump outContent in Yaml format to filename"""
-    with open(filename, 'w') as fd:
+    with open(filename, 'w', encoding='utf-8') as fd:
         yaml.dump(outContent, fd, allow_unicode=True,
                   default_flow_style=False, explicit_start=True,
                   width=1000)
 
 
 def prepareNewInventoryFile(inventory):
+    """Prepare and write new inventory file"""
     out = {'sense': {'hosts': {}}}
     for name, params in inventory.get('inventory', {}).items():
         out['sense']['hosts'][name] = {'ansible_host': params['host']}
@@ -62,6 +66,7 @@ def prepareNewInventoryFile(inventory):
 
 
 def prepareNewHostFiles(name, params):
+    """Prepare and write new host file"""
     hostinfo = getYamlContent(f'{ROOTPATH}/host_vars/{name}.yaml')
     if not hostinfo:
         hostinfo = {'ansible_become': '',
