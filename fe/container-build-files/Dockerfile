@@ -35,7 +35,6 @@ COPY build_files/etc/supervisord.d/09-mariadb.conf /etc/supervisord.d/09-mariadb
 COPY build_files/etc/supervisord.d/11-config-fetcher.conf /etc/supervisord.d/11-config-fetcher.conf
 COPY build_files/etc/supervisord.d/12-httpd.conf /etc/supervisord.d/12-httpd.conf
 COPY build_files/etc/supervisord.d/13-lookup-service.conf /etc/supervisord.d/13-lookup-service.conf
-COPY build_files/etc/supervisord.d/14-provisioning-service.conf /etc/supervisord.d/14-provisioning-service.conf
 COPY build_files/etc/supervisord.d/15-snmpmon-service.conf /etc/supervisord.d/15-snmpmon-service.conf
 
 EXPOSE 80 443
