@@ -46,7 +46,7 @@ COPY build_files/etc/supervisord.conf /etc/
 
 RUN mkdir -p /usr/local/sbin/
 
-RUN rpm -i https://repo.opensciencegrid.org/osg/3.6/el8/release/x86_64/osg-ca-certs-1.110-1.2.osg36.el8.noarch.rpm
+RUN rpm -i https://repo.opensciencegrid.org/osg/3.6/el8/release/x86_64/osg-ca-certs-1.114-2.osg36.el8.noarch.rpm
 
 RUN rm -f /etc/httpd/conf.d/ssl.conf
 RUN mkdir -p /run/httpd

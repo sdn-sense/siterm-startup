@@ -44,7 +44,7 @@ RUN mkdir -p /etc/supervisord.d/
 COPY build_files/etc/supervisord.conf /etc/
 
 # Install CA Certs
-RUN rpm -i https://repo.opensciencegrid.org/osg/3.6/el8/release/x86_64/osg-ca-certs-1.110-1.2.osg36.el8.noarch.rpm
+RUN rpm -i https://repo.opensciencegrid.org/osg/3.6/el8/release/x86_64/osg-ca-certs-1.114-2.osg36.el8.noarch.rpm
 RUN yum clean all && rm -rf /var/cache/yum
 
 # Install crons to fetch CA Certs
