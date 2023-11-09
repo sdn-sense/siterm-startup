@@ -27,13 +27,11 @@ def template_mapping(network_os):
 
 def key_mac_mappings(network_os):
     """Key/Mac mapping for MAC monitoring"""
-    mappings = {'sense.dellos9.dellos9': {'key_mapping': {'mib': 'mib-2.17.4.3.1.1.',
-                                                          'oid': '1.3.6.1.2.1.17.4.3.1.1'},
-                                          'mac_mapping': {'mib': 'mib-2.17.7.1.2.2.1.2.',
-                                                          'oid': '1.3.6.1.2.1.17.7.1.2.2'}}}
+    default = {'oid': '1.3.6.1.2.1.17.7.1.2.2.1.3', 'mib': 'mib-2.17.7.1.2.2.1.3.'}
+    mappings = {'sense.sonic.sonic': {'oid': '1.3.6.1.2.1.17.7.1.2.2.1.2', 'mib': 'mib-2.17.7.1.2.2.1.2.'}}
     if network_os in mappings:
         return mappings[network_os]
-    return {}
+    return default
 
 
 def getYamlContent(filename, raiseError=False):
