@@ -112,7 +112,8 @@ def prepareNewHostFiles(name, params):
     if 'become' in params:
         hostinfo['ansible_become'] = params['become']
     else:
-        print(f'ERROR! {name} does not have become parameter defined!')
+        print(f'ERROR! {name} does not have become parameter defined! Will set default to False')
+        hostinfo['ansible_become'] = False
     # 6. Add SNMP Parameters
     if 'session_vars' in params.get('snmp_params', {}):
         hostinfo.setdefault('snmp_monitoring', {})
