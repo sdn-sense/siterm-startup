@@ -27,13 +27,13 @@ do
   esac
 done
 
-for id in `docker ps -a | grep sdnsense/site-rm-sense | awk '{print $1}'`;
+for id in `docker ps -a | grep sdnsense/site-rm-sense | awk '{print $1}'`
 do
-  docker stop $id;
-  docker rm $id;
+  docker stop $id
+  docker rm $id
 done
 
-for id in `docker image ls | grep sdnsense/site-rm-sense | awk '{print $3}'`;
+for id in `docker image ls | grep sdnsense/site-rm-sense | awk '{print $3}'`
 do
   docker image rm $id --force
 done

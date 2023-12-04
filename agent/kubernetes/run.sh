@@ -113,7 +113,7 @@ else
   certExit=$?
   if [ "$certExit" -ne "0" ]; then
     exit $certExit
-  fi 
+  fi
 fi
 
 echo "============================================================"
@@ -144,7 +144,7 @@ else
   certExit=$?
   if [ "$certExit" -ne "0" ]; then
     exit $certExit
-  fi 
+  fi
 fi
 
 echo "============================================================"

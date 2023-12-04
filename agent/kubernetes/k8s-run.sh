@@ -53,7 +53,7 @@ echo "--- DaemonSet - deploys on ALL nodes inside Kubernetes cluster"
 echo "--- Pod - target's only one specific hostname for deployment"
 echo "1 - DaemonSet"
 echo "2 - Pod"
-read kubekind;
+read kubekind
 case $kubekind in
   1) kubekind="daemonset"
 echo "What is the Sitename (prefered same as in rm-configs) - Mainly to have separate config files?"

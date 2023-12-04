@@ -5,7 +5,7 @@ sleep_long () {
 } &> /dev/null
 
 
-# Remove yaml files to prefetch from scratch;
+# Remove yaml files to prefetch from scratch
 rm -f /tmp/*-mapping.yaml
 rm -f /tmp/*Agent-main.yaml
 # Remove any PID files left from reboot/stop.

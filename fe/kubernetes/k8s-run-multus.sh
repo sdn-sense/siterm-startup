@@ -67,7 +67,7 @@ fi
 # Some fields in yaml require listing without '.' - so we replace it to  '-'
 fqdnnodots=$( echo ${fqdn:1} | tr '.' '-' )
 
-# Get all MULTUS Namespaces available;
+# Get all MULTUS Namespaces available
 #k8s.cni.cncf.io/v1/network-attachment-definitions
 #___REPLACEMEMULTUSNAME___
 echo "On which Network Namespace you want to deploy it? Available network namespaces below. Please enter NAME"
@@ -104,7 +104,7 @@ else
   certExit=$?
   if [ "$certExit" -ne "0" ]; then
     exit $certExit
-  fi 
+  fi
 fi
 
 echo "============================================================"
@@ -135,7 +135,7 @@ else
   certExit=$?
   if [ "$certExit" -ne "0" ]; then
     exit $certExit
-  fi 
+  fi
 fi
 
 echo "============================================================"

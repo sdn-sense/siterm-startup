@@ -14,7 +14,7 @@ if [[ -z $MARIA_DB_HOST || -z $MARIA_DB_USER || -z $MARIA_DB_DATABASE || -z $MAR
 fi
 
 if [ ! -f /opt/siterm/config/mysql/site-rm-db-initialization ]; then
-  # First time start of mysql, ensure dirs are present;
+  # First time start of mysql, ensure dirs are present
   mkdir -p /opt/siterm/config/mysql/
   mkdir -p /var/log/mariadb
   chown -R mysql:mysql /opt/siterm/config/mysql/
@@ -40,7 +40,7 @@ if [ ! -f /opt/siterm/config/mysql/site-rm-db-initialization ]; then
   # Create all databases needed for SiteRM
   python3 -c 'from SiteRMLibs.DBBackend import DBBackend; db = DBBackend(); db._createdb()'
 
-  # create file under /var/lib/mysql which is only unique for Site-RM. 
+  # create file under /var/lib/mysql which is only unique for Site-RM.
   # This ensures that we are not repeating same steps during docker restart
   echo $(date) >> /opt/siterm/config/mysql/site-rm-db-initialization
 else

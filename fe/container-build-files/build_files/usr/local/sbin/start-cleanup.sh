@@ -4,7 +4,7 @@ sleep_long () {
     /usr/libexec/platform-python -c '__import__("select").select([], [], [])'
 } &> /dev/null
 
-# Remove yaml files to prefetch from scratch;
+# Remove yaml files to prefetch from scratch
 rm -f /tmp/*-mapping.yaml
 rm -f /tmp/*-FE-main.yaml
 rm -f /tmp/*-FE-auth.yaml
