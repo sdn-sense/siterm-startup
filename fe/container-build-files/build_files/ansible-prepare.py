@@ -26,6 +26,12 @@ def template_mapping(network_os):
         return mappings[network_os]
     return ""
 
+def special_params(network_os):
+    """Add Special ansible params based on network os"""
+    mappings = {"sense.sonic.sonic": {"ansible_connection": "ansible.netcommon.libssh"}}
+    if network_os in mappings:
+        return mappings[network_os]
+    return {}
 
 def key_mac_mappings(network_os):
     """Key/Mac mapping for MAC monitoring"""
@@ -149,6 +155,10 @@ def prepareNewHostFiles(name, params):
         print(
             f"ERROR! {name} does not availabe template for control. Unsupported Device?!"
         )
+    # 8. Add special Ansible params (known as needed)
+    specParams = special_params(params["network_os"])
+    if specParams:
+        hostinfo.update(specParams)
     dumpYamlContent(f"{ROOTPATH}/host_vars/{name}.yaml", hostinfo)
 
 
