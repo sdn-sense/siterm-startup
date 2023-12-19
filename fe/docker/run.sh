@@ -117,13 +117,8 @@ if [ "$ERROR" = true ]; then
     exit 1
 fi
 
-# Precreate mysql and ssh-keys empty directories if do not exist.
-# That might be an issue of non existing dirs on podman installation
-cmd="docker volume exists sitermfe-mysql"
-if [ $ISPODMAN -eq 0 ]; then
-  cmd="docker volume inspect siterm-mysql &> /dev/null"
-fi
-# Podman has exists command for volume, but docker does not
+# Create docker volume for configuration storage
+cmd="docker volume inspect siterm-mysql &> /dev/null"
 if eval "$cmd"
 then
   echo "Docker volume available. Will use sitermfe-mysql for mysql database"
@@ -136,6 +131,8 @@ else
   fi
 fi
 
+# Precreate mysql and ssh-keys empty directories if do not exist.
+# That might be an issue of non existing dirs on podman installation
 if [[ ! -d "$(pwd)/../conf/opt/siterm/config/ssh-keys" ]]; then
   mkdir -p $(pwd)/../conf/opt/siterm/config/ssh-keys
 fi

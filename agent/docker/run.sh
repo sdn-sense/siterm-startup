@@ -107,11 +107,7 @@ if `test -S /run/lldpd/lldpd.socket`; then
 fi
 
 # Create docker volume for configuration storage
-cmd="docker volume exists siterm-agent"
-if [ $ISPODMAN -eq 0 ]; then
-  cmd="docker volume inspect siterm-agent &> /dev/null"
-fi
-# Podman has exists command for volume, but docker does not
+cmd="docker volume inspect siterm-agent &> /dev/null"
 if eval "$cmd"
 then
   echo "Docker volume available. Will use siterm-agent for runtime files"
