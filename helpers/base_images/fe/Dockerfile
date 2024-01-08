@@ -53,8 +53,9 @@ RUN yum -y install git autoconf sudo libcurl-devel libffi-devel openssl-devel au
 RUN rm -f /etc/httpd/conf.d/ssl.conf
 
 # Install all pip packages
-RUN pip3 install --no-cache-dir --upgrade setuptools && \
-    pip3 install --no-cache-dir --upgrade pip3 supervisor superlance
+RUN pip3 install --no-cache-dir --upgrade setuptools pip && \
+    pip3 install --no-cache-dir supervisor superlance
+
 
 COPY build_files/etc/supervisord.conf /etc/
 
