@@ -21,12 +21,12 @@ RUN python3 setup-sitefe.py install || exit $?
 
 # Install all ansible collections
 # TODO Move all main to MASTER and use $GITBR
-RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-aristaeos-collection,main
-RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos10-collection,master
-RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos9-collection,main
-RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-freertr-collection,master
-RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-sonic-collection,master
-RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-cisconx9-collection,main
+RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-aristaeos-collection,"$GITBR" && \
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos10-collection,"$GITBR" && \
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos9-collection,"$GITBR" && \
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-freertr-collection,"$GITBR" && \
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-sonic-collection,"$GITBR" && \
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-cisconx9-collection,"$GITBR"
 
 # Add all supervisord configs
 # Copy Supervisor.d Config, Script files
