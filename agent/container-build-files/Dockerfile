@@ -1,15 +1,16 @@
 ARG RELEASE=latest
 FROM sdnsense/siteagent-base:$RELEASE
-MAINTAINER Justas Balcas <jbalcas@caltech.edu>
 
 # Configuration which repo to use for build
 ARG GITREPO=siterm
 ARG GITORG=sdn-sense
 ARG GITBR=master
 
-RUN cd /opt/siterm/sitermcode && git clone -b $GITBR https://github.com/$GITORG/$GITREPO
-RUN cd /opt/siterm/sitermcode/siterm/ && pip3 install --no-cache-dir -r requirements-agent.txt || exit $?
-RUN cd /opt/siterm/sitermcode/siterm/ && python3 setup-agent.py install || exit $?
+WORKDIR /opt/siterm/sitermcode
+RUN git clone -b $GITBR https://github.com/$GITORG/$GITREPO
+WORKDIR /opt/siterm/sitermcode/siterm/
+RUN pip3 install --no-cache-dir -r requirements-agent.txt || exit $?
+RUN python3 setup-agent.py install || exit $?
 
 # Copy Supervisor.d Config, Script files
 COPY build_files/usr/local/sbin/start-cleanup.sh /usr/local/sbin/start-cleanup.sh
