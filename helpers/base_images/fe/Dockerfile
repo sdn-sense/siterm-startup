@@ -2,62 +2,69 @@ FROM almalinux:8
 # Architecture argument: amd64 ppc64le
 ARG ARCH="x86_64"
 
-MAINTAINER Justas Balcas <jbalcas@caltech.edu>
-
-RUN yum -y install wget epel-release
+RUN yum -y install wget epel-release && yum clean all
 
 # Maria DB Configuration
-ADD build_files/mariadb.repo-$ARCH /etc/yum.repos.d/mariadb.repo
-ADD build_files/mariadb.sql /root/mariadb.sql
-ADD build_files/server.cnf /etc/my.cnf.d/server.cnf
+COPY build_files/mariadb.repo-$ARCH /etc/yum.repos.d/mariadb.repo
+COPY build_files/mariadb.sql /root/mariadb.sql
+COPY build_files/server.cnf /etc/my.cnf.d/server.cnf
 # Import GPG Keys for MariaDB and EPEL
-RUN cd /etc/pki/rpm-gpg/ && wget https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-MariaDB
+WORKDIR /etc/pki/rpm-gpg/
+RUN wget --progress=dot:giga https://yum.mariadb.org/RPM-GPG-KEY-MariaDB && rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-MariaDB
 
-RUN adduser apache -U -u 48
-RUN adduser mysql -U -u 4000
+RUN adduser apache -U -u 48 && adduser mysql -U -u 4000
 
 # Precreate all directories
-RUN mkdir -p /var/log/siterm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api,SNMPMonitoring}/
-RUN touch /var/log/siterm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api,SNMPMonitoring}/api.log
-RUN mkdir -p /var/log/mariadb/
-RUN mkdir -p /opt/siterm/config/mysql/
-RUN chown mysql:mysql /var/log/mariadb/
-RUN chown mysql:mysql /opt/siterm/config/mysql/
-RUN chown -R apache:apache /var/log/siterm-site-fe
-RUN chmod g+ws /var/log/siterm-site-fe/
-RUN chmod -R g+ws /var/log/siterm-site-fe/*
-RUN mkdir -p /opt/siterm/config && mkdir -p /opt/siterm/sitermcode
-RUN mkdir -p /etc/httpd/{certs,conf.d}/ && mkdir -p /etc/grid-security/certificates
-RUN mkdir -p /root/.ssh/
+RUN mkdir -p /var/log/siterm-site-fe/LookUpService/ && \
+    mkdir -p /var/log/siterm-site-fe/ProvisioningService && \
+    mkdir -p /var/log/siterm-site-fe/PolicyService && \
+    mkdir -p /var/log/siterm-site-fe/SwitchBackends && \
+    mkdir -p mkdir -p /var/log/siterm-site-fe/contentdb && \
+    mkdir -p /var/log/siterm-site-fe/http-api && \
+    mkdir -p /var/log/siterm-site-fe/SNMPMonitoring && \
+    mkdir -p /var/log/mariadb/ && mkdir -p /opt/siterm/config/mysql/ && \
+    mkdir -p /var/log/supervisor && mkdir -p /etc/supervisord.d/ && \
+    mkdir -p /usr/local/sbin/ && mkdir -p /run/httpd && mkdir -p /etc/cron.d/
+
+RUN touch /var/log/siterm-site-fe/LookUpService/api.log && \
+    touch /var/log/siterm-site-fe/ProvisioningService/api.log && \
+    touch /var/log/siterm-site-fe/PolicyService/api.log && \
+    touch /var/log/siterm-site-fe/SwitchBackends/api.log && \
+    touch /var/log/siterm-site-fe/contentdb/api.log && \
+    touch /var/log/siterm-site-fe/http-api/api.log && \
+    touch /var/log/siterm-site-fe/SNMPMonitoring/api.log
+
+RUN chown mysql:mysql /var/log/mariadb/ && \
+    chown mysql:mysql /opt/siterm/config/mysql/ && \
+    chown -R apache:apache /var/log/siterm-site-fe && \
+    chmod g+ws /var/log/siterm-site-fe/ && \
+    chmod -R g+ws /var/log/siterm-site-fe/*
+
+RUN mkdir -p /opt/siterm/config && \
+    mkdir -p /opt/siterm/sitermcode && \
+    mkdir -p /etc/httpd/certs && mkdir -p /etc/httpd/conf.d/ && \
+    mkdir -p /etc/grid-security/certificates && \
+    mkdir -p /root/.ssh/
 
 # Install all required packages
 RUN yum -y install git autoconf sudo libcurl-devel libffi-devel openssl-devel automake curl gcc libuuid-devel lm_sensors make nc pkgconfig wget zlib-devel python39-devel httpd httpd-devel python39-mod_wsgi mod_ssl cronie python39-pip python39 python3-pyOpenSSL mariadb-server python3-mysql mariadb-devel fetch-crl procps-ng redhat-rpm-config net-snmp-devel sshpass && yum clean all
-RUN pip3 install --no-cache-dir --upgrade setuptools
-RUN pip3 install --no-cache-dir --upgrade pip
 
-# Install supervisord and superlance to run service, monitor mem usage
-RUN pip3 install --no-cache-dir supervisor superlance
-RUN mkdir -p /var/log/supervisor
+# Remove ssl.conf file (siterm write's own httpd conf file)
+RUN rm -f /etc/httpd/conf.d/ssl.conf
 
-# Configure Supervisord
-RUN mkdir -p /etc/supervisord.d/
+# Install all pip packages
+RUN pip3 install --no-cache-dir --upgrade setuptools && \
+    pip3 install --no-cache-dir --upgrade pip3 supervisor superlance
+
 COPY build_files/etc/supervisord.conf /etc/
 
-RUN mkdir -p /usr/local/sbin/
-
-RUN rpm -i https://repo.opensciencegrid.org/osg/3.6/el8/release/x86_64/osg-ca-certs-1.114-2.osg36.el8.noarch.rpm
-
-RUN rm -f /etc/httpd/conf.d/ssl.conf
-RUN mkdir -p /run/httpd
-
-RUN yum clean all && rm -rf /var/cache/yum
+RUN rpm -i https://repo.opensciencegrid.org/osg/23-main/el8/release/x86_64/osg-ca-certs-1.117-1.osg23.el8.noarch.rpm
 
 # Install crons to fetch CA Certs
-RUN mkdir -p /etc/cron.d/
 COPY build_files/etc/cron.d/fetch-crl /etc/cron.d/fetch-crl
 COPY build_files/etc/cron.d/fetch-crl-reboot /etc/cron.d/fetch-crl-reboot
 
 # Install rust if ppc64le. Need for TLS, due to old OpenSSL
-RUN if [[ $ARCH == "ppc64le" ]]; then cd /tmp/ && curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf &> rust-install.sh && sh rust-install.sh -y && source $HOME/.cargo/env && rm -f rust-install.sh; fi
-RUN if [[ $ARCH != "ppc64le" ]]; then mkdir -p $HOME/.cargo && touch $HOME/.cargo/env; fi
+WORKDIR /tmp
+RUN if [ "$ARCH" == "ppc64le" ]; then wget --output-document - --quiet https://sh.rustup.rs &> rust-install.sh && sh rust-install.sh -y && source "$HOME"/.cargo/env && rm -f rust-install.sh; fi
+RUN if [ "$ARCH" != "ppc64le" ]; then mkdir -p "$HOME"/.cargo && touch "$HOME"/.cargo/env; fi
