@@ -67,19 +67,6 @@ if [ "$result" -ne "0" ]; then
 fi
 
 
-# Precheck that such node exists. Needed for
-count=`kubectl get nodes --kubeconfig $KUBECONF | grep $fqdn | wc -l`
-if [ "$count" -ne "1" ]; then
-  echo "Hostname $fqdn does not exists in kubernetes nodes list. (Maybe private name?)"
-  echo "Here is full list of kubernetes nodes:"
-  kubectl get nodes --kubeconfig $KUBECONF
-  echo "On which one you want to deploy service? Needed for nodeSelector: kubernetes.io/hostname parameter. Please enter NAME:"
-  read nodeselector
-else
-  nodeselector=$fqdn
-fi
-
-
 # Some fields in yaml require listing without '.' - so we replace it to  '-'
 fqdnnodots=$( echo ${fqdn:1} | tr '.' '-' )
 
@@ -166,7 +153,6 @@ echo "============================================================"
 
 cp $configfile sitefe-k8s.yaml-$fqdn
 sed -i ".backup" "s|___REPLACEME___|$fqdn|g" sitefe-k8s.yaml-$fqdn
-sed -i ".backup" "s|___REPLACEMENODESELECTOR___|$nodeselector|g" sitefe-k8s.yaml-$fqdn
 sed -i ".backup" "s|___REPLACEMENODOTS___|$fqdnnodots|g" sitefe-k8s.yaml-$fqdn
 sed -i ".backup" "s|___REPLACEMENAMESPACE___|$namespace|g" sitefe-k8s.yaml-$fqdn
 rm -f sitefe-k8s.yaml-$fqdn.backup

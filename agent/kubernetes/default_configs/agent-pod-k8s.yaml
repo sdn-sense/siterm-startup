@@ -33,6 +33,7 @@ spec:
             memory: "3Gi"
             cpu: "1"
         securityContext:
+          privileged: true
           capabilities:
             add:
             - NET_ADMIN
@@ -50,6 +51,12 @@ spec:
           subPath: hostkey.pem
         - mountPath: /etc/iproute2/rt_tables
           name: etc-iproute2
+          readOnly: true
+        - mountPath: /run/lldpd/lldpd.socket
+          name: lldpd-socket
+          readOnly: true
+        - mountPath: /var/run/netns
+          name: run-netns
           readOnly: true
       nodeSelector:
           kubernetes.io/hostname: ___REPLACEMENODESELECTOR___
@@ -80,4 +87,11 @@ spec:
       - name: etc-iproute2
         hostPath:
           path: /etc/iproute2/rt_tables
+      - name: lldpd-socket
+        hostPath:
+          path: /run/lldpd/lldpd.socket
+      - hostPath:
+          path: /var/run/netns/
+          type: ""
+        name: run-netns
 status: {}
