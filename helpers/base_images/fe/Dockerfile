@@ -19,6 +19,7 @@ RUN mkdir -p /var/log/siterm-site-fe/LookUpService/ && \
     mkdir -p /var/log/siterm-site-fe/ProvisioningService && \
     mkdir -p /var/log/siterm-site-fe/PolicyService && \
     mkdir -p /var/log/siterm-site-fe/SwitchBackends && \
+    mkdir -p /var/log/siterm-site-fe/Debugger && \
     mkdir -p mkdir -p /var/log/siterm-site-fe/contentdb && \
     mkdir -p /var/log/siterm-site-fe/http-api && \
     mkdir -p /var/log/siterm-site-fe/SNMPMonitoring && \
@@ -30,6 +31,7 @@ RUN touch /var/log/siterm-site-fe/LookUpService/api.log && \
     touch /var/log/siterm-site-fe/ProvisioningService/api.log && \
     touch /var/log/siterm-site-fe/PolicyService/api.log && \
     touch /var/log/siterm-site-fe/SwitchBackends/api.log && \
+    touch /var/log/siterm-site-fe/Debugger/api.log && \
     touch /var/log/siterm-site-fe/contentdb/api.log && \
     touch /var/log/siterm-site-fe/http-api/api.log && \
     touch /var/log/siterm-site-fe/SNMPMonitoring/api.log
