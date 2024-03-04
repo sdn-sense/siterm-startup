@@ -41,6 +41,7 @@ COPY build_files/etc/supervisord.conf /etc/
 
 # Install CA Certs
 # RUN rpm -i https://repo.opensciencegrid.org/osg/23-main/el8/release/x86_64/osg-ca-certs-1.117-1.osg23.el8.noarch.rpm
+RUN rpm -i https://mirror.grid.uchicago.edu/pub/osg/23-main/el8/release/x86_64/osg-ca-certs-1.118-1.osg23.el8.noarch.rpm
 
 # Install crons to fetch CA Certs
 COPY build_files/etc/cron.d/fetch-crl /etc/cron.d/fetch-crl
