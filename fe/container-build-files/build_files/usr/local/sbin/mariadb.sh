@@ -53,4 +53,8 @@ else
   python3 -c 'from SiteRMLibs.DBBackend import DBBackend; db = DBBackend(); db._createdb()'
 fi
 
+# Start DB Cleaner in background
+python3 /usr/local/sbin/DBCleaner.py &> /var/log/mariadb/DBCleaner.log &
+
+# Wait for Maria db to exit (if so, supervisord will restart it)
 wait $(cat /opt/siterm/config/mysql/mariadb.pid)
