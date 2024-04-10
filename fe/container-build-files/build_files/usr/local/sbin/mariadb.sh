@@ -54,7 +54,8 @@ else
 fi
 
 # Start DB Cleaner in background
-python3 /usr/local/sbin/DBCleaner.py &> /var/log/mariadb/DBCleaner.log &
+# 2024-04-09 Disabled due to continuos restarts on prp dev container
+# python3 /usr/local/sbin/DBCleaner.py &> /var/log/mariadb/DBCleaner.log &
 
 # Wait for Maria db to exit (if so, supervisord will restart it)
 wait $(cat /opt/siterm/config/mysql/mariadb.pid)
