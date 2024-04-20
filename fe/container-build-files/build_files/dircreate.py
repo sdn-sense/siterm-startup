@@ -11,7 +11,7 @@ Date: 2022/11/22
 import os
 import pwd
 from pathlib import Path
-from SiteRMLibs.MainUtilities import GitConfig
+from SiteRMLibs.GitConfig import GitConfig
 
 def getusergroupuid(user, group):
     """Get user and group uid"""
