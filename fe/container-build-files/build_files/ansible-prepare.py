@@ -12,27 +12,20 @@ import yaml
 ROOTPATH = "/opt/siterm/config/ansible/sense/inventory"
 
 
-def template_mapping_before(network_os):
+def template_mapping(network_os, subitem=""):
     """Template mappings for OS"""
     mappings = {
-        "sense.dellos10.dellos10": "dellos10_before.j2",
+        "sense.dellos9.dellos9": {"main": "dellos9.j2", "before": "dellos9_before.j2"},
+        "sense.dellos10.dellos10": {"main": "dellos10.j2", "before": "dellos10_before.j2"},
+        "sense.aristaeos.aristaeos": {"main": "aristaeos.j2", "before": "aristaeos_before.j2"},
+        "sense.freertr.freertr": {"main": "freertr.j2", "before": "freertr_before.j2"},
+        "sense.sonic.sonic": {"main": "sonic.j2", "before": "sonic_before.j2"},
+        "sense.cisconx9.cisconx9": {"main": "cisconx9.j2", "before": "cisconx9_before.j2"},
     }
     if network_os in mappings:
-        return mappings[network_os]
-    return ""
-
-def template_mapping(network_os):
-    """Template mappings for OS"""
-    mappings = {
-        "sense.dellos9.dellos9": "dellos9.j2",
-        "sense.dellos10.dellos10": "dellos10.j2",
-        "sense.aristaeos.aristaeos": "aristaeos.j2",
-        "sense.freertr.freertr": "freertr.j2",
-        "sense.sonic.sonic": "sonic.j2",
-        "sense.cisconx9.cisconx9": "cisconx9.j2",
-    }
-    if network_os in mappings:
-        return mappings[network_os]
+        if subitem:
+            return mappings[network_os].get(subitem, "")
+        return mappings[network_os]["main"]
     return ""
 
 
@@ -167,9 +160,13 @@ def prepareNewHostFiles(name, params):
             f"ERROR! {name} does not availabe template for control. Unsupported Device?!"
         )
     # 8. Add any before templates if defined
-    template = template_mapping_before(params["network_os"])
+    template = template_mapping(params["network_os"], "before")
     if template:
         hostinfo["template_before_name"] = template
+    else:
+        print(
+            f"ERROR! {name} does not availabe template for control. Unsupported Device?!"
+        )
     # 9. Add special Ansible params (known as needed)
     specParams = special_params(params["network_os"])
     if specParams:
