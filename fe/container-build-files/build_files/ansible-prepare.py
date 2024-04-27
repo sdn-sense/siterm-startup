@@ -12,6 +12,15 @@ import yaml
 ROOTPATH = "/opt/siterm/config/ansible/sense/inventory"
 
 
+def template_mapping_before(network_os):
+    """Template mappings for OS"""
+    mappings = {
+        "sense.dellos10.dellos10": "dellos10_before.j2",
+    }
+    if network_os in mappings:
+        return mappings[network_os]
+    return ""
+
 def template_mapping(network_os):
     """Template mappings for OS"""
     mappings = {
@@ -157,7 +166,11 @@ def prepareNewHostFiles(name, params):
         print(
             f"ERROR! {name} does not availabe template for control. Unsupported Device?!"
         )
-    # 8. Add special Ansible params (known as needed)
+    # 8. Add any before templates if defined
+    template = template_mapping_before(params["network_os"])
+    if template:
+        hostinfo["template_before_name"] = template
+    # 9. Add special Ansible params (known as needed)
     specParams = special_params(params["network_os"])
     if specParams:
         hostinfo.update(specParams)
