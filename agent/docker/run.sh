@@ -127,6 +127,8 @@ docker run \
   -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem:ro \
   -v siterm-agent:/opt/siterm/config/ \
   -v /etc/iproute2/rt_tables:/etc/iproute2/rt_tables:ro $LLDPMOUNT \
+  --restart always \
+  --privileged \
   --cap-add=NET_ADMIN \
   --net=host \
   $LOGOPTIONS docker.io/sdnsense/site-agent-sense:$VERSION

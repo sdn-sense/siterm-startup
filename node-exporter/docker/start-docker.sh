@@ -1,11 +1,20 @@
+#!/bin/bash
+
+# Do not use json-file logging if it is podman
+ISPODMAN=`docker --version | grep podman | wc -l`
+LOGOPTIONS=""
+if [ $ISPODMAN -eq 0 ]; then
+  LOGOPTIONS="--log-driver=json-file --log-opt max-size=10m --log-opt max-file=10"
+fi
+
 docker run -d -p 9100:9100 \
   --net="host" \
   --pid="host" \
   -v "/proc:/host/proc:ro" \
   -v "/sys:/host/sys:ro" \
   -v "/:/host:ro,rslave" \
-  --log-driver "json-file" \
-  --log-opt max-size=10m --log-opt max-file=10 \
+  --restart always \
+  $LOGOPTIONS \
   prom/node-exporter \
   --path.rootfs=/host \
   --collector.netdev.address-info

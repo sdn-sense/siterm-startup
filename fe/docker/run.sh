@@ -148,6 +148,7 @@ docker run \
        -v sitermfe-mysql:/opt/siterm/config/mysql/ \
        -v $(pwd)/../conf/opt/siterm/config/ssh-keys:/opt/siterm/config/ssh-keys \
        $DOCKERNET \
+       --restart always \
        --env-file $(pwd)/../conf/environment \
        $LOGOPTIONS docker.io/sdnsense/site-rm-sense:$VERSION
 
