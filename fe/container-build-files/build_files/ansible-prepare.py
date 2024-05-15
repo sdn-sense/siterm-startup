@@ -95,6 +95,7 @@ def prepareNewHostFiles(name, params):
             "ansible_ssh_pass": "",
             "ansible_ssh_user": "",
             "ansible_ssh_private_key_file": "",
+            "ansible_ssh_common_args": "",
             "hostname": "",
             "template_name": "",
             "snmp_monitoring": {},
@@ -134,7 +135,12 @@ def prepareNewHostFiles(name, params):
         # Check that key is present, if not print WARNING!
         if not os.path.isfile(params["sshkey"]):
             print(f"ERROR! SSH Key {params['sshkey']} not available on the host")
-    # 5. Add become flag
+    # 5. Add ansible_ssh_common_args
+    if "ssh_common_args" in params:
+        hostinfo["ansible_ssh_common_args"] = params["ssh_common_args"]
+    else:
+        del hostinfo["ansible_ssh_common_args"]
+    # 6. Add become flag
     if "become" in params:
         hostinfo["ansible_become"] = params["become"]
     else:
@@ -142,7 +148,7 @@ def prepareNewHostFiles(name, params):
             f"ERROR! {name} does not have become parameter defined! Will set default to False"
         )
         hostinfo["ansible_become"] = False
-    # 6. Add SNMP Parameters
+    # 7. Add SNMP Parameters
     if "session_vars" in params.get("snmp_params", {}):
         hostinfo.setdefault("snmp_monitoring", {})
         hostinfo["snmp_monitoring"]["session_vars"] = params["snmp_params"][
@@ -151,7 +157,7 @@ def prepareNewHostFiles(name, params):
         macparse = key_mac_mappings(params["network_os"])
         if macparse:
             hostinfo["snmp_monitoring"]["mac_parser"] = macparse
-    # 7. Add template parameter
+    # 8. Add template parameter
     template = template_mapping(params["network_os"])
     if template:
         hostinfo["template_name"] = template
@@ -159,7 +165,7 @@ def prepareNewHostFiles(name, params):
         print(
             f"ERROR! {name} does not availabe template for control. Unsupported Device?!"
         )
-    # 8. Add any before templates if defined
+    # 9. Add any before templates if defined
     template = template_mapping(params["network_os"], "before")
     if template:
         hostinfo["template_before_name"] = template
@@ -167,7 +173,7 @@ def prepareNewHostFiles(name, params):
         print(
             f"ERROR! {name} does not availabe template for control. Unsupported Device?!"
         )
-    # 9. Add special Ansible params (known as needed)
+    # 10. Add special Ansible params (known as needed)
     specParams = special_params(params["network_os"])
     if specParams:
         hostinfo.update(specParams)
