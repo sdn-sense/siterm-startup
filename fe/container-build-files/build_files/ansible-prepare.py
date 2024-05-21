@@ -138,7 +138,7 @@ def prepareNewHostFiles(name, params):
     # 5. Add ansible_ssh_common_args
     if "ssh_common_args" in params:
         hostinfo["ansible_ssh_common_args"] = params["ssh_common_args"]
-    else:
+    elif 'ansible_ssh_common_args' in hostinfo:
         del hostinfo["ansible_ssh_common_args"]
     # 6. Add become flag
     if "become" in params:
