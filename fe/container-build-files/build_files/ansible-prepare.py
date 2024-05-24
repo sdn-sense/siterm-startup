@@ -7,7 +7,7 @@ Date: 2022/11/22
 """
 import os.path
 import traceback
-from datetime import datetime, timezone
+import json
 import yaml
 
 ROOTPATH = "/opt/siterm/config/ansible/sense/inventory"
@@ -76,6 +76,10 @@ def dumpYamlContent(filename, outContent):
             width=1000,
         )
 
+def dumpJsonContent(filename, outContent):
+    """Dump outcontent in Json format to filename"""
+    with open(filename, "w", encoding="utf-8") as fd:
+        json.dump(outContent, fd)
 
 def prepareNewInventoryFile(inventory):
     """Prepare and write new inventory file"""
@@ -182,8 +186,8 @@ def prepareNewHostFiles(name, params):
 
 def writeState(state):
     """Write state file"""
-    stdict = {"state": state, "timestamp": int(datetime.now(timezone.utc).timestamp())}
-    dumpYamlContent("/tmp/ansible-prepare-state.yaml", stdict)
+    stdict = {"state": state, "sitename": "General", "runtime": 0, "version": "General"}
+    dumpJsonContent("/tmp/siterm-states/ansible-prepare.yaml", stdict)
 
 def generateAnsible():
     """Generate Ansible configuration files"""
