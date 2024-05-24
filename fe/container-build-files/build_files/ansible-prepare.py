@@ -200,7 +200,7 @@ def generateAnsible():
         print(traceback.print_exc())
         writeState("ERROR")
         raise
-    writeState("SUCCESS")
+    writeState("OK")
 
 
 if __name__ == "__main__":
