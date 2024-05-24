@@ -6,7 +6,8 @@ Authors:
 Date: 2022/11/22
 """
 import os.path
-
+import traceback
+from datetime import datetime, timezone
 import yaml
 
 ROOTPATH = "/opt/siterm/config/ansible/sense/inventory"
@@ -179,11 +180,23 @@ def prepareNewHostFiles(name, params):
         hostinfo.update(specParams)
     dumpYamlContent(f"{ROOTPATH}/host_vars/{name}.yaml", hostinfo)
 
+def writeState(state):
+    """Write state file"""
+    stdict = {"state": state, "timestamp": int(datetime.now(timezone.utc).timestamp())}
+    dumpYamlContent("/tmp/ansible-prepare-state.yaml", stdict)
 
 def generateAnsible():
     """Generate Ansible configuration files"""
-    inventory = getYamlContent("/etc/ansible-conf.yaml", True)
-    prepareNewInventoryFile(inventory)
+    try:
+        inventory = getYamlContent("/etc/ansible-conf.yaml", True)
+        prepareNewInventoryFile(inventory)
+    except Exception as ex:
+        print(f"ERROR! Got Exception: {ex}")
+        print("Full traceback below:")
+        print(traceback.print_exc())
+        writeState("ERROR")
+        raise
+    writeState("SUCCESS")
 
 
 if __name__ == "__main__":
