@@ -5,6 +5,7 @@ Authors:
   Justas Balcas jbalcas (at) caltech.edu
 Date: 2022/11/22
 """
+import os
 import os.path
 import traceback
 import json
@@ -187,6 +188,7 @@ def prepareNewHostFiles(name, params):
 def writeState(state):
     """Write state file"""
     stdict = {"state": state, "sitename": "General", "runtime": 0, "version": "General"}
+    os.mkdir('/tmp/siterm-states/')
     dumpJsonContent("/tmp/siterm-states/ansible-prepare.yaml", stdict)
 
 def generateAnsible():
