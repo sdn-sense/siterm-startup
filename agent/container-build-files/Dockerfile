@@ -14,10 +14,13 @@ RUN python3 setup-agent.py install || exit $?
 
 # Copy Supervisor.d Config, Script files
 COPY build_files/usr/local/sbin/start-cleanup.sh /usr/local/sbin/start-cleanup.sh
+COPY build_files/usr/local/sbin/docker-healthcheck.sh /usr/local/sbin/docker-healthcheck.sh
 COPY build_files/etc/supervisord.d/00-cleanup.conf /etc/supervisord.d/00-cleanup.conf
 COPY build_files/etc/supervisord.d/11-config-fetcher.conf /etc/supervisord.d/11-config-fetcher.conf
 COPY build_files/etc/supervisord.d/12-siterm-debugger.conf /etc/supervisord.d/12-siterm-debugger.conf
 COPY build_files/etc/supervisord.d/13-siterm-ruler.conf /etc/supervisord.d/13-siterm-ruler.conf
 COPY build_files/etc/supervisord.d/14-siterm-agent.conf /etc/supervisord.d/14-siterm-agent.conf
+
+HEALTHCHECK --retries=3 --start-period=60s --interval=60s --timeout=30s CMD bash /usr/local/sbin/docker-healthcheck.sh  || exit 1
 
 CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]

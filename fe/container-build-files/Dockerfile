@@ -32,6 +32,7 @@ RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-ari
 # Copy Supervisor.d Config, Script files
 COPY build_files/usr/local/sbin/mariadb.sh /usr/local/sbin/mariadb.sh
 COPY build_files/usr/local/sbin/start-cleanup.sh /usr/local/sbin/start-cleanup.sh
+COPY build_files/usr/local/sbin/docker-healthcheck.sh /usr/local/sbin/docker-healthcheck.sh
 COPY build_files/etc/supervisord.d/00-cleanup.conf /etc/supervisord.d/00-cleanup.conf
 COPY build_files/etc/supervisord.d/09-mariadb.conf /etc/supervisord.d/09-mariadb.conf
 COPY build_files/etc/supervisord.d/11-config-fetcher.conf /etc/supervisord.d/11-config-fetcher.conf
@@ -41,6 +42,8 @@ COPY build_files/etc/supervisord.d/13-lookup-service.conf /etc/supervisord.d/13-
 COPY build_files/etc/supervisord.d/15-snmpmon-service.conf /etc/supervisord.d/15-snmpmon-service.conf
 
 EXPOSE 80 443
+
+HEALTHCHECK --retries=3 --start-period=60s --interval=60s --timeout=30s CMD bash /usr/local/sbin/docker-healthcheck.sh  || exit 1
 
 CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]
 
