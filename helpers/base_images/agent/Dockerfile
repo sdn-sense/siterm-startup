@@ -12,7 +12,8 @@ RUN mkdir -p /var/log/siterm-agent/Agent && \
     mkdir -p /var/log/supervisor && \
     mkdir -p /etc/supervisord.d/ && \
     mkdir -p /usr/local/sbin/ && \
-    mkdir -p /usr/src/ && mkdir -p /etc/cron.d/
+    mkdir -p /usr/src/ && mkdir -p /etc/cron.d/ && \
+    mkdir -p /etc/cron-scripts/
 
 RUN yum -y install epel-release && yum clean all
 
