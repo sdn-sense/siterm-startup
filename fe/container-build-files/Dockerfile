@@ -18,6 +18,14 @@ WORKDIR /opt/siterm/sitermcode/siterm/
 RUN if [ "$ARCH" == "ppc64le" ]; then source "$HOME"/.cargo/env && pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?; fi
 RUN if [ "$ARCH" != "ppc64le" ]; then pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?; fi
 RUN mv setup-sitefe.py setup.py && pip3 install . -v || exit $?
+# Install all data files needed for FE - httpd, cron, web files
+RUN cp packaging/siterm-site-fe/sitefe.wsgi /var/www/wsgi-scripts/ && \
+    cp packaging/siterm-site-fe/sitefe-httpd.conf /etc/httpd/conf.d/ && \
+    cp packaging/siterm-site-fe/welcome.conf /etc/httpd/conf.d/ && \
+    cp packaging/general/siterm-crons /etc/cron.d/ && \
+    cp packaging/siterm-site-fe/scripts/DBCleaner.py /usr/local/sbin/ && \
+    cp packaging/general/siterm-ca-cron.sh /etc/cron-scripts/ && \
+    cp -R src/html/* /var/www/html/
 
 # Install all ansible collections
 # TODO Move all main to MASTER and use $GITBR
