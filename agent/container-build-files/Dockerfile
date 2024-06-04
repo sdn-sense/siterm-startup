@@ -10,7 +10,7 @@ WORKDIR /opt/siterm/sitermcode
 RUN git clone -b $GITBR https://github.com/$GITORG/$GITREPO
 WORKDIR /opt/siterm/sitermcode/siterm/
 RUN pip3 install --no-cache-dir -r requirements-agent.txt || exit $?
-RUN python3 setup-agent.py install || exit $?
+RUN mv setup-agent.py setup.py && pip3 install . -v || exit $?
 
 # Copy Supervisor.d Config, Script files
 COPY build_files/usr/local/sbin/start-cleanup.sh /usr/local/sbin/start-cleanup.sh

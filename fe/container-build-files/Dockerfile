@@ -17,7 +17,7 @@ WORKDIR /opt/siterm/sitermcode/siterm/
 # Rust is needed only of ppc64le
 RUN if [ "$ARCH" == "ppc64le" ]; then source "$HOME"/.cargo/env && pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?; fi
 RUN if [ "$ARCH" != "ppc64le" ]; then pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?; fi
-RUN python3 setup-sitefe.py install || exit $?
+RUN mv setup-sitefe.py setup.py && pip3 install . -v || exit $?
 
 # Install all ansible collections
 # TODO Move all main to MASTER and use $GITBR
