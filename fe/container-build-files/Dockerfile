@@ -43,6 +43,7 @@ COPY build_files/usr/local/sbin/start-cleanup.sh /usr/local/sbin/start-cleanup.s
 COPY build_files/usr/local/sbin/docker-healthcheck.sh /usr/local/sbin/docker-healthcheck.sh
 COPY build_files/etc/supervisord.d/00-cleanup.conf /etc/supervisord.d/00-cleanup.conf
 COPY build_files/etc/supervisord.d/09-mariadb.conf /etc/supervisord.d/09-mariadb.conf
+COPY build_files/etc/supervisord.d/10-dbworker.conf /etc/supervisord.d/10-dbworker.conf
 COPY build_files/etc/supervisord.d/11-config-fetcher.conf /etc/supervisord.d/11-config-fetcher.conf
 COPY build_files/etc/supervisord.d/12-siterm-debugger.conf /etc/supervisord.d/12-siterm-debugger.conf
 COPY build_files/etc/supervisord.d/12-httpd.conf /etc/supervisord.d/12-httpd.conf
