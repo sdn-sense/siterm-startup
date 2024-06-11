@@ -38,6 +38,10 @@ def dircreate():
         for subpath in ['LookUpService', 'PolicyService']:
             newpath = f'{path}/{subpath}'
             pathcreate(newpath, uid, gid)
+        # create httpnew and httpfinished dirs owned by apache
+        for subpath in ['httpnew', 'httpfinished']:
+            newpath = f'{path}/PolicyService/{subpath}'
+            pathcreate(newpath, uid, gid)
 
 if __name__ == "__main__":
     dircreate()

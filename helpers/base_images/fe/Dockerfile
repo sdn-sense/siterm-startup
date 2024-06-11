@@ -39,17 +39,17 @@ RUN touch /var/log/siterm-site-fe/LookUpService/api.log && \
     touch /var/log/siterm-site-fe/http-api/api.log && \
     touch /var/log/siterm-site-fe/SNMPMonitoring/api.log
 
-RUN chown mysql:mysql /var/log/mariadb/ && \
-    chown mysql:mysql /opt/siterm/config/mysql/ && \
-    chown -R apache:apache /var/log/siterm-site-fe && \
-    chmod g+ws /var/log/siterm-site-fe/ && \
-    chmod -R g+ws /var/log/siterm-site-fe/*
-
 RUN mkdir -p /opt/siterm/config && \
     mkdir -p /opt/siterm/sitermcode && \
     mkdir -p /etc/httpd/certs && mkdir -p /etc/httpd/conf.d/ && \
     mkdir -p /etc/grid-security/certificates && \
     mkdir -p /root/.ssh/
+
+RUN chown mysql:mysql /var/log/mariadb/ && \
+    chown mysql:mysql /opt/siterm/config/mysql/ && \
+    chown -R apache:apache /var/log/siterm-site-fe && \
+    chmod g+ws /var/log/siterm-site-fe/ && \
+    chmod -R g+ws /var/log/siterm-site-fe/*
 
 # Install all required packages
 RUN yum -y install git autoconf sudo libcurl-devel libffi-devel openssl-devel automake curl gcc libuuid-devel lm_sensors make nc pkgconfig wget zlib-devel python39-devel httpd httpd-devel python39-mod_wsgi mod_ssl cronie python39-pip python39 python3-pyOpenSSL mariadb-server python3-mysql mariadb-devel fetch-crl procps-ng redhat-rpm-config net-snmp-devel sshpass && yum clean all

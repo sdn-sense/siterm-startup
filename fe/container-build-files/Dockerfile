@@ -48,6 +48,7 @@ COPY build_files/etc/supervisord.d/11-config-fetcher.conf /etc/supervisord.d/11-
 COPY build_files/etc/supervisord.d/12-siterm-debugger.conf /etc/supervisord.d/12-siterm-debugger.conf
 COPY build_files/etc/supervisord.d/12-httpd.conf /etc/supervisord.d/12-httpd.conf
 COPY build_files/etc/supervisord.d/13-lookup-service.conf /etc/supervisord.d/13-lookup-service.conf
+COPY build_files/etc/supervisord.d/14-policy-service.conf /etc/supervisord.d/14-policy-service.conf
 COPY build_files/etc/supervisord.d/15-snmpmon-service.conf /etc/supervisord.d/15-snmpmon-service.conf
 COPY build_files/root/.ansible.cfg /root/.ansible.cfg
 
