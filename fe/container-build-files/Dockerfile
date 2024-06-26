@@ -17,7 +17,7 @@ WORKDIR /opt/siterm/sitermcode/siterm/
 # Rust is needed only of ppc64le
 RUN if [ "$ARCH" == "ppc64le" ]; then source "$HOME"/.cargo/env && pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?; fi
 RUN if [ "$ARCH" != "ppc64le" ]; then pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?; fi
-RUN mv setup-sitefe.py setup.py && pip3 install . -v || exit $?
+RUN ./pre-install.sh $RELEASE && mv setup-sitefe.py setup.py && pip3 install . -v || exit $?
 # Install all data files needed for FE - httpd, cron, web files
 RUN cp packaging/siterm-site-fe/sitefe.wsgi /var/www/wsgi-scripts/ && \
     cp packaging/siterm-site-fe/sitefe-httpd.conf /etc/httpd/conf.d/ && \
