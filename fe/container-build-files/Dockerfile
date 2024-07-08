@@ -50,6 +50,7 @@ COPY build_files/etc/supervisord.d/12-httpd.conf /etc/supervisord.d/12-httpd.con
 COPY build_files/etc/supervisord.d/13-lookup-service.conf /etc/supervisord.d/13-lookup-service.conf
 COPY build_files/etc/supervisord.d/14-policy-service.conf /etc/supervisord.d/14-policy-service.conf
 COPY build_files/etc/supervisord.d/15-snmpmon-service.conf /etc/supervisord.d/15-snmpmon-service.conf
+COPY build_files/etc/supervisord.d/16-dbcleaner.conf /etc/supervisord.d/16-dbcleaner.conf
 COPY build_files/root/.ansible.cfg /root/.ansible.cfg
 
 EXPOSE 80 443
