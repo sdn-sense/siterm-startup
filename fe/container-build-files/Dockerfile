@@ -23,7 +23,6 @@ RUN cp packaging/siterm-site-fe/sitefe.wsgi /var/www/wsgi-scripts/ && \
     cp packaging/siterm-site-fe/sitefe-httpd.conf /etc/httpd/conf.d/ && \
     cp packaging/siterm-site-fe/welcome.conf /etc/httpd/conf.d/ && \
     cp packaging/general/siterm-crons /etc/cron.d/ && \
-    cp packaging/siterm-site-fe/scripts/DBCleaner.py /usr/local/sbin/ && \
     cp packaging/general/siterm-ca-cron.sh /etc/cron-scripts/ && \
     cp -R src/html/* /var/www/html/
 
