@@ -17,12 +17,30 @@ ROOTPATH = "/opt/siterm/config/ansible/sense/inventory"
 def template_mapping(network_os, subitem=""):
     """Template mappings for OS"""
     mappings = {
-        "sense.dellos9.dellos9": {"main": "dellos9.j2", "before": "dellos9_before.j2"},
-        "sense.dellos10.dellos10": {"main": "dellos10.j2", "before": "dellos10_before.j2"},
-        "sense.aristaeos.aristaeos": {"main": "aristaeos.j2", "before": "aristaeos_before.j2"},
-        "sense.freertr.freertr": {"main": "freertr.j2", "before": "freertr_before.j2"},
-        "sense.sonic.sonic": {"main": "sonic.j2", "before": "sonic_before.j2"},
-        "sense.cisconx9.cisconx9": {"main": "cisconx9.j2", "before": "cisconx9_before.j2"},
+        "sense.dellos9.dellos9": {"main": "dellos9.j2",
+                                  "before": "dellos9_before.j2",
+                                  "ping": "dellos9_ping.j2",
+                                  "traceroute": "dellos9_traceroute.j2"},
+        "sense.dellos10.dellos10": {"main": "dellos10.j2",
+                                    "before": "dellos10_before.j2",
+                                    "ping": "dellos10_ping.j2",
+                                    "traceroute": "dellos10_traceroute.j2"},
+        "sense.aristaeos.aristaeos": {"main": "aristaeos.j2",
+                                      "before": "aristaeos_before.j2",
+                                      "ping": "aristaeos_ping.j2",
+                                      "traceroute": "aristaeos_traceroute.j2"},
+        "sense.freertr.freertr": {"main": "freertr.j2",
+                                  "before": "freertr_before.j2",
+                                  "ping": "freertr_ping.j2",
+                                  "traceroute": "freertr_traceroute.j2"},
+        "sense.sonic.sonic": {"main": "sonic.j2",
+                              "before": "sonic_before.j2",
+                              "ping": "sonic_ping.j2",
+                              "traceroute": "sonic_traceroute.j2"},
+        "sense.cisconx9.cisconx9": {"main": "cisconx9.j2",
+                                    "before": "cisconx9_before.j2",
+                                    "ping": "cisconx9_ping.j2",
+                                    "traceroute": "cisconx9_traceroute.j2"},
     }
     if network_os in mappings:
         if subitem:
@@ -164,22 +182,14 @@ def prepareNewHostFiles(name, params):
         if macparse:
             hostinfo["snmp_monitoring"]["mac_parser"] = macparse
     # 8. Add template parameter
-    template = template_mapping(params["network_os"])
-    if template:
-        hostinfo["template_name"] = template
-    else:
-        print(
-            f"ERROR! {name} does not availabe template for control. Unsupported Device?!"
-        )
-    # 9. Add any before templates if defined
-    template = template_mapping(params["network_os"], "before")
-    if template:
-        hostinfo["template_before_name"] = template
-    else:
-        print(
-            f"ERROR! {name} does not availabe template for control. Unsupported Device?!"
-        )
-    # 10. Add special Ansible params (known as needed)
+    for key, anskey in {"main": "template_name", "before": "template_before_name",
+                        "ping": "template_name_ping", "traceroute": "template_name_traceroute"}.items():
+        template = template_mapping(params["network_os"], key)
+        if template:
+            hostinfo[anskey] = template
+        else:
+            print(f"ERROR! {name} does not availabe template for {key}. Unsupported Device?!")
+    # 9. Add special Ansible params (known as needed)
     specParams = special_params(params["network_os"])
     if specParams:
         hostinfo.update(specParams)
