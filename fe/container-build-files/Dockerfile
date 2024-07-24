@@ -20,7 +20,7 @@ RUN if [ "$ARCH" != "ppc64le" ]; then pip3 install --no-cache-dir -r requirement
 RUN ./pre-install.sh $RELEASE && mv setup-sitefe.py setup.py && pip3 install . -v || exit $?
 # Install all data files needed for FE - httpd, cron, web files
 RUN cp packaging/siterm-site-fe/sitefe.wsgi /var/www/wsgi-scripts/ && \
-    cp packaging/siterm-site-fe/sitefe-httpd.conf /etc/httpd/conf.d/ && \
+    cp packaging/siterm-site-fe/sitefe-httpd.conf /etc/httpd/sitefe-httpd.template && \
     cp packaging/siterm-site-fe/welcome.conf /etc/httpd/conf.d/ && \
     cp packaging/general/siterm-crons /etc/cron.d/ && \
     cp packaging/general/siterm-ca-cron.sh /etc/cron-scripts/ && \
@@ -38,6 +38,7 @@ RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-ari
 # Add all supervisord configs
 # Copy Supervisor.d Config, Script files
 COPY build_files/usr/local/sbin/mariadb.sh /usr/local/sbin/mariadb.sh
+COPY build_files/usr/local/sbin/httpd.sh /usr/local/sbin/httpd.sh
 COPY build_files/usr/local/sbin/start-cleanup.sh /usr/local/sbin/start-cleanup.sh
 COPY build_files/usr/local/sbin/docker-healthcheck.sh /usr/local/sbin/docker-healthcheck.sh
 COPY build_files/etc/supervisord.d/00-cleanup.conf /etc/supervisord.d/00-cleanup.conf
