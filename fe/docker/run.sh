@@ -72,7 +72,7 @@ update_listen() {
     fi
 }
 
-while getopts i:n: flag
+while getopts i:n:l: flag
 do
   case "${flag}" in
     i) VERSION=${OPTARG};;

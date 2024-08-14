@@ -16,7 +16,7 @@ if [ $# == 0 ]; then
     exit 1
 fi
 
-while getopts i:n: flag
+while getopts i:n:l: flag
 do
   case "${flag}" in
     i) VERSION=${OPTARG};;
@@ -39,4 +39,4 @@ for id in `docker image ls | grep sdnsense/site-rm-sense | awk '{print $3}'`
 do
   docker image rm $id --force
 done
-./run.sh -i $VERSION -n $NETMODE -l LISTEN_HTTPS
+./run.sh -i $VERSION -n $NETMODE -l $LISTEN_HTTPS
