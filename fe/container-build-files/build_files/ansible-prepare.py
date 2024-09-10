@@ -198,7 +198,10 @@ def prepareNewHostFiles(name, params):
 def writeState(state):
     """Write state file"""
     stdict = {"state": state, "sitename": "General", "runtime": 0, "version": "General"}
-    os.mkdir('/tmp/siterm-states/')
+    try:
+        os.mkdir('/tmp/siterm-states/')
+    except FileExistsError:
+        pass
     dumpJsonContent("/tmp/siterm-states/ansible-prepare.yaml", stdict)
 
 def generateAnsible():

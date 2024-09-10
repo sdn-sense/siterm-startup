@@ -42,4 +42,14 @@ python3 /root/ansible-prepare.py
 # Make sure all ansible hosts are defined in ~/.ssh/known_hosts
 python3 /root/ssh-keygen.py
 
+# Run in a loop directory creation and chown for apache
+while true; do
+    sleep_time=$(( 3600 + RANDOM % 1800 ))
+    echo "Sleeping for $sleep_time seconds"
+    sleep $sleep_time
+    # Run the Python script
+    python3 /root/dircreate.py
+done
+
+# Sleep forever in case exit loop (which should not happen)
 sleep_long
