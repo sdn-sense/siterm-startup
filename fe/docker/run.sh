@@ -11,7 +11,9 @@ if [ $# == 0 ]; then
     echo "  -n networkmode (OPTIONAL). Default port mode"
     echo "     specify network mode. One of: host,port."
     echo "     host means it will use --net host for docker startup. Please make sure to open port 80, 443 in firewall. Use this option only if any of your hosts, network devices are IPv6 only (no IPv4 address)."
-    echo "     port means it will use -p 8080:80 -p 8443:443 in docker startup. Docker will open port on system firewall. Default parameter"
+    echo "     port means it will use -p 8080:80 -p 8443:443 in docker startup. Docker will open port on system firewall. Default parameter."
+    echo "  -p Overwrite default ports for docker. Default is 8080:80 and 8443:443. Specify in quotes, like -p \"10080:80 10443:443\""
+    echo "  -u (Optional) Unique volume for docker mysql database (any string)/docker container name. If specified, will use it for docker volume creation and container name"
     echo "  -l Instruct httpd to listen on a specific port. Default inside docker is 443. (Mainly for docker + nftables mode (no iptables) - where it is mandatory to use -n host)"
     exit 1
 fi
@@ -21,6 +23,8 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 LISTEN_HTTPS=443
 DOCKERNET="-p 8080:80 -p 8443:443"
+DOCKVOL="siterm-mysql"
+DOCKERNAME="site-fe-sense"
 ENV_FILE="$(pwd)/../conf/environment"
 
 certchecker () {
@@ -72,8 +76,9 @@ update_listen() {
     fi
 }
 
-while getopts i:n:l: flag
+while getopts i:n:l:p:u: flag
 do
+  echo "Processing flag: ${flag} with argument: ${OPTARG}"
   case "${flag}" in
     i) VERSION=${OPTARG};;
     l) LISTEN_HTTPS=${OPTARG};;
@@ -83,9 +88,16 @@ do
          exit 1
        elif [ "x$NETMODE" == "xhost" ]; then
          DOCKERNET="--net host"
-       else
-         DOCKERNET="-p 8080:80 -p 8443:443"
        fi;;
+    p) PORTS=${OPTARG}
+       if [ "x$NETMODE" == "xport" ]; then
+          DOCKERNET=$PORTS
+       else
+         echo "Mistmatch. Cant use -p with -n host"
+         exit 1
+       fi;;
+    u) DOCKVOL="siterm-mysql-${OPTARG}"
+       DOCKERNAME="site-fe-sense-${OPTARG}";;
   esac
 done
 
@@ -94,7 +106,7 @@ done
 if [[ -f "$ENV_FILE" ]]; then
     # Get the current value of LISTEN_HTTPS if defined
     CURRENT_LISTEN=$(grep '^LISTEN_HTTPS=' "$ENV_FILE" | cut -d '=' -f 2)
- 
+
     if [[ "$CURRENT_LISTEN" != "$LISTEN_HTTPS" ]]; then
         update_listen
     else
@@ -154,13 +166,13 @@ if [ "$ERROR" = true ]; then
 fi
 
 # Create docker volume for configuration storage
-cmd="docker volume inspect siterm-mysql &> /dev/null"
+cmd="docker volume inspect ${DOCKVOL} &> /dev/null"
 if eval "$cmd"
 then
-  echo "Docker volume available. Will use sitermfe-mysql for mysql database"
+  echo "Docker volume available. Will use ${DOCKVOL} for mysql database"
 else
-  echo "Docker volume not available. Will create sitermfe-mysql for mysql database"
-  docker volume create siterm-mysql
+  echo "Docker volume not available. Will create ${DOCKVOL} for mysql database"
+  docker volume create ${DOCKVOL}
   if [ $? != 0 ]; then
     echo -e "${RED}There was a failure creating docker volume. See error above. SiteRM will not start${NC}"
     exit 1
@@ -174,14 +186,14 @@ if [[ ! -d "$(pwd)/../conf/opt/siterm/config/ssh-keys" ]]; then
 fi
 
 docker run \
-       -dit --name site-fe-sense \
+       -dit --name ${DOCKERNAME} \
        -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml \
        -v $(pwd)/../conf/etc/ansible-conf.yaml:/etc/ansible-conf.yaml \
        -v $(pwd)/../conf/etc/httpd/certs/cert.pem:/etc/httpd/certs/cert.pem \
        -v $(pwd)/../conf/etc/httpd/certs/privkey.pem:/etc/httpd/certs/privkey.pem \
        -v $(pwd)/../conf/etc/grid-security/hostcert.pem:/etc/grid-security/hostcert.pem \
        -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem \
-       -v sitermfe-mysql:/opt/siterm/config/mysql/ \
+       -v ${DOCKVOL}:/opt/siterm/config/mysql/ \
        -v $(pwd)/../conf/opt/siterm/config/ssh-keys:/opt/siterm/config/ssh-keys \
        $DOCKERNET \
        --restart always \

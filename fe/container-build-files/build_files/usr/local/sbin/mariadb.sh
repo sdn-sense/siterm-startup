@@ -13,6 +13,17 @@ if [[ -z $MARIA_DB_HOST || -z $MARIA_DB_USER || -z $MARIA_DB_DATABASE || -z $MAR
   fi
 fi
 
+# Overwrite MariaDB port if it is not default 3306
+if [[ "$MARIA_DB_PORT" != "3306" && -n "$MARIA_DB_PORT" ]]; then
+    cp /etc/my.cnf.d/server.cnf /etc/my.cnf.d/server.cnf.bak
+    if grep -q "^port=" /etc/my.cnf.d/server.cnf; then
+        echo "MariaDB Port is already defined in /etc/my.cnf.d/server.cnf"
+    else
+        echo "port=${MARIA_DB_PORT}" >> /etc/my.cnf.d/server.cnf
+        echo "Port ${MARIA_DB_PORT} added to /etc/my.cnf.d/server.cnf."
+    fi
+fi
+
 if [ ! -f /opt/siterm/config/mysql/site-rm-db-initialization ]; then
   # First time start of mysql, ensure dirs are present
   mkdir -p /opt/siterm/config/mysql/
