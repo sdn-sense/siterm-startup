@@ -22,6 +22,7 @@ fi
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 LISTEN_HTTPS=443
+LISTEN_HTTP=80
 DOCKERNET="-p 8080:80 -p 8443:443"
 DOCKVOL="siterm-mysql"
 DOCKERNAME="site-fe-sense"

@@ -28,13 +28,13 @@ RUN cp packaging/siterm-site-fe/sitefe.wsgi /var/www/wsgi-scripts/ && \
     cp -R src/html/* /var/www/html/
 
 # Install all ansible collections
-# TODO Move all main to MASTER and use $GITBR
 RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-aristaeos-collection,"$GITBR" && \
     ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos10-collection,"$GITBR" && \
     ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos9-collection,"$GITBR" && \
     ansible-galaxy collection install git+https://github.com/sdn-sense/sense-freertr-collection,"$GITBR" && \
     ansible-galaxy collection install git+https://github.com/sdn-sense/sense-sonic-collection,"$GITBR" && \
-    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-cisconx9-collection,"$GITBR"
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-cisconx9-collection,"$GITBR" && \
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-frr-collection,"$GITBR"
 
 # Add all supervisord configs
 # Copy Supervisor.d Config, Script files

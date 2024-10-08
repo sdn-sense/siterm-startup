@@ -37,6 +37,10 @@ def template_mapping(network_os, subitem=""):
                               "before": "sonic_before.j2",
                               "ping": "sonic_ping.j2",
                               "traceroute": "sonic_traceroute.j2"},
+        "sense.frr.frr": {"main": "frr.j2",
+                              "before": "frr_before.j2",
+                              "ping": "frr_ping.j2",
+                              "traceroute": "frr_traceroute.j2"},
         "sense.cisconx9.cisconx9": {"main": "cisconx9.j2",
                                     "before": "cisconx9_before.j2",
                                     "ping": "cisconx9_ping.j2",
@@ -51,7 +55,8 @@ def template_mapping(network_os, subitem=""):
 
 def special_params(network_os):
     """Add Special ansible params based on network os"""
-    mappings = {"sense.sonic.sonic": {"ansible_connection": "ansible.netcommon.libssh"}}
+    mappings = {"sense.sonic.sonic": {"ansible_connection": "ansible.netcommon.libssh"},
+                "sense.frr.frr": {"ansible_connection": "ansible.netcommon.libssh"}}
     if network_os in mappings:
         return mappings[network_os]
     return {}
