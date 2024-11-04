@@ -7,7 +7,7 @@ if [ $ISPODMAN -eq 0 ]; then
   LOGOPTIONS="--log-driver=json-file --log-opt max-size=10m --log-opt max-file=10"
 fi
 
-docker run -d -p 9100:9100 \
+docker run -d \
   --net="host" \
   --pid="host" \
   -v "/proc:/host/proc:ro" \
@@ -17,4 +17,5 @@ docker run -d -p 9100:9100 \
   $LOGOPTIONS \
   prom/node-exporter \
   --path.rootfs=/host \
-  --collector.netdev.address-info
+  --collector.netdev.address-info \
+  --web.listen-address=":9100"  # Change port if needed
