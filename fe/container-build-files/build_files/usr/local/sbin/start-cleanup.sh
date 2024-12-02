@@ -4,6 +4,9 @@ sleep_long () {
     /usr/libexec/platform-python -c '__import__("select").select([], [], [])'
 } &> /dev/null
 
+# Set default Ansible repo (or use one defined in the environment)
+ANSIBLE_REPO="${ANSIBLE_REPO:-origin/master}"
+
 # Remove yaml files to prefetch from scratch
 rm -f /tmp/*-mapping.yaml
 rm -f /tmp/*-FE-main.yaml
@@ -30,11 +33,24 @@ if [[ ! -d "/opt/siterm/config/ansible" ]]; then
   echo "Cloning git repo and add default ansible config."
   mkdir -p /opt/siterm/config/ansible/sense
   git clone https://github.com/sdn-sense/ansible-templates /opt/siterm/config/ansible/sense
+
+  # Pull another branch if defined via environment variable
+  if [[ "$ANSIBLE_REPO" != "origin/master" ]]; then
+    echo "Switching to branch: $ANSIBLE_REPO"
+    cd /opt/siterm/config/ansible/sense || exit 1
+    git fetch --all
+    git checkout "${ANSIBLE_REPO#origin/}" || git checkout -b "${ANSIBLE_REPO#origin/}" "$ANSIBLE_REPO"
+    git pull "$ANSIBLE_REPO" "${ANSIBLE_REPO#origin/}"
+  fi
 else
   cd /opt/siterm/config/ansible/sense
   git fetch --all
   git branch backup-master-`date +%s`
-  git reset --hard origin/master
+
+  git checkout "${ANSIBLE_REPO#origin/}" || git checkout -b "${ANSIBLE_REPO#origin/}" "$ANSIBLE_REPO"
+  git reset --hard "$ANSIBLE_REPO"
+  git pull "$ANSIBLE_REPO" "${ANSIBLE_REPO#origin/}"
+
 fi
 # Run ansible prepare and prepare all ansible configuration files.
 python3 /root/ansible-prepare.py
