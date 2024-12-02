@@ -6,6 +6,19 @@ LOGOPTIONS=""
 if [ $ISPODMAN -eq 0 ]; then
   LOGOPTIONS="--log-driver=json-file --log-opt max-size=10m --log-opt max-file=10"
 fi
+PORT=9100
+while getopts "p:" opt; do
+  case $opt in
+    p)
+      PORT=$OPTARG
+      ;;
+    *)
+      echo "Usage: $0 [-p <PORT>]"
+      exit 1
+      ;;
+  esac
+done
+
 
 docker run -d \
   --net="host" \
@@ -18,4 +31,4 @@ docker run -d \
   prom/node-exporter \
   --path.rootfs=/host \
   --collector.netdev.address-info \
-  --web.listen-address=":9100"  # Change port if needed
+  --web.listen-address=":$PORT"
