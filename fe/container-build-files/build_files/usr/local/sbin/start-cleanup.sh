@@ -20,7 +20,7 @@ rm -f /tmp/siterm-git-fetch-lockfile
 mkdir -p /var/log/siterm-site-fe/
 chown apache:apache /var/log/siterm-site-fe/
 chmod g+s /var/log/siterm-site-fe/
-mkdir -p /var/log/siterm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api}/
+mkdir -p /var/log/siterm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api,HostData}/
 chown apache:apache /var/log/siterm-site-fe/*
 chmod g+s /var/log/siterm-site-fe/*
 

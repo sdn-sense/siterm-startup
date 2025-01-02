@@ -38,25 +38,13 @@ RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-ari
 
 # Add all supervisord configs
 # Copy Supervisor.d Config, Script files
-COPY build_files/usr/local/sbin/mariadb.sh /usr/local/sbin/mariadb.sh
-COPY build_files/usr/local/sbin/httpd.sh /usr/local/sbin/httpd.sh
-COPY build_files/usr/local/sbin/start-cleanup.sh /usr/local/sbin/start-cleanup.sh
-COPY build_files/usr/local/sbin/docker-healthcheck.sh /usr/local/sbin/docker-healthcheck.sh
-COPY build_files/etc/supervisord.d/00-cleanup.conf /etc/supervisord.d/00-cleanup.conf
-COPY build_files/etc/supervisord.d/09-mariadb.conf /etc/supervisord.d/09-mariadb.conf
-COPY build_files/etc/supervisord.d/10-dbworker.conf /etc/supervisord.d/10-dbworker.conf
-COPY build_files/etc/supervisord.d/11-config-fetcher.conf /etc/supervisord.d/11-config-fetcher.conf
-COPY build_files/etc/supervisord.d/12-siterm-debugger.conf /etc/supervisord.d/12-siterm-debugger.conf
-COPY build_files/etc/supervisord.d/12-httpd.conf /etc/supervisord.d/12-httpd.conf
-COPY build_files/etc/supervisord.d/13-lookup-service.conf /etc/supervisord.d/13-lookup-service.conf
-COPY build_files/etc/supervisord.d/14-policy-service.conf /etc/supervisord.d/14-policy-service.conf
-COPY build_files/etc/supervisord.d/15-snmpmon-service.conf /etc/supervisord.d/15-snmpmon-service.conf
-COPY build_files/etc/supervisord.d/16-dbcleaner.conf /etc/supervisord.d/16-dbcleaner.conf
+COPY build_files/usr/local/sbin/ /usr/local/sbin/
+COPY build_files/etc/supervisord.d/ /etc/supervisord.d/
 COPY build_files/root/.ansible.cfg /root/.ansible.cfg
 
 EXPOSE 80 443
 
-HEALTHCHECK --retries=3 --start-period=60s --interval=60s --timeout=30s CMD bash /usr/local/sbin/docker-healthcheck.sh  || exit 1
+HEALTHCHECK --retries=3 --start-period=60s --interval=60s --timeout=30s CMD bash /usr/local/sbin/docker-healthcheck.sh || exit 1
 
 CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]
 
