@@ -72,7 +72,7 @@ class DBStarter:
         """Start the database creation"""
         self.db.createdb()
         version = self._getversion()
-        if version == self._getversionfloat(runningVersion):
+        if version != self._getversionfloat(runningVersion):
             self.upgradedb(version)
 
 
