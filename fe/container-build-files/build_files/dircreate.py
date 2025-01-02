@@ -35,7 +35,7 @@ def dircreate():
     if gitObj.config.get('SITENAME', None):
         path = f'/opt/siterm/config/{gitObj.config["SITENAME"]}'
         pathcreate(path, uid, gid)
-        for subpath in ['LookUpService', 'PolicyService']:
+        for subpath in ['LookUpService', 'PolicyService', 'HostData']:
             newpath = f'{path}/{subpath}'
             pathcreate(newpath, uid, gid)
         # create httpnew and httpfinished dirs owned by apache

@@ -11,4 +11,4 @@ sed "s/{{LISTEN_HTTP}}/${LISTEN_HTTP}/g" /tmp/new-httpd.conf > /tmp/new-httpd.co
 mv /tmp/new-httpd.conf_1 /etc/httpd/conf.d/sitefe-httpd.conf
 
 # Start Apache
-/usr/sbin/httpd -k start -DFOREGROUND
+exec /usr/sbin/httpd -k start -DFOREGROUND
