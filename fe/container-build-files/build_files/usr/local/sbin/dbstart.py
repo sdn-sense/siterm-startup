@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Database starter to create and update database"""
+from time import sleep
 import pkg_resources
 import mariadb
 from SiteRMLibs.DBBackend import dbinterface
@@ -12,6 +13,15 @@ class DBStarter:
     def __init__(self):
         self.config = getGitConfig()
         self.db = dbinterface('DBINIT', self.config, "MAIN")
+
+    def dbready(self):
+        """Check if the database is ready"""
+        try:
+            self.db.db.execute("SELECT 1")
+        except mariadb.OperationalError as ex:
+            print(f"Error executing SQL: {ex}")
+            return False
+        return True
 
     @staticmethod
     def _getversionfloat(valin):
@@ -70,9 +80,13 @@ class DBStarter:
 
     def start(self):
         """Start the database creation"""
+        while not self.dbready():
+            print("Database not ready, waiting for 1 second. See error above. If continous, check the mariadb process.")
+            sleep(1)
         self.db.createdb()
         version = self._getversion()
-        if version != self._getversionfloat(runningVersion):
+        # TODO: Replace to != once ready for new version.
+        if version == self._getversionfloat(runningVersion):
             self.upgradedb(version)
 
 

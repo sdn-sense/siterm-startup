@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Check if upgrade is in progress and loop until it is completed
+if [ -f /tmp/siterm-mariadb-init ]; then
+  while [ -f /tmp/siterm-mariadb-init ]; do
+    echo "Upgrade in progress. Waiting for it to complete."
+    sleep 5
+  done
+fi
+
 set -a
 source /etc/environment
 set +a

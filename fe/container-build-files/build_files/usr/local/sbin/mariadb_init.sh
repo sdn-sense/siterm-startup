@@ -4,6 +4,10 @@ sleep_long () {
     /usr/libexec/platform-python -c '__import__("select").select([], [], [])'
 } &> /dev/null
 
+# Create temp file for initialization (hold off other processes)
+touch /tmp/siterm-mariadb-init
+echo `date` > /tmp/siterm-mariadb-init
+
 # Check if all env variables are available and set
 if [[ -z $MARIA_DB_HOST || -z $MARIA_DB_USER || -z $MARIA_DB_DATABASE || -z $MARIA_DB_PASSWORD || -z $MARIA_DB_PORT ]]; then
   if [ -f "/etc/siterm-mariadb" ]; then
@@ -53,6 +57,8 @@ else
   python3 /usr/local/sbin/dbstart.py
 
 fi
+# Remove temp file for initialization
+rm -f /tmp/siterm-mariadb-init
 
 # Process is over, sleep long
 sleep_long
