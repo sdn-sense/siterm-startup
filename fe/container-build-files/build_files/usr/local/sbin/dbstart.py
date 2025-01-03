@@ -21,6 +21,14 @@ class DBStarter:
             return False
         return True
 
+    def _insupdversion(self, vval):
+        version = self.db.get("dbversion", limit=1)
+        # If no version is found, write the current version
+        if not version:
+            self.db.insert("dbversion", [{"version": vval}])
+        else:
+            self.db.update("dbversion", [{"version": vval, "id": version[0]["id"]}])
+
     @staticmethod
     def _getversionfloat(valin):
         valspl = valin.split('.')
@@ -46,7 +54,7 @@ class DBStarter:
         # If no version is found, write the current version
         if not version:
             vval = self._getversionfloat(runningVersion)
-            self.db.insert("dbversion", [{"version": vval}])
+            self._insupdversion(vval)
             return vval
         return self._getversionfloat(version[0]["version"])
 
@@ -73,7 +81,7 @@ class DBStarter:
                     for sqlcall in sql_statements:
                         if sqlcall:
                             self._makesqlcall(sqlcall)
-                self.db.update("dbversion", {"version": key})
+                self._insupdversion(key)
                 version = key
 
     def start(self):
