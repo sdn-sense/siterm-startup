@@ -5,14 +5,12 @@ import pkg_resources
 import mariadb
 from SiteRMLibs.DBBackend import dbinterface
 from SiteRMLibs import __version__ as runningVersion
-from SiteRMLibs.GitConfig import getGitConfig
 
 
 class DBStarter:
     """Database starter class"""
     def __init__(self):
-        self.config = getGitConfig()
-        self.db = dbinterface('DBINIT', self.config, "MAIN")
+        self.db = dbinterface('DBINIT', None, "MAIN")
 
     def dbready(self):
         """Check if the database is ready"""
