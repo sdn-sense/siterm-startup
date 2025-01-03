@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# If upgrade is in progress, exit 0
+if [ -f /tmp/siterm-mariadb-init ]; then
+  exit 0
+fi
+
 echo "Running siterm-liveness check"
 siterm-liveness
 if [ $? -ne 0 ]; then

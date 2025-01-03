@@ -58,6 +58,14 @@ python3 /root/ansible-prepare.py
 # Make sure all ansible hosts are defined in ~/.ssh/known_hosts
 python3 /root/ssh-keygen.py
 
+# Check if upgrade is in progress and loop until it is completed
+if [ -f /tmp/siterm-mariadb-init ]; then
+  while [ -f /tmp/siterm-mariadb-init ]; do
+    echo "Upgrade in progress. Waiting for it to complete."
+    sleep 5
+  done
+fi
+
 # Run in a loop directory creation and chown for apache
 while true; do
     sleep_time=$(( 3600 + RANDOM % 1800 ))
