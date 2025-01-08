@@ -62,7 +62,13 @@ python3 /root/ssh-keygen.py
 if [ -f /tmp/siterm-mariadb-init ]; then
   while [ -f /tmp/siterm-mariadb-init ]; do
     echo "Upgrade in progress. Waiting for it to complete."
-    sleep 5
+    sleep 1
+  done
+fi
+if [ ! -f /tmp/config-fetcher-ready ]; then
+  while [ ! -f /tmp/config-fetcher-ready ]; do
+    echo "Config fetch not started yet. Waiting for it to start."
+    sleep 1
   done
 fi
 

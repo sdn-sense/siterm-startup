@@ -5,6 +5,10 @@ if [ -f /tmp/siterm-mariadb-init ]; then
   exit 0
 fi
 
+if [ ! -f /tmp/config-fetcher-ready ]; then
+  exit 0
+fi
+
 echo "Running siterm-liveness check"
 siterm-liveness
 if [ $? -ne 0 ]; then
