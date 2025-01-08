@@ -7,6 +7,12 @@ if [ -f /tmp/siterm-mariadb-init ]; then
     sleep 5
   done
 fi
+if [ ! -f /tmp/config-fetcher-ready ]; then
+  while [ ! -f /tmp/config-fetcher-ready ]; do
+    echo "Config fetch not finished yet. Waiting for it to start."
+    sleep 1
+  done
+fi
 
 set -a
 source /etc/environment
