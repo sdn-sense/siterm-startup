@@ -45,6 +45,10 @@ def template_mapping(network_os, subitem=""):
                                     "before": "cisconx9_before.j2",
                                     "ping": "cisconx9_ping.j2",
                                     "traceroute": "cisconx9_traceroute.j2"},
+        "sense.junos.junos": {"main": "junos.j2",
+                             "before": "junos_before.j2",
+                             "ping": "junos_ping.j2",
+                             "traceroute": "junos_traceroute.j2"},
     }
     if network_os in mappings:
         if subitem:
