@@ -4,6 +4,15 @@ sleep_long () {
     /usr/libexec/platform-python -c '__import__("select").select([], [], [])'
 } &> /dev/null
 
+
+# Read all env variables for the process.
+if [ -f "/etc/siterm-mariadb" ]; then
+  set -a
+  source /etc/siterm-mariadb
+  set +a
+  env
+fi
+
 # Set default Ansible repo (or use one defined in the environment)
 ANSIBLE_REPO="${ANSIBLE_REPO:-origin/master}"
 
