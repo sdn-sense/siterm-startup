@@ -34,7 +34,8 @@ RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-ari
     ansible-galaxy collection install git+https://github.com/sdn-sense/sense-freertr-collection,"$GITBR" && \
     ansible-galaxy collection install git+https://github.com/sdn-sense/sense-sonic-collection,"$GITBR" && \
     ansible-galaxy collection install git+https://github.com/sdn-sense/sense-cisconx9-collection,"$GITBR" && \
-    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-frr-collection,"$GITBR"
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-frr-collection,"$GITBR" && \
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-junos-collection,"$GITBR"
 
 # Add all supervisord configs
 # Copy Supervisor.d Config, Script files
