@@ -24,6 +24,11 @@ if [[ "$MARIA_DB_PORT" != "3306" && -n "$MARIA_DB_PORT" ]]; then
     fi
 fi
 
+# Clean up any stale lock files
+rm -f /opt/siterm/config/mysql/ibtmp1
+rm -f /opt/siterm/config/mysql/aria_log.*
+rm -f /opt/siterm/config/mysql/*.pid
+
 if [ ! -f /opt/siterm/config/mysql/site-rm-db-initialization ]; then
   # First time start of mysql, ensure dirs are present
   mkdir -p /opt/siterm/config/mysql/

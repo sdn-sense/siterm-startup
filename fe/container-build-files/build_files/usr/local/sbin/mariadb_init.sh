@@ -1,7 +1,17 @@
 #!/bin/sh
 
-sleep_long () {
-    /usr/libexec/platform-python -c '__import__("select").select([], [], [])'
+db_backup_sleep () {
+  BACKUPDIR="/opt/siterm/config/backups/"
+  while true; do
+      TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+      BACKUPPATH="$BACKUPDIR/$TIMESTAMP"
+      mkdir -p "$BACKUPPATH"
+      mysqldump "sitefe" > "$BACKUPPATH/sitefe.sql"
+      # Remove backups while keeping the last 3 days
+      ls -dt "$BACKUPDIR"/* | tail -n +4 | xargs rm -rf --
+      # Sleep for 1 hour
+      sleep 3600
+    done
 } &> /dev/null
 
 # Create temp file for initialization (hold off other processes)
@@ -61,4 +71,4 @@ fi
 rm -f /tmp/siterm-mariadb-init
 
 # Process is over, sleep long
-sleep_long
+db_backup_sleep
