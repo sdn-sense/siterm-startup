@@ -8,7 +8,7 @@ db_backup_sleep () {
       mkdir -p "$BACKUPPATH"
       mysqldump "sitefe" > "$BACKUPPATH/sitefe.sql"
       # Remove backups while keeping the last 3 days
-      ls -dt "$BACKUPDIR"/* | tail -n +4 | xargs rm -rf --
+      ls -dt "$BACKUPDIR"/* | tail -n +72 | xargs rm -rf --
       # Sleep for 1 hour
       sleep 3600
     done
@@ -42,31 +42,29 @@ if [[ "$MARIA_DB_PORT" != "3306" && -n "$MARIA_DB_PORT" ]]; then
     fi
 fi
 
-# Wait for Maria db to start
-sleep 20s
+# Replace variables in /root/mariadb.sql with vars from ENV (docker file)
+sed -i "s/##ENV_MARIA_DB_PASSWORD##/$MARIA_DB_PASSWORD/" /root/mariadb.sql
+sed -i "s/##ENV_MARIA_DB_USER##/$MARIA_DB_USER/" /root/mariadb.sql
+sed -i "s/##ENV_MARIA_DB_HOST##/$MARIA_DB_HOST/" /root/mariadb.sql
+sed -i "s/##ENV_MARIA_DB_DATABASE##/$MARIA_DB_DATABASE/" /root/mariadb.sql
 
-if [ ! -f /opt/siterm/config/mysql/site-rm-db-initialization ]; then
-  # Replace variables in /root/mariadb.sql with vars from ENV (docker file)
-  sed -i "s/##ENV_MARIA_DB_PASSWORD##/$MARIA_DB_PASSWORD/" /root/mariadb.sql
-  sed -i "s/##ENV_MARIA_DB_USER##/$MARIA_DB_USER/" /root/mariadb.sql
-  sed -i "s/##ENV_MARIA_DB_HOST##/$MARIA_DB_HOST/" /root/mariadb.sql
-  sed -i "s/##ENV_MARIA_DB_DATABASE##/$MARIA_DB_DATABASE/" /root/mariadb.sql
+# Execute /root/mariadb.sql
+while true; do
+    mysql -v < /root/mariadb.sql
+    if [ $? -eq 0 ]; then
+        break
+    fi
+    echo "Retrying mysql sql in 5 seconds..."
+    sleep 5
+done
 
-  # Execute /root/mariadb.sql
-  mysql -v < /root/mariadb.sql
+# Create/Update all databases needed for SiteRM
+python3 /usr/local/sbin/dbstart.py
 
-  # Create/Update all databases needed for SiteRM
-  python3 /usr/local/sbin/dbstart.py
+# create file under /var/lib/mysql which is only unique for Site-RM.
+# This ensures that we are not repeating same steps during docker restart
+echo $(date) >> /opt/siterm/config/mysql/site-rm-db-initialization
 
-  # create file under /var/lib/mysql which is only unique for Site-RM.
-  # This ensures that we are not repeating same steps during docker restart
-  echo $(date) >> /opt/siterm/config/mysql/site-rm-db-initialization
-else
-  echo "Seems this is not the first time start."
-  # Create/Update all databases needed for SiteRM
-  python3 /usr/local/sbin/dbstart.py
-
-fi
 # Remove temp file for initialization
 rm -f /tmp/siterm-mariadb-init
 
