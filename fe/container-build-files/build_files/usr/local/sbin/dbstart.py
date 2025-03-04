@@ -60,7 +60,10 @@ class DBStarter:
 
     def _getAllModFiles(self):
         """Get all the modification files"""
-        moddir = pkg_resources.resource_listdir('SiteFE', 'release/release_mods')
+        try:
+            moddir = pkg_resources.resource_listdir('SiteFE', 'release/release_mods')
+        except FileNotFoundError:
+            return {}
         modfiles = {}
         for mod in moddir:
             modv = self._getversionfloat(mod)
@@ -91,8 +94,7 @@ class DBStarter:
             sleep(1)
         self.db.createdb()
         version = self._getversion()
-        # TODO: Replace to != once ready for new version.
-        if version == self._getversionfloat(runningVersion):
+        if version != self._getversionfloat(runningVersion):
             self.upgradedb(version)
 
 
