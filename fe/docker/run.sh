@@ -1,12 +1,8 @@
 #!/bin/bash
-# VERSION:
-#  dev - development branch, often updated, might not be working version
-#  latest - stable working version
-
 # Check if parameters are defined. If not, print usage and exit 1.
 if [ $# == 0 ]; then
     echo "Usage: `basename $0` [-i imagetag] [-n networkmode]"
-    echo "  -i imagetag (MANDATORY)"
+    echo "  -i imagetag (OPTIONAL). Default latest"
     echo "     specify image tag, e.g. latest, dev, v1.3.0... For production deplyoment use latest, unless instructed otherwise by SENSE team"
     echo "  -n networkmode (OPTIONAL). Default port mode"
     echo "     specify network mode. One of: host,port."
@@ -24,9 +20,11 @@ NC='\033[0m' # No Color
 LISTEN_HTTPS=443
 LISTEN_HTTP=80
 DOCKERNET="-p 8080:80 -p 8443:443"
+NETMODE="port"
 DOCKVOL="siterm-mysql"
 DOCKERNAME="site-fe-sense"
 ENV_FILE="$(pwd)/../conf/environment"
+VERSION="latest"
 
 certchecker () {
   local ERROR=false
@@ -91,12 +89,11 @@ do
          DOCKERNET="--net host"
        fi;;
     p) PORTS=${OPTARG}
-       if [ "x$NETMODE" == "xport" ]; then
-          DOCKERNET=$PORTS
-       else
+       if [ "x$NETMODE" == "xhost" ]; then
          echo "Mistmatch. Cant use -p with -n host"
          exit 1
-       fi;;
+       fi
+       DOCKERNET=$PORTS;;
     u) DOCKVOL="siterm-mysql-${OPTARG}"
        DOCKERNAME="site-fe-sense-${OPTARG}";;
   esac
@@ -200,5 +197,3 @@ docker run \
        --restart always \
        --env-file $ENV_FILE \
        $LOGOPTIONS docker.io/sdnsense/site-rm-sense:$VERSION
-
-# For development, add -v /home/jbalcas/siterm/:/opt/siterm/sitermcode/siterm/ \
