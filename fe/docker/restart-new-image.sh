@@ -1,12 +1,8 @@
 #!/bin/bash
-# VERSION:
-#  dev - development branch, often updated, might not be working version
-#  latest - stable working version
-
 # Check if parameters are defined. If not, print usage and exit 1.
 if [ $# == 0 ]; then
     echo "Usage: `basename $0` [-i imagetag] [-n networkmode]"
-    echo "  -i imagetag (MANDATORY)"
+    echo "  -i imagetag (Optional). Default latest"
     echo "     specify image tag, e.g. latest, dev, v1.3.0... For production deplyoment use latest, unless instructed otherwise by SENSE team"
     echo "  -n networkmode (OPTIONAL). Default port mode"
     echo "     specify network mode. One of: host,port."
@@ -22,6 +18,8 @@ DOCKVOL="siterm-mysql"
 DOCKERNAME="site-fe-sense"
 DOCKERNET="-p 8080:80 -p 8443:443"
 UFLAG=""
+VERSION="latest"
+NETMODE="port"
 
 while getopts i:n:l:p:u: flag
 do
@@ -34,26 +32,35 @@ do
          exit 1
        fi;;
     p) PORTS=${OPTARG}
-       if [ "x$NETMODE" != "xhost" ] && [ "x$NETMODE" != "xport" ]; then
-          DOCKERNET=$PORTS
-       else
+       if [ "x$NETMODE" = "xhost" ]; then
          echo "Mistmatch. Cant use -p with -n host"
          exit 1
-       fi;;
+       fi
+       DOCKERNET=$PORTS;;
     u) DOCKVOL="siterm-mysql-${OPTARG}"
        DOCKERNAME="site-fe-sense-${OPTARG}"
        UFLAG=${OPTARG};;
   esac
 done
 
+# Validate that all required parameters are set
+if [ -z "$VERSION" ]; then
+  echo "Error: Missing required parameter of -i version of image to use."
+  exit 1
+fi
+
+echo "================================================"
+echo "Finding and stopping existing docker containers for ${DOCKERNAME}"
 for id in `docker ps -a | grep ${DOCKERNAME} | awk '{print $1}'`
 do
   docker stop $id
   docker rm $id
 done
-
+echo "================================================"
+echo "Finding and removing existing docker images for sdnsense/site-rm-sense"
 for id in `docker image ls | grep sdnsense/site-rm-sense | awk '{print $3}'`
 do
   docker image rm $id --force
 done
+echo "================================================"
 ./run.sh -i $VERSION -n $NETMODE -l $LISTEN_HTTPS -p $DOCKERNET -u $UFLAG

@@ -21,6 +21,28 @@ class DBStarter:
             return False
         return True
 
+    def dboptimize(self):
+        """Optimize the database"""
+        print("Optimizing database")
+        try:
+            out = self.db.db.execute_get("""SELECT CONCAT('CREATE TABLE ', table_name, '_new LIKE ', table_name, '; ',
+                                                          'INSERT INTO ', table_name, '_new SELECT * FROM ', table_name, '; ',
+                                                          'RENAME TABLE ', table_name, ' TO ', table_name, '_old, ',
+                                                                           table_name, '_new TO ', table_name, '; ',
+                                                          'DROP TABLE ', table_name, '_old; '
+                                                         ) AS migration_commands
+                                            FROM information_schema.tables
+                                            WHERE table_schema = 'sitefe';""")
+            for row in out[2]:
+                print("Executing SQL Command:", row[0])
+                for item in row[0].split(';'):
+                    if item.strip():
+                        self.db.db.execute(item.strip())
+        except mariadb.OperationalError as ex:
+            print(f"Error executing SQL: {ex}")
+            return False
+        return True
+
     def _insupdversion(self, vval):
         version = self.db.get("dbversion", limit=1)
         # If no version is found, write the current version
@@ -93,6 +115,7 @@ class DBStarter:
             print("Database not ready, waiting for 1 second. See error above. If continous, check the mariadb process.")
             sleep(1)
         self.db.createdb()
+        self.dboptimize()
         version = self._getversion()
         if version != self._getversionfloat(runningVersion):
             self.upgradedb(version)
