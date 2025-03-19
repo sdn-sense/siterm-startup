@@ -6,8 +6,9 @@ db_backup_sleep () {
       TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
       BACKUPPATH="$BACKUPDIR/$TIMESTAMP"
       mkdir -p "$BACKUPPATH"
-      mysqldump "sitefe" > "$BACKUPPATH/sitefe.sql"
-      # Remove backups while keeping the last 3 days
+      mysqldump "sitefe" | xz -c > "$BACKUPPATH/sitefe.sql.xz"
+      # Remove backups while keeping the last 72
+      # To use backup file: xzcat sitefe.sql.xz | mysql -u root -p sitefe
       ls -dt "$BACKUPDIR"/* | tail -n +72 | xargs rm -rf --
       # Sleep for 1 hour
       sleep 3600
