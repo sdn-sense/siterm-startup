@@ -19,7 +19,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 LISTEN_HTTPS=443
 LISTEN_HTTP=80
-DOCKERNET="-p 8080:80 -p 8443:443"
+DOCKERNET="8080:80 8443:443"
 NETMODE="port"
 DOCKVOL="siterm-mysql"
 DOCKERNAME="site-fe-sense"
@@ -99,6 +99,9 @@ do
   esac
 done
 
+for port in $DOCKERNET; do
+  DOCKERNET_PARSED+=" -p $port"
+done
 
 # Check if the file exists
 if [[ -f "$ENV_FILE" ]]; then
@@ -193,7 +196,7 @@ docker run \
        -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem \
        -v ${DOCKVOL}:/opt/siterm/config/mysql/ \
        -v $(pwd)/../conf/opt/siterm/config/ssh-keys:/opt/siterm/config/ssh-keys \
-       $DOCKERNET \
+       $DOCKERNET_PARSED \
        --restart always \
        --env-file $ENV_FILE \
        $LOGOPTIONS docker.io/sdnsense/site-rm-sense:$VERSION

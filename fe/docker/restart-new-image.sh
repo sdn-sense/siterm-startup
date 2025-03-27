@@ -16,10 +16,11 @@ fi
 
 DOCKVOL="siterm-mysql"
 DOCKERNAME="site-fe-sense"
-DOCKERNET="-p 8080:80 -p 8443:443"
+DOCKERNET="8080:80 8443:443"
 UFLAG=""
 VERSION="latest"
 NETMODE="port"
+LISTEN_HTTPS="443"
 
 while getopts i:n:l:p:u: flag
 do
@@ -63,4 +64,4 @@ do
   docker image rm $id --force
 done
 echo "================================================"
-./run.sh -i $VERSION -n $NETMODE -l $LISTEN_HTTPS -p $DOCKERNET -u $UFLAG
+./run.sh -i $VERSION -n $NETMODE -l $LISTEN_HTTPS -p "$DOCKERNET" -u $UFLA
