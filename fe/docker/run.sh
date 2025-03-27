@@ -19,7 +19,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 LISTEN_HTTPS=443
 LISTEN_HTTP=80
-DOCKERNET="8080:80 8443:443"
+DOCKERNET=""
 NETMODE="port"
 DOCKVOL="siterm-mysql"
 DOCKERNAME="site-fe-sense"
@@ -89,7 +89,7 @@ do
          DOCKERNET="--net host"
        fi;;
     p) PORTS=${OPTARG}
-       if [ "x$NETMODE" == "xhost" ]; then
+       if [ "x$NETMODE" == "xhost" ] && [ -n "$PORTS" ]; then
          echo "Mistmatch. Cant use -p with -n host"
          exit 1
        fi
@@ -99,9 +99,20 @@ do
   esac
 done
 
-for port in $DOCKERNET; do
-  DOCKERNET_PARSED+=" -p $port"
-done
+# Set docker network correct params
+if [ "x$NETMODE" = "xport" ]; then
+  if [ -z "$DOCKERNET" ]; then
+    DOCKERNET="8080:80 8443:443"
+  fi
+  for port in $DOCKERNET; do
+    DOCKERNET_PARSED+=" -p $port"
+  done
+else
+  if [ -z "$DOCKERNET" ]; then
+    DOCKERNET="--net host"
+  fi
+  DOCKERNET_PARSED=$DOCKERNET
+fi
 
 # Check if the file exists
 if [[ -f "$ENV_FILE" ]]; then

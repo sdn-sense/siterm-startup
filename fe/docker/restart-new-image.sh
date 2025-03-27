@@ -16,7 +16,7 @@ fi
 
 DOCKVOL="siterm-mysql"
 DOCKERNAME="site-fe-sense"
-DOCKERNET="8080:80 8443:443"
+DOCKERNET=""
 UFLAG=""
 VERSION="latest"
 NETMODE="port"
@@ -44,6 +44,13 @@ do
   esac
 done
 
+# Set default ports if not specified;
+if [ "x$NETMODE" = "xport" ]; then
+  if [ -z "$DOCKERNET" ]; then
+    DOCKERNET="8080:80 8443:443"
+  fi
+fi
+
 # Validate that all required parameters are set
 if [ -z "$VERSION" ]; then
   echo "Error: Missing required parameter of -i version of image to use."
@@ -64,4 +71,4 @@ do
   docker image rm $id --force
 done
 echo "================================================"
-./run.sh -i $VERSION -n $NETMODE -l $LISTEN_HTTPS -p "$DOCKERNET" -u $UFLA
+./run.sh -i $VERSION -n $NETMODE -l $LISTEN_HTTPS -p "$DOCKERNET" -u $UFLAG
