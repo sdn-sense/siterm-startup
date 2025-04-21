@@ -99,6 +99,21 @@ do
   esac
 done
 
+# Save cmd line arguments to file
+CMD_FILE=".last_run_cmd"
+CURRENT_CMD="./run.sh $@"
+if [[ -f "$CMD_FILE" ]]; then
+    SAVED_CMD=$(<"$CMD_FILE")
+    if [[ "$CURRENT_CMD" != "$SAVED_CMD" ]]; then
+        echo "Mismatch in run command:"
+        echo "  Saved:   $SAVED_CMD"
+        echo "  Current: $CURRENT_CMD"
+        echo "To override, delete the file: $CMD_FILE"
+        exit 1
+    fi
+fi
+echo "$CURRENT_CMD" > "$CMD_FILE"
+
 # Set docker network correct params
 if [ "x$NETMODE" = "xport" ]; then
   if [ -z "$DOCKERNET" ]; then

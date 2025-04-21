@@ -6,7 +6,7 @@
 
 # Check if parameters are defined. If not, print usage and exit 1.
 if [ $# == 0 ]; then
-    echo "Usage: `basename $0` [-i imagetag] [-n networkmode]"
+    echo "Usage: `basename $0` [-i imagetag]"
     echo "  -i imagetag (MANDATORY)"
     echo "     specify image tag, e.g. latest, dev, v1.3.0... For production deplyoment use latest, unless instructed otherwise by SENSE team"
     exit 1
@@ -18,6 +18,20 @@ do
     i) VERSION=${OPTARG};;
   esac
 done
+
+CMD_FILE=".last_run_cmd"
+CURRENT_CMD="./run.sh $@"
+if [[ -f "$CMD_FILE" ]]; then
+    SAVED_CMD=$(<"$CMD_FILE")
+    if [[ "$CURRENT_CMD" != "$SAVED_CMD" ]]; then
+        echo "Mismatch in run command:"
+        echo "  Saved:   $SAVED_CMD"
+        echo "  Current: $CURRENT_CMD"
+        echo "To override, delete the file: $CMD_FILE"
+        exit 1
+    fi
+fi
+echo "$CURRENT_CMD" > "$CMD_FILE"
 
 RED='\033[0;31m'
 NC='\033[0m' # No Color
