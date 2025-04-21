@@ -22,6 +22,7 @@ LISTEN_HTTP=80
 DOCKERNET=""
 NETMODE="port"
 DOCKVOL="siterm-mysql"
+DOCKVOLLOG="sitermfe-log"
 DOCKERNAME="site-fe-sense"
 ENV_FILE="$(pwd)/../conf/environment"
 VERSION="latest"
@@ -95,6 +96,7 @@ do
        fi
        DOCKERNET=$PORTS;;
     u) DOCKVOL="siterm-mysql-${OPTARG}"
+       DOCKVOLLOG="sitermfe-log-${OPTARG}"
        DOCKERNAME="site-fe-sense-${OPTARG}";;
   esac
 done
@@ -196,15 +198,30 @@ fi
 cmd="docker volume inspect ${DOCKVOL} &> /dev/null"
 if eval "$cmd"
 then
-  echo "Docker volume available. Will use ${DOCKVOL} for mysql database"
+  echo "Docker volume available for FE Configuration. Will use ${DOCKVOL} for mysql database"
 else
-  echo "Docker volume not available. Will create ${DOCKVOL} for mysql database"
+  echo "Docker volume not available for FE Configuration. Will create ${DOCKVOL} for mysql database"
   docker volume create ${DOCKVOL}
   if [ $? != 0 ]; then
     echo -e "${RED}There was a failure creating docker volume. See error above. SiteRM will not start${NC}"
     exit 1
   fi
 fi
+
+# Create docker volume for log storage
+cmd="docker volume inspect ${DOCKVOLLOG} &> /dev/null"
+if eval "$cmd"
+then
+  echo "Docker volume available for logs. Will use ${DOCKVOLLOG} for logs"
+else
+  echo "Docker volume not available for logs. Will create ${DOCKVOLLOG} for logs"
+  docker volume create ${DOCKVOLLOG}
+  if [ $? != 0 ]; then
+    echo -e "${RED}There was a failure creating docker volume. See error above. SiteRM will not start${NC}"
+    exit 1
+  fi
+fi
+
 
 # Precreate mysql and ssh-keys empty directories if do not exist.
 # That might be an issue of non existing dirs on podman installation
@@ -221,6 +238,7 @@ docker run \
        -v $(pwd)/../conf/etc/grid-security/hostcert.pem:/etc/grid-security/hostcert.pem \
        -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem \
        -v ${DOCKVOL}:/opt/siterm/config/mysql/ \
+       -v ${DOCKVOLLOG}:/var/log/ \
        -v $(pwd)/../conf/opt/siterm/config/ssh-keys:/opt/siterm/config/ssh-keys \
        $DOCKERNET_PARSED \
        --restart always \

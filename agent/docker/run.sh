@@ -19,6 +19,9 @@ do
   esac
 done
 
+DOCKVOL="siterm-agent"
+DOCKVOLLOG="siterm-agent-logs"
+
 CMD_FILE=".last_run_cmd"
 CURRENT_CMD="./run.sh $@"
 if [[ -f "$CMD_FILE" ]]; then
@@ -121,13 +124,27 @@ if `test -S /run/lldpd/lldpd.socket`; then
 fi
 
 # Create docker volume for configuration storage
-cmd="docker volume inspect siterm-agent &> /dev/null"
+cmd="docker volume inspect ${DOCKVOL} &> /dev/null"
 if eval "$cmd"
 then
-  echo "Docker volume available. Will use siterm-agent for runtime files"
+  echo "Docker volume available for config. Will use ${DOCKVOL} for runtime files"
 else
-  echo "Docker volume not available. Will create sitermfe-mysql for mysql database"
-  docker volume create siterm-agent
+  echo "Docker volume not available for config. Will create ${DOCKVOL} for mysql database"
+  docker volume create ${DOCKVOL}
+  if [ $? != 0 ]; then
+    echo -e "${RED}There was a failure creating docker volume. See error above. SiteRM will not start${NC}"
+    exit 1
+  fi
+fi
+
+# Create docker volume for log storage
+cmd="docker volume inspect ${DOCKVOLLOG} &> /dev/null"
+if eval "$cmd"
+then
+  echo "Docker volume available for logs. Will use ${DOCKVOLLOG} for logs"
+else
+  echo "Docker volume not available for logs. Will create ${DOCKVOLLOG} for logs"
+  docker volume create ${DOCKVOLLOG}
   if [ $? != 0 ]; then
     echo -e "${RED}There was a failure creating docker volume. See error above. SiteRM will not start${NC}"
     exit 1
@@ -139,7 +156,8 @@ docker run \
   -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml:ro \
   -v $(pwd)/../conf/etc/grid-security/hostcert.pem:/etc/grid-security/hostcert.pem:ro \
   -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem:ro \
-  -v siterm-agent:/opt/siterm/config/ \
+  -v ${DOCKVOL}:/opt/siterm/config/ \
+  -v ${DOCKVOLLOG}:/var/log/ \
   -v /etc/iproute2/rt_tables:/etc/iproute2/rt_tables:ro $LLDPMOUNT \
   --restart always \
   --privileged \
