@@ -19,7 +19,7 @@ RUN if [ "$ARCH" == "ppc64le" ]; then source "$HOME"/.cargo/env && pip3 install 
 RUN if [ "$ARCH" != "ppc64le" ]; then pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?; fi
 RUN ./pre-install.sh $RELEASE && mv setup-sitefe.py setup.py && pip3 install . -v || exit $?
 # Install all data files needed for FE - httpd, cron, web files
-RUN cp packaging/siterm-site-fe/sitefe.wsgi /var/www/wsgi-scripts/ && \
+RUN cp packaging/siterm-site-fe/sitefe.py /var/www/wsgi-scripts/ && \
     cp packaging/siterm-site-fe/httpd.conf /etc/httpd/conf/httpd.conf && \
     cp packaging/siterm-site-fe/sitefe-httpd.conf /etc/httpd/sitefe-httpd.template && \
     cp packaging/siterm-site-fe/welcome.conf /etc/httpd/conf.d/ && \
@@ -42,6 +42,7 @@ RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-ari
 COPY build_files/usr/local/sbin/ /usr/local/sbin/
 COPY build_files/etc/supervisord.d/ /etc/supervisord.d/
 COPY build_files/root/.ansible.cfg /root/.ansible.cfg
+COPY build_files/var/www/wsgi-scripts/ /var/www/wsgi-scripts/
 
 EXPOSE 80 443
 
