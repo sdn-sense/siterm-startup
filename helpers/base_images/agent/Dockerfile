@@ -41,11 +41,10 @@ RUN touch /etc/firehol/fireqos.conf
 COPY build_files/etc/supervisord.conf /etc/
 
 # Install CA Certs
-RUN rpm -i https://repo.opensciencegrid.org/osg/24-main/el8/release/x86_64/Packages/o/osg-ca-certs-1.132-1.osg24.el8.noarch.rpm
+RUN rpm -i https://repo.opensciencegrid.org/osg/24-main/el8/release/x86_64/Packages/o/osg-ca-certs-1.134-1.osg24.el8.noarch.rpm
 # Install InCommon Server CA 2
-RUN wget -O /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem "https://spaces.at.internet2.edu/download/attachments/24576265/InCommon%20RSA%20Server%20CA%202.pem?api=v2" && \
+RUN wget -q -O /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem "https://spaces.at.internet2.edu/download/attachments/24576265/InCommon%20RSA%20Server%20CA%202.pem?api=v2" && \
     ln -s /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem /etc/grid-security/certificates/$(openssl x509 -in /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem -noout -hash).0
-
 
 # Install crons to fetch CA Certs
 COPY build_files/etc/cron.d/fetch-crl /etc/cron.d/fetch-crl

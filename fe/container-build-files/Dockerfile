@@ -14,10 +14,8 @@ ARG GITBR=master
 WORKDIR /opt/siterm/sitermcode
 RUN git clone -b $GITBR https://github.com/$GITORG/$GITREPO
 WORKDIR /opt/siterm/sitermcode/siterm/
-# Rust is needed only of ppc64le
-RUN if [ "$ARCH" == "ppc64le" ]; then source "$HOME"/.cargo/env && pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?; fi
-RUN if [ "$ARCH" != "ppc64le" ]; then pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?; fi
-RUN ./pre-install.sh $RELEASE && mv setup-sitefe.py setup.py && pip3 install . -v || exit $?
+RUN pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?
+RUN ./pre-install.sh "$RELEASE" && mv setup-sitefe.py setup.py && pip3 install . -v || exit $?
 # Install all data files needed for FE - httpd, cron, web files
 RUN cp packaging/siterm-site-fe/sitefe.py /var/www/wsgi-scripts/ && \
     cp packaging/siterm-site-fe/httpd.conf /etc/httpd/conf/httpd.conf && \
@@ -49,9 +47,3 @@ EXPOSE 80 443
 HEALTHCHECK --retries=3 --start-period=60s --interval=60s --timeout=30s CMD bash /usr/local/sbin/docker-healthcheck.sh || exit 1
 
 CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]
-
-# NOTE:
-# ppc64le keeps very old openssl. There is only one machine of this
-# So not rebuilding whole ssl just for this. This is not needed
-# for x86_64
-# export CRYPTOGRAPHY_ALLOW_OPENSSL_102=1

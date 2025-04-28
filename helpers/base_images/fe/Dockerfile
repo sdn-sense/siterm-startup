@@ -21,6 +21,8 @@ RUN mkdir -p /var/log/siterm-site-fe/LookUpService/ && \
     mkdir -p /var/log/siterm-site-fe/SwitchBackends && \
     mkdir -p /var/log/siterm-site-fe/Debugger && \
     mkdir -p /var/log/siterm-site-fe/DBWorker && \
+    mkdir -p /var/log/siterm-site-fe/Config-Fetcher && \
+    mkdir -p /var/log/siterm-site-fe/Validator && \
     mkdir -p /var/log/siterm-site-fe/contentdb && \
     mkdir -p /var/log/siterm-site-fe/http-api && \
     mkdir -p /var/log/siterm-site-fe/SNMPMonitoring && \
@@ -28,7 +30,8 @@ RUN mkdir -p /var/log/siterm-site-fe/LookUpService/ && \
     mkdir -p /var/log/mariadb/ && mkdir -p /opt/siterm/config/mysql/ && \
     mkdir -p /var/log/supervisor && mkdir -p /etc/supervisord.d/ && \
     mkdir -p /usr/local/sbin/ && mkdir -p /run/httpd && mkdir -p /etc/cron.d/ && \
-    mkdir -p /var/www/wsgi-scripts/ && mkdir -p /etc/cron-scripts/ && mkdir -p /var/www/html/
+    mkdir -p /var/www/wsgi-scripts/ && mkdir -p /etc/cron-scripts/ && mkdir -p /var/www/html/ && \
+    mkdir -p "$HOME"/.cargo && touch "$HOME"/.cargo/env
 
 RUN touch /var/log/siterm-site-fe/LookUpService/api.log && \
     touch /var/log/siterm-site-fe/ProvisioningService/api.log && \
@@ -36,6 +39,8 @@ RUN touch /var/log/siterm-site-fe/LookUpService/api.log && \
     touch /var/log/siterm-site-fe/SwitchBackends/api.log && \
     touch /var/log/siterm-site-fe/Debugger/api.log && \
     touch /var/log/siterm-site-fe/DBWorker/api.log && \
+    touch /var/log/siterm-site-fe/Config-Fetcher/api.log && \
+    touch /var/log/siterm-site-fe/Validator/api.log && \
     touch /var/log/siterm-site-fe/DBCleaner/api.log && \
     touch /var/log/siterm-site-fe/contentdb/api.log && \
     touch /var/log/siterm-site-fe/http-api/api.log && \
@@ -63,19 +68,15 @@ RUN rm -f /etc/httpd/conf.d/ssl.conf
 RUN pip3 install --no-cache-dir --upgrade setuptools pip && \
     pip3 install --no-cache-dir supervisor superlance
 
-
 COPY build_files/etc/supervisord.conf /etc/
 
 # Install CA Certs
-RUN rpm -i https://repo.opensciencegrid.org/osg/24-main/el8/release/x86_64/Packages/o/osg-ca-certs-1.132-1.osg24.el8.noarch.rpm
+RUN rpm -i https://repo.opensciencegrid.org/osg/24-main/el8/release/x86_64/Packages/o/osg-ca-certs-1.134-1.osg24.el8.noarch.rpm
 # Install InCommon Server CA 2
-RUN wget -O /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem "https://spaces.at.internet2.edu/download/attachments/24576265/InCommon%20RSA%20Server%20CA%202.pem?api=v2" && \
+RUN wget -q -O /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem "https://spaces.at.internet2.edu/download/attachments/24576265/InCommon%20RSA%20Server%20CA%202.pem?api=v2" && \
     ln -s /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem /etc/grid-security/certificates/$(openssl x509 -in /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem -noout -hash).0
 # Install crons to fetch CA Certs
 COPY build_files/etc/cron.d/fetch-crl /etc/cron.d/fetch-crl
 COPY build_files/etc/cron.d/fetch-crl-reboot /etc/cron.d/fetch-crl-reboot
 
-# Install rust if ppc64le. Need for TLS, due to old OpenSSL
 WORKDIR /tmp
-RUN if [ "$ARCH" == "ppc64le" ]; then wget --output-document - --quiet https://sh.rustup.rs &> rust-install.sh && sh rust-install.sh -y && source "$HOME"/.cargo/env && rm -f rust-install.sh; fi
-RUN if [ "$ARCH" != "ppc64le" ]; then mkdir -p "$HOME"/.cargo && touch "$HOME"/.cargo/env; fi
