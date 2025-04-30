@@ -7,3 +7,4 @@ log_error=/var/log/mariadb/error
 datadir=/opt/siterm/config/mysql/
 collation-server=utf8_unicode_ci
 character-set-server=utf8
+max_connections = 500
