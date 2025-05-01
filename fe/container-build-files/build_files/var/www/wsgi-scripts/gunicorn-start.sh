@@ -14,6 +14,7 @@ GU_KEEP_ALIVE="${KEEP_ALIVE:-5}"
 GU_LIMIT_REQUEST_LINE="${GU_LIMIT_REQUEST_LINE:-8190}"
 GU_LIMIT_REQUEST_FIELDS="${GU_LIMIT_REQUEST_FIELDS:-32768}"
 GU_LIMIT_REQUEST_BODY="${GU_LIMIT_REQUEST_BODY:-104857600}"
+GU_LOG_LEVEL="${LOG_LEVEL:-info}"
 
 # Start gunicorn
 exec gunicorn sitefe:application \
@@ -27,4 +28,7 @@ exec gunicorn sitefe:application \
   --keep-alive "$GU_KEEP_ALIVE" \
   --limit-request-line "$GU_LIMIT_REQUEST_LINE" \
   --limit-request-fields "$GU_LIMIT_REQUEST_FIELDS" \
+  --access-logfile "-" \
+  --error-logfile "-" \
+  --log-level "$GU_LOG_LEVEL" \
   --bind 127.0.0.1:8080
