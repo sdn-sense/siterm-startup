@@ -6,12 +6,9 @@ sleep_long () {
 
 
 # Read all env variables for the process.
-if [ -f "/etc/siterm-mariadb" ]; then
-  set -a
-  source /etc/siterm-mariadb
-  set +a
-  env
-fi
+set -a
+source /etc/environment || true
+set +a
 
 # Set default Ansible repo (or use one defined in the environment)
 ANSIBLE_REPO="${ANSIBLE_REPO:-origin/master}"

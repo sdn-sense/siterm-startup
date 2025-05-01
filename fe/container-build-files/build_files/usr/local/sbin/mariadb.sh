@@ -6,12 +6,15 @@ if [[ -z $MARIA_DB_HOST || -z $MARIA_DB_USER || -z $MARIA_DB_DATABASE || -z $MAR
     set -a
     source /etc/siterm-mariadb
     set +a
-    env
   else
     echo 'DB Configuration file not available. exiting.'
     exit 1
   fi
 fi
+# Source the environment variables
+set -a
+source /etc/environment || true
+set +a
 
 # Overwrite MariaDB port if it is not default 3306
 if [[ "$MARIA_DB_PORT" != "3306" && -n "$MARIA_DB_PORT" ]]; then
