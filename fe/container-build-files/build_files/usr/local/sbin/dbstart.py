@@ -2,7 +2,7 @@
 """Database starter to create and update database"""
 from time import sleep
 import pkg_resources
-import mariadb
+import pymysql
 from SiteRMLibs.DBBackend import dbinterface
 from SiteRMLibs import __version__ as runningVersion
 
@@ -16,7 +16,7 @@ class DBStarter:
         """Check if the database is ready"""
         try:
             self.db.db.execute("SELECT 1")
-        except mariadb.OperationalError as ex:
+        except pymysql.OperationalError as ex:
             print(f"Error executing SQL: {ex}")
             return False
         return True
@@ -38,7 +38,7 @@ class DBStarter:
                 for item in row[0].split(';'):
                     if item.strip():
                         self.db.db.execute(item.strip())
-        except mariadb.OperationalError as ex:
+        except pymysql.OperationalError as ex:
             print(f"Error executing SQL: {ex}")
             return False
         return True
@@ -63,10 +63,10 @@ class DBStarter:
     def _makesqlcall(self, sqlcall):
         try:
             self.db.db.execute(sqlcall)
-        except mariadb.ProgrammingError as ex:
+        except pymysql.ProgrammingError as ex:
             print(f"Error executing SQL: {ex}")
             raise
-        except mariadb.OperationalError as ex:
+        except pymysql.OperationalError as ex:
             print(f"Error executing SQL: {ex}")
             raise
 
