@@ -4,7 +4,7 @@ source /etc/environment || true
 set +a
 
 # Default values if not defined in /etc/environment
-GU_WORKERS="${WORKERS:-3}"
+GU_WORKERS="${WORKERS:-2}"
 GU_THREADS="${THREADS:-1}"
 GU_MAX_REQUESTS="${MAX_REQUESTS:-8000}"
 GU_MAX_REQUESTS_JITTER="${MAX_REQUESTS_JITTER:-1000}"
