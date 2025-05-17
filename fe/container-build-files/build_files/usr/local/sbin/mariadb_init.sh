@@ -19,22 +19,15 @@ db_backup_sleep () {
 touch /tmp/siterm-mariadb-init
 echo `date` > /tmp/siterm-mariadb-init
 
-# Check if all env variables are available and set
-if [[ -z $MARIA_DB_HOST || -z $MARIA_DB_USER || -z $MARIA_DB_DATABASE || -z $MARIA_DB_PASSWORD || -z $MARIA_DB_PORT ]]; then
-  if [ -f "/etc/siterm-mariadb" ]; then
-    set -a
-    source /etc/siterm-mariadb
-    set +a
-  else
-    echo 'DB Configuration file not available. exiting.'
-    exit 1
-  fi
-fi
 set -a
 source /etc/environment || true
 set +a
 
-
+# Check if all env variables are available and set
+if [[ -z $MARIA_DB_HOST || -z $MARIA_DB_USER || -z $MARIA_DB_DATABASE || -z $MARIA_DB_PASSWORD || -z $MARIA_DB_PORT ]]; then
+    echo 'DB Configuration file not available. exiting.'
+    exit 1
+fi
 
 # Overwrite MariaDB port if it is not default 3306
 if [[ "$MARIA_DB_PORT" != "3306" && -n "$MARIA_DB_PORT" ]]; then

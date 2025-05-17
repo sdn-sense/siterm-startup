@@ -8,17 +8,14 @@ if [ $# == 0 ]; then
     echo "     specify network mode. One of: host,port."
     echo "     host means it will use --net host for docker startup. Please make sure to open port 80, 443 in firewall. Use this option only if any of your hosts, network devices are IPv6 only (no IPv4 address)."
     echo "     port means it will use -p 8080:80 -p 8443:443 in docker startup. Docker will open port on system firewall. Default parameter."
-    echo "  -p Overwrite default ports for docker. Default is 8080:80 and 8443:443. Specify in quotes, like -p \"10080:80 10443:443\""
+    echo "  -p Overwrite default ports for docker. Default is 8080:80 and 8443:443. Specify in quotes, like -p \"9443:1443 8443:443\""
     echo "  -u (Optional) Unique volume for docker mysql database (any string)/docker container name. If specified, will use it for docker volume creation and container name"
-    echo "  -l Instruct httpd to listen on a specific port. Default inside docker is 443. (Mainly for docker + nftables mode (no iptables) - where it is mandatory to use -n host)"
     exit 1
 fi
 
 # Set defaults
 RED='\033[0;31m'
 NC='\033[0m' # No Color
-LISTEN_HTTPS=443
-LISTEN_HTTP=80
 DOCKERNET=""
 NETMODE="port"
 DOCKVOL="siterm-mysql"
@@ -64,24 +61,11 @@ certchecker () {
   return 0
 }
 
-update_listen() {
-    if grep -q '^LISTEN_HTTPS=' "$ENV_FILE"; then
-        # Update the existing value
-        sed -i "s/^LISTEN_HTTPS=.*/LISTEN_HTTPS=$LISTEN_HTTPS/" "$ENV_FILE"
-        echo "LISTEN_HTTPS updated to $LISTEN_HTTPS in $ENV_FILE."
-    else
-        # Add the new value
-        echo "LISTEN_HTTPS=$LISTEN_HTTPS" >> "$ENV_FILE"
-        echo "LISTEN_HTTPS added with value $LISTEN_HTTPS in $ENV_FILE."
-    fi
-}
-
 while getopts i:n:l:p:u: flag
 do
   echo "Processing flag: ${flag} with argument: ${OPTARG}"
   case "${flag}" in
     i) VERSION=${OPTARG};;
-    l) LISTEN_HTTPS=${OPTARG};;
     n) NETMODE=${OPTARG}
        if [ "x$NETMODE" != "xhost" ] && [ "x$NETMODE" != "xport" ]; then
          echo "Parameter -n $NETMODE is not one of: host,port."
@@ -119,7 +103,7 @@ echo "$CURRENT_CMD" > "$CMD_FILE"
 # Set docker network correct params
 if [ "x$NETMODE" = "xport" ]; then
   if [ -z "$DOCKERNET" ]; then
-    DOCKERNET="8080:80 8443:443"
+    DOCKERNET="9443:1443 8443:443"
   fi
   for port in $DOCKERNET; do
     DOCKERNET_PARSED+=" -p $port"
@@ -130,24 +114,6 @@ else
   fi
   DOCKERNET_PARSED=$DOCKERNET
 fi
-
-# Check if the file exists
-if [[ -f "$ENV_FILE" ]]; then
-    # Get the current value of LISTEN_HTTPS if defined
-    CURRENT_LISTEN=$(grep '^LISTEN_HTTPS=' "$ENV_FILE" | cut -d '=' -f 2)
-
-    if [[ "$CURRENT_LISTEN" != "$LISTEN_HTTPS" ]]; then
-        update_listen
-    else
-        echo "LISTEN_HTTPS is already set to the desired value in $ENV_FILE."
-    fi
-else
-    # If the file doesn't exist, create it and add LISTEN_HTTPS
-    echo "LISTEN_HTTPS=$LISTEN_HTTPS" > "$ENV_FILE"
-    echo "Environment file $ENV_FILE created and LISTEN_HTTPS set to $LISTEN_HTTPS."
-fi
-
-
 
 # Do not use json-file logging if it is podman
 ISPODMAN=`docker --version | grep podman | wc -l`

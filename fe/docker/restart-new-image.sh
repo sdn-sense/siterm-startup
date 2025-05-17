@@ -10,7 +10,6 @@ if [ $# == 0 ]; then
     echo "     port means it will use -p 8080:80 -p 8443:<l port> in docker startup. Docker will open port on system firewall. Default parameter"
     echo "  -p Overwrite default ports for docker. Default is 8080:80 and 8443:443. Specify in quotes, like -p \"10080:80 10443:443\""
     echo "  -u (Optional) Unique volume for docker mysql database (any string)/docker container name. If specified, will use it for docker volume creation and container name"
-    echo "  -l Instruct httpd to listen on a specific port. Default inside docker is 443. (Mainly for docker + nftables mode (no iptables) - where it is mandatory to use -n host)"
     exit 1
 fi
 
@@ -20,13 +19,11 @@ DOCKERNET=""
 UFLAG=""
 VERSION="latest"
 NETMODE="port"
-LISTEN_HTTPS="443"
 
 while getopts i:n:l:p:u: flag
 do
   case "${flag}" in
     i) VERSION=${OPTARG};;
-    l) LISTEN_HTTPS=${OPTARG};;
     n) NETMODE=${OPTARG}
        if [ "x$NETMODE" != "xhost" ] && [ "x$NETMODE" != "xport" ]; then
          echo "Parameter -n $NETMODE is not one of: host,port."
@@ -47,7 +44,7 @@ done
 # Set default ports if not specified;
 if [ "x$NETMODE" = "xport" ]; then
   if [ -z "$DOCKERNET" ]; then
-    DOCKERNET="8080:80 8443:443"
+    DOCKERNET="9443:1443 8443:443"
   fi
 fi
 
@@ -71,4 +68,4 @@ do
   docker image rm $id --force
 done
 echo "================================================"
-./run.sh -i $VERSION -n $NETMODE -l $LISTEN_HTTPS -p "$DOCKERNET" -u $UFLAG
+./run.sh -i $VERSION -n $NETMODE -p "$DOCKERNET" -u $UFLAG
