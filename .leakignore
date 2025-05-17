@@ -33,3 +33,7 @@ none
 dummy
 prometheus_username
 prometheus_password
+MARIA_DB_PASSWORD
+MARIA_DB_USER
+MARIA_DB_HOST
+MARIA_DB_DATABASE
