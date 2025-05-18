@@ -18,9 +18,6 @@ RUN pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?
 RUN ./pre-install.sh "$RELEASE" && mv setup-sitefe.py setup.py && pip3 install . -v || exit $?
 # Install all data files needed for FE - httpd, cron, web files
 RUN cp packaging/siterm-site-fe/sitefe.py /var/www/wsgi-scripts/ && \
-    cp packaging/siterm-site-fe/httpd.conf /etc/httpd/conf/httpd.conf && \
-    cp packaging/siterm-site-fe/sitefe-httpd.conf /etc/httpd/sitefe-httpd.template && \
-    cp packaging/siterm-site-fe/welcome.conf /etc/httpd/conf.d/ && \
     cp packaging/general/siterm-crons /etc/cron.d/ && \
     cp packaging/general/siterm-ca-cron.sh /etc/cron-scripts/ && \
     cp -R src/html/* /var/www/html/
@@ -42,7 +39,14 @@ COPY build_files/etc/supervisord.d/ /etc/supervisord.d/
 COPY build_files/root/.ansible.cfg /root/.ansible.cfg
 COPY build_files/var/www/wsgi-scripts/ /var/www/wsgi-scripts/
 
-EXPOSE 80 443
+# Copy all HTTP Templates
+COPY build_files/etc/httpd/httpd.conf /etc/httpd/conf/httpd.conf
+COPY build_files/etc/httpd/sitefe-httpd-oidc.conf-template /etc/httpd/sitefe-httpd-oidc.conf-template
+COPY build_files/etc/httpd/sitefe-httpd-x509-oidc.conf-template /etc/httpd/sitefe-httpd-x509-oidc.conf-template
+COPY build_files/etc/httpd/sitefe-httpd-x509.conf-template /etc/httpd/sitefe-httpd-x509.conf-template
+COPY build_files/etc/httpd/welcome.conf /etc/httpd/conf.d/welcome.conf
+
+EXPOSE 443
 
 HEALTHCHECK --retries=3 --start-period=60s --interval=60s --timeout=30s CMD bash /usr/local/sbin/docker-healthcheck.sh || exit 1
 
