@@ -18,36 +18,53 @@ set -a
 source /etc/environment
 set +a
 
-# Set defaults for HTTPS_API and HTTPS_WEB
-LISTEN_HTTPS_API=${LISTEN_HTTPS_API:-443}
-LISTEN_HTTPS_WEB=${LISTEN_HTTPS_WEB:-1443}
+# Set defaults for HTTPS
+LISTEN_HTTPS=${LISTEN_HTTPS:-443}
 
-# Identify any missing variables.
-REQUIRED_VARS=(
-  LISTEN_HTTPS_API_SERVER
-  LISTEN_HTTPS_WEB_SERVER
-  OIDCPROVIDER
-  OIDCCLIENTID
-  OIDCCLIENTSECRET
-  OIDCREDIRECTURI
-  OIDCCRYPTOPASS
-)
+# AUTH_SUPPORT should be one of: X509, OIDC, BOTH. Default X509
+case "$AUTH_SUPPORT" in
+  X509)
+    TEMPLATE_FILE="/etc/httpd/sitefe-httpd-x509.conf-template"
+    ;;
+  OIDC)
+    TEMPLATE_FILE="/etc/httpd/sitefe-httpd-oidc.conf-template"
+    ;;
+  BOTH)
+    TEMPLATE_FILE="/etc/httpd/sitefe-httpd-x509-oidc.conf-template"
+    ;;
+  *)
+    TEMPLATE_FILE="/etc/httpd/sitefe-httpd-x509.conf-template"
+    ;;
+esac
 
-MISSING_VARS=()
-for var in "${REQUIRED_VARS[@]}"; do
-  if [[ -z "${!var:-}" ]]; then
-    MISSING_VARS+=("$var")
-  fi
-done
+if [[ "$AUTH_SUPPORT" == "OIDC" || "$AUTH_SUPPORT" == "BOTH" ]]; then
+  REQUIRED_VARS=(
+    OIDC_PROVIDER
+    OIDC_CLIENT_ID
+    OIDC_CLIENT_SECRET
+    OIDC_REDIRECT_URI
+    OIDC_CRYPTO_PASS
+  )
 
-if [[ ${#MISSING_VARS[@]} -gt 0 ]]; then
-  echo "Error: Missing required environment variables:"
-  for var in "${MISSING_VARS[@]}"; do
-    echo "  - $var"
+  MISSING_VARS=()
+  for var in "${REQUIRED_VARS[@]}"; do
+    if [[ -z "${!var:-}" ]]; then
+      MISSING_VARS+=("$var")
+    fi
   done
-  exit 1
+
+  if [[ ${#MISSING_VARS[@]} -gt 0 ]]; then
+    echo "Error: Missing required environment variables:"
+    for var in "${MISSING_VARS[@]}"; do
+      echo "  - $var"
+    done
+    exit 1
+  fi
 fi
+
+
 # Generate apache config from template
-envsubst < /etc/httpd/sitefe-httpd.template > /etc/httpd/conf.d/sitefe-httpd.conf
+envsubst < "$TEMPLATE_FILE" > /etc/httpd/conf.d/sitefe-httpd.conf
+
 # Lets run it!
 exec /usr/sbin/httpd -k start -DFOREGROUND

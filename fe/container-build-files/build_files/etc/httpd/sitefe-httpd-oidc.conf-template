@@ -1,0 +1,81 @@
+LoadModule headers_module modules/mod_headers.so
+LoadModule auth_openidc_module modules/mod_auth_openidc.so
+
+# This will be overwritten by /usr/local/sbin/httpd.sh
+Listen ${LISTEN_HTTPS}
+
+<VirtualHost *:${LISTEN_HTTPS}>
+  SSLEngine on
+  SSLCertificateFile /etc/httpd/certs/cert.pem
+  SSLCertificateKeyFile /etc/httpd/certs/privkey.pem
+  SSLCACertificatePath /etc/grid-security/certificates/
+  SSLProtocol -All -SSLv3 -TLSv1 -TLSv1.1 +TLSv1.2
+  SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS !RC4"
+  SSLHonorCipherOrder on
+
+  Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains"
+  RewriteEngine On
+  RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
+  RewriteRule .* - [F]
+
+  LogFormat "%h %{X-Forwarded-For}i %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+  ErrorLog "|/sbin/rotatelogs -n 7 /var/log/httpd/error_ssl_log 86400"
+  CustomLog "|/sbin/rotatelogs -n 7 /var/log/httpd/access_ssl_log 86400" combined
+
+  ErrorDocument 403 "You are not authorized to access this URL"
+
+  # OIDC Configuration
+  OIDCProviderMetadataURL ${OIDC_PROVIDER}
+  OIDCClientID ${OIDC_CLIENT_ID}
+  OIDCClientSecret ${OIDC_CLIENT_SECRET}
+  OIDCRedirectURI https://${OIDC_REDIRECT_URI}/oidc/callback
+  OIDCCryptoPassphrase "${OIDC_CRYPTO_PASS}"
+  OIDCScope "openid email profile"
+  OIDCPassClaimsAs both
+  OIDCPassUserInfoAs claims
+  OIDCRemoteUserClaim email
+
+  # Handle callback internally
+  ProxyPass /oidc/callback !
+  <Location /oidc/callback>
+    AuthType openid-connect
+    Require valid-user
+  </Location>
+
+  <LocationMatch "^/(T[0-9]_.*_.*/sitefe|NRM_.*/sitefe|MAIN/sitefe)">
+    AuthType openid-connect
+    Require valid-user
+  </LocationMatch>
+
+  <Directory "/var/www/html">
+      Options FollowSymLinks
+      AllowOverride None
+      Require all denied 
+  </Directory>
+
+  <LocationMatch "^/$|^/index\.html|^/assets/|^/.*\.html$">
+      AuthType openid-connect
+      Require valid-user
+  </LocationMatch>
+
+  ProxyPreserveHost On
+  ProxyPassMatch ^/(T[0-9]_.*_.*/sitefe|NRM_.*/sitefe|MAIN/sitefe) http://127.0.0.1:8080/
+  ProxyPassReverse / http://127.0.0.1:8080/
+
+</VirtualHost>
+
+MaxRequestWorkers 150
+LimitRequestBody 5242880
+KeepAlive On
+MaxKeepAliveRequests 500
+KeepAliveTimeout 60
+
+<IfModule mpm_event_module>
+    StartServers          2
+    MinSpareThreads       25
+    MaxSpareThreads       75
+    ThreadLimit           64
+    ThreadsPerChild       25
+    MaxRequestWorkers     150
+    MaxConnectionsPerChild   500
+</IfModule>
