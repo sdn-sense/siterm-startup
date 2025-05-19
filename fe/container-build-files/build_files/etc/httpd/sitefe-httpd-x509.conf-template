@@ -2,10 +2,10 @@ LoadModule headers_module modules/mod_headers.so
 
 # Use the defined ports in the Listen directives
 # This will be overwritten by /usr/local/sbin/httpd.sh
-Listen {{LISTEN_HTTPS}}
+Listen ${LISTEN_HTTPS}
 
 #Define the behaviour for our SSL-encypted host
-<VirtualHost *:{{LISTEN_HTTPS}}>
+<VirtualHost *:${LISTEN_HTTPS}>
   Header always set Strict-Transport-Security "max-age=63072000; includeSubdomains;"
   RewriteEngine on
   RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
