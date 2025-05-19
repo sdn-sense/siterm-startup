@@ -19,7 +19,7 @@ source /etc/environment
 set +a
 
 # Set defaults for HTTPS
-LISTEN_HTTPS=${LISTEN_HTTPS:-443}
+export LISTEN_HTTPS="${LISTEN_HTTPS:-443}"
 
 # AUTH_SUPPORT should be one of: X509, OIDC, BOTH. Default X509
 case "$AUTH_SUPPORT" in
