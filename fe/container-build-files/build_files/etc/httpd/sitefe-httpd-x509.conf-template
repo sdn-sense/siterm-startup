@@ -49,7 +49,7 @@ Listen ${LISTEN_HTTPS}
   <LocationMatch "^/$|^/index\.html|^/assets/|^/.*\.html$">
       SSLRequireSSL
       SSLVerifyClient require
-      Require valid-user
+      Require ssl-verify-client
   </LocationMatch>
 
   ProxyPreserveHost On
