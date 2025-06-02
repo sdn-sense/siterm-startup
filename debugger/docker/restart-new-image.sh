@@ -19,13 +19,13 @@ do
   esac
 done
 
-for id in `docker ps -a | grep sdnsense/siterm-agent | awk '{print $1}'`
+for id in `docker ps -a | grep sdnsense/siterm-debugger | awk '{print $1}'`
 do
   docker stop $id
   docker rm $id
 done
 
-for id in `docker image ls | grep sdnsense/siterm-agent | awk '{print $3}'`
+for id in `docker image ls | grep sdnsense/siterm-debugger | awk '{print $3}'`
 do
   docker image rm $id --force
 done

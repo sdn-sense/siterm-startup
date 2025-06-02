@@ -20,7 +20,7 @@ DOCKERNET=""
 NETMODE="port"
 DOCKVOL="siterm-mysql"
 DOCKVOLLOG="sitermfe-log"
-DOCKERNAME="site-fe-sense"
+DOCKERNAME="siterm-fe"
 ENV_FILE="$(pwd)/../conf/environment"
 VERSION="latest"
 
@@ -81,7 +81,7 @@ do
        DOCKERNET=$PORTS;;
     u) DOCKVOL="siterm-mysql-${OPTARG}"
        DOCKVOLLOG="sitermfe-log-${OPTARG}"
-       DOCKERNAME="site-fe-sense-${OPTARG}";;
+       DOCKERNAME="siterm-fe-${OPTARG}";;
   esac
 done
 
@@ -209,4 +209,4 @@ docker run \
        $DOCKERNET_PARSED \
        --restart always \
        --env-file $ENV_FILE \
-       $LOGOPTIONS docker.io/sdnsense/site-rm-sense:$VERSION
+       $LOGOPTIONS docker.io/sdnsense/siterm-fe:$VERSION

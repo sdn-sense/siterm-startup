@@ -1,5 +1,5 @@
 FROM almalinux:8
-# Architecture argument: amd64 ppc64le
+# Architecture argument: amd64
 ARG ARCH
 
 RUN mkdir -p /var/log/siterm-agent/Agent && \
@@ -17,25 +17,11 @@ RUN mkdir -p /var/log/siterm-agent/Agent && \
 
 RUN yum -y install epel-release && yum clean all
 
-RUN yum -y install git autoconf automake sudo libcurl-devel libffi-devel python3-lxml openssl-devel curl gcc traceroute libuuid-devel lm_sensors ipset make nc pkgconfig python39 python39-pyyaml zlib-devel python39-devel wget tcpdump jq iproute cronie python39-pip wireshark iperf3 iproute-tc diffutils fetch-crl procps-ng mariadb-devel libxml2-devel libxslt-devel lldpd && yum clean all
+RUN yum -y install git autoconf automake sudo libcurl-devel libffi-devel python3-lxml openssl-devel curl libuuid-devel lm_sensors ipset make nc python39 python39-pyyaml zlib-devel python39-devel wget jq iproute cronie python39-pip diffutils fetch-crl procps-ng mariadb-devel libxml2-devel libxslt-devel lldpd && yum clean all
 
 # Install supervisord and superlance to run service, monitor mem usage
 RUN pip3 install --no-cache-dir --upgrade setuptools pip && \
     pip3 install --no-cache-dir supervisor superlance
-
-# Install iprange
-RUN git clone https://github.com/firehol/iprange.git /usr/src/iprange.git
-WORKDIR /usr/src/iprange.git/
-RUN ./autogen.sh && ./configure --prefix=/usr CFLAGS="-O2" --disable-man && \
-    make clean && make && make install && rm -rf /usr/src/iprange.git
-
-# Install firehol
-RUN git clone https://github.com/firehol/firehol.git /usr/src/firehol.git
-WORKDIR /usr/src/firehol.git
-RUN ./autogen.sh && ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-man --disable-doc && \
-    make clean && make && make install && rm -rf /usr/src/firehol.git
-
-RUN touch /etc/firehol/fireqos.conf
 
 # Configure Supervisord
 COPY build_files/etc/supervisord.conf /etc/

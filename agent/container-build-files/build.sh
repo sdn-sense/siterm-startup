@@ -8,7 +8,5 @@ fi
 
 ARCH=`arch`
 if [ $ARCH = "x86_64" ]; then
-  docker build --no-cache -t siteagent-main --build-arg RELEASE=$RELEASE .
-elif [ $ARCH = "ppc64le" ]; then
-  docker build --no-cache -t siteagent-main --build-arg RELEASE=$RELEASE"-"$ARCH .
+  docker build --no-cache -t siterm-agent --build-arg RELEASE=$RELEASE .
 fi

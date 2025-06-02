@@ -62,8 +62,8 @@ do
   docker rm $id
 done
 echo "================================================"
-echo "Finding and removing existing docker images for sdnsense/site-rm-sense"
-for id in `docker image ls | grep sdnsense/site-rm-sense | awk '{print $3}'`
+echo "Finding and removing existing docker images for sdnsense/siterm-fe"
+for id in `docker image ls | grep sdnsense/siterm-fe | awk '{print $3}'`
 do
   docker image rm $id --force
 done

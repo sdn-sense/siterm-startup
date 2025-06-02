@@ -1,6 +1,6 @@
 ARG RELEASE=latest
 ARG ARCH="x86_64"
-FROM sdnsense/sitefe-base:$RELEASE
+FROM sdnsense/sitermfebase:$RELEASE
 
 COPY build_files/ssh-keygen.py /root/ssh-keygen.py
 COPY build_files/ansible-prepare.py /root/ansible-prepare.py
@@ -15,7 +15,7 @@ WORKDIR /opt/siterm/sitermcode
 RUN git clone -b $GITBR https://github.com/$GITORG/$GITREPO
 WORKDIR /opt/siterm/sitermcode/siterm/
 RUN pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?
-RUN ./pre-install.sh "$RELEASE" && mv setup-sitefe.py setup.py && pip3 install . -v || exit $?
+RUN ./pre-install.sh "$RELEASE" && mv setup-sitefe.py setup.py && pip3 install --no-cache-dir . -v || exit $?
 # Install all data files needed for FE - httpd, cron, web files
 RUN cp packaging/siterm-site-fe/sitefe.py /var/www/wsgi-scripts/ && \
     cp packaging/general/siterm-crons /etc/cron.d/ && \

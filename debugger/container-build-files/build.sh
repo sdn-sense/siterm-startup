@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 RELEASE=dev
 if [ $# -eq 1 ]
   then
@@ -8,5 +9,5 @@ fi
 
 ARCH=`arch`
 if [ $ARCH = "x86_64" ]; then
-  docker build --no-cache -t siterm-fe --build-arg RELEASE=$RELEASE --build-arg ARCH=$ARCH .
+  docker build --no-cache -t sitermdebuggerbuild --build-arg RELEASE=$RELEASE .
 fi

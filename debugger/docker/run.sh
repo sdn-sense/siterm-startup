@@ -19,8 +19,8 @@ do
   esac
 done
 
-DOCKVOL="siterm-agent"
-DOCKVOLLOG="siterm-agent-logs"
+DOCKVOL="siterm-debugger"
+DOCKVOLLOG="siterm-debugger-logs"
 
 CMD_FILE=".last_run_cmd"
 CURRENT_CMD="./run.sh $@"
@@ -114,14 +114,6 @@ if [ $ISPODMAN -eq 0 ]; then
   LOGOPTIONS="--log-driver=json-file --log-opt max-size=10m --log-opt max-file=10"
 fi
 
-# If lldpd daemon running on the host, we pass socket to container.
-# SiteRM Agent will try to get lldpd information (lldpcli show neighbors)
-# So that it can know automatically how things are connected.
-# lldp must be enabled at the site level (host and network)
-LLDPMOUNT=""
-if `test -S /run/lldpd/lldpd.socket`; then
-  LLDPMOUNT="-v /run/lldpd/lldpd.socket:/run/lldpd/lldpd.socket:ro"
-fi
 
 # Create docker volume for configuration storage
 cmd="docker volume inspect ${DOCKVOL} &> /dev/null"
@@ -152,16 +144,12 @@ else
 fi
 
 docker run \
-  -dit --name siterm-agent \
+  -dit --name siterm-debugger \
   -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml:ro \
   -v $(pwd)/../conf/etc/grid-security/hostcert.pem:/etc/grid-security/hostcert.pem:ro \
   -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem:ro \
   -v ${DOCKVOL}:/opt/siterm/config/ \
-  -v ${DOCKVOLLOG}:/var/log/ \
-  -v /etc/iproute2/rt_tables:/etc/iproute2/rt_tables:ro $LLDPMOUNT \
+  -v ${DOCKVOLLOG}:/var/log/ \ 
   --restart always \
-  --privileged \
-  --cap-add=NET_ADMIN \
   --net=host \
-  $LOGOPTIONS docker.io/sdnsense/siterm-agent:$VERSION
-# For development, add -v /home/jbalcas/siterm/:/opt/siterm/sitermcode/siterm/ \
+  $LOGOPTIONS docker.io/sdnsense/siterm-debugger:$VERSION
