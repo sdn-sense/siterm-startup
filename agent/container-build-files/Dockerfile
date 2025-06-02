@@ -6,7 +6,7 @@ ARG GITREPO=siterm
 ARG GITORG=sdn-sense
 ARG GITBR=master
 
-RUN yum -y install iproute-tc automake autoconf gcc make pkgconfig && yum clean all
+RUN yum -y install iproute-tc automake autoconf gcc make pkgconfig traceroute iproute && yum clean all
 
 # Install iprange
 RUN git clone https://github.com/firehol/iprange.git /usr/src/iprange.git
