@@ -149,7 +149,7 @@ docker run \
   -v $(pwd)/../conf/etc/grid-security/hostcert.pem:/etc/grid-security/hostcert.pem:ro \
   -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem:ro \
   -v ${DOCKVOL}:/opt/siterm/config/ \
-  -v ${DOCKVOLLOG}:/var/log/ \ 
+  -v ${DOCKVOLLOG}:/var/log/ \
   --restart always \
   --net=host \
   $LOGOPTIONS docker.io/sdnsense/siterm-debugger:$VERSION

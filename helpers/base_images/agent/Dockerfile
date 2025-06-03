@@ -1,4 +1,4 @@
-FROM almalinux:8
+FROM fedora:42
 # Architecture argument: amd64
 ARG ARCH
 
@@ -15,9 +15,7 @@ RUN mkdir -p /var/log/siterm-agent/Agent && \
     mkdir -p /usr/src/ && mkdir -p /etc/cron.d/ && \
     mkdir -p /etc/cron-scripts/
 
-RUN yum -y install epel-release && yum clean all
-
-RUN yum -y install git autoconf automake sudo libcurl-devel libffi-devel python3-lxml openssl-devel curl libuuid-devel lm_sensors ipset make nc python39 python39-pyyaml zlib-devel python39-devel wget jq iproute cronie python39-pip diffutils fetch-crl procps-ng mariadb-devel libxml2-devel libxslt-devel lldpd && yum clean all
+RUN yum -y install git autoconf automake sudo libcurl-devel libffi-devel python3-lxml openssl-devel curl libuuid-devel lm_sensors ipset make nc python3 python3-pyyaml zlib-devel python3-devel wget jq iproute cronie python3-pip diffutils fetch-crl procps-ng mariadb-devel libxml2-devel libxslt-devel lldpd && yum clean all
 
 # Install supervisord and superlance to run service, monitor mem usage
 RUN pip3 install --no-cache-dir --upgrade setuptools pip && \
