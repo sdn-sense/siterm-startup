@@ -1,5 +1,4 @@
-FROM almalinux:8
-# Architecture argument: amd64 ppc64le
+FROM almalinux:10
 ARG ARCH="x86_64"
 
 RUN yum -y install wget epel-release && yum clean all
@@ -59,7 +58,7 @@ RUN chown mysql:mysql /var/log/mariadb/ && \
     chmod -R g+ws /var/log/siterm-site-fe/*
 
 # Install all required packages
-RUN yum -y install git autoconf sudo mod_auth_openidc gettext libcurl-devel libffi-devel openssl-devel automake curl gcc libuuid-devel lm_sensors make nc pkgconfig zlib-devel python39-devel httpd httpd-devel python39-mod_wsgi mod_ssl cronie python39-pip python39 python3-pyOpenSSL mariadb-server python3-mysql mariadb-devel fetch-crl procps-ng redhat-rpm-config net-snmp-devel sshpass && yum clean all
+RUN yum -y install git autoconf sudo mod_auth_openidc gettext libcurl-devel libffi-devel openssl-devel automake curl gcc libuuid-devel lm_sensors make nc pkgconfig zlib-devel python39-devel httpd httpd-devel python39-mod_wsgi mod_ssl cronie python39-pip python39 python3-pyOpenSSL mariadb-server python3-mysql mariadb-devel procps-ng redhat-rpm-config net-snmp-devel sshpass https://dl.fedoraproject.org/pub/epel/10.1/Everything/x86_64/Packages/f/fetch-crl-3.0.23-5.el10_1.noarch.rpm && yum clean all
 
 # Remove ssl.conf file (siterm write's own httpd conf file)
 RUN rm -f /etc/httpd/conf.d/ssl.conf
@@ -71,7 +70,7 @@ RUN pip3 install --no-cache-dir --upgrade setuptools pip && \
 COPY build_files/etc/supervisord.conf /etc/
 
 # Install CA Certs
-RUN rpm -i https://repo.opensciencegrid.org/osg/24-main/el8/release/x86_64/Packages/o/osg-ca-certs-1.134-1.osg24.el8.noarch.rpm
+RUN rpm -i https://repo.opensciencegrid.org/osg/24-main/el9/release/x86_64/Packages/o/osg-ca-certs-1.135-1.osg24.el9.noarch.rpm
 # Install InCommon Server CA 2
 RUN wget -q -O /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem "https://spaces.at.internet2.edu/download/attachments/24576265/InCommon%20RSA%20Server%20CA%202.pem?api=v2" && \
     ln -s /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem /etc/grid-security/certificates/$(openssl x509 -in /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem -noout -hash).0
