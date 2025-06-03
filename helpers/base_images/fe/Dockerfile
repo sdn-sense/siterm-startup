@@ -1,4 +1,4 @@
-FROM almalinux:10
+FROM almalinux:9
 ARG ARCH="x86_64"
 
 RUN yum -y install wget epel-release && yum clean all
@@ -58,7 +58,7 @@ RUN chown mysql:mysql /var/log/mariadb/ && \
     chmod -R g+ws /var/log/siterm-site-fe/*
 
 # Install all required packages
-RUN yum -y install git autoconf sudo mod_auth_openidc gettext libcurl-devel libffi-devel openssl-devel automake curl gcc libuuid-devel lm_sensors make nc pkgconfig zlib-devel python39-devel httpd httpd-devel python39-mod_wsgi mod_ssl cronie python39-pip python39 python3-pyOpenSSL mariadb-server python3-mysql mariadb-devel procps-ng redhat-rpm-config net-snmp-devel sshpass https://dl.fedoraproject.org/pub/epel/10.1/Everything/x86_64/Packages/f/fetch-crl-3.0.23-5.el10_1.noarch.rpm && yum clean all
+RUN yum -y install git autoconf sudo mod_auth_openidc gettext libcurl-devel libffi-devel openssl-devel automake curl gcc libuuid-devel lm_sensors make nc pkgconfig zlib-devel python39-devel httpd httpd-devel python39-mod_wsgi mod_ssl cronie python39-pip python39 python3-pyOpenSSL mariadb-server python3-mysql mariadb-devel procps-ng redhat-rpm-config net-snmp-devel sshpass fetch-crl && yum clean all
 
 # Remove ssl.conf file (siterm write's own httpd conf file)
 RUN rm -f /etc/httpd/conf.d/ssl.conf
