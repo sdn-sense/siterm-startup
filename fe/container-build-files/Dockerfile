@@ -10,6 +10,7 @@ COPY build_files/dircreate.py /root/dircreate.py
 ARG GITREPO=siterm
 ARG GITORG=sdn-sense
 ARG GITBR=master
+ARG GITBRANS=master
 
 WORKDIR /opt/siterm/sitermcode
 RUN git clone -b $GITBR https://github.com/$GITORG/$GITREPO
@@ -26,14 +27,14 @@ RUN cp packaging/siterm-site-fe/sitefe.py /var/www/wsgi-scripts/ && \
     cp -R src/html/* /var/www/html/
 
 # Install all ansible collections
-RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-aristaeos-collection,"$GITBR" && \
-    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos10-collection,"$GITBR" && \
-    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos9-collection,"$GITBR" && \
-    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-freertr-collection,"$GITBR" && \
-    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-sonic-collection,"$GITBR" && \
-    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-cisconx9-collection,"$GITBR" && \
-    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-frr-collection,"$GITBR" && \
-    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-junos-collection,"$GITBR"
+RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-aristaeos-collection,"$GITBRANS" && \
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos10-collection,"$GITBRANS" && \
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-dellos9-collection,"$GITBRANS" && \
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-freertr-collection,"$GITBRANS" && \
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-sonic-collection,"$GITBRANS" && \
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-cisconx9-collection,"$GITBRANS" && \
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-frr-collection,"$GITBRANS" && \
+    ansible-galaxy collection install git+https://github.com/sdn-sense/sense-junos-collection,"$GITBRANS"
 
 # Add all supervisord configs
 # Copy Supervisor.d Config, Script files
