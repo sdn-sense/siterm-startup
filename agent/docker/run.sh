@@ -160,7 +160,6 @@ docker run \
   -v ${DOCKVOLLOG}:/var/log/ \
   -v /etc/iproute2/rt_tables:/etc/iproute2/rt_tables:ro $LLDPMOUNT \
   --restart always \
-  --privileged \
   --cap-add=NET_ADMIN \
   --net=host \
   $LOGOPTIONS docker.io/sdnsense/siterm-agent:$VERSION

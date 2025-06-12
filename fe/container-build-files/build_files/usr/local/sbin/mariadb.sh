@@ -11,8 +11,6 @@ if [[ -z $MARIA_DB_HOST || -z $MARIA_DB_USER || -z $MARIA_DB_DATABASE || -z $MAR
     exit 1
 fi
 
-
-
 # Overwrite MariaDB port if it is not default 3306
 if [[ "$MARIA_DB_PORT" != "3306" && -n "$MARIA_DB_PORT" ]]; then
     cp /etc/my.cnf.d/server.cnf /etc/my.cnf.d/server.cnf.bak
