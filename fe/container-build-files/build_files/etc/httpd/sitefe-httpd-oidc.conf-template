@@ -42,7 +42,7 @@ Listen ${LISTEN_HTTPS}
     Require valid-user
   </Location>
 
-  <LocationMatch "^/(T[0-9]_.*_.*/sitefe|NRM_.*/sitefe|MAIN/sitefe)">
+  <LocationMatch "^/(T[0-9]_.*_.*/sitefe|NRM_.*/sitefe|MAIN/sitefe|siterm-http-status)">
     AuthType openid-connect
     Require valid-user
   </LocationMatch>
@@ -60,9 +60,30 @@ Listen ${LISTEN_HTTPS}
 
   ProxyPreserveHost On
   ProxyPassMatch ^/(T[0-9]_.*_.*/sitefe|NRM_.*/sitefe|MAIN/sitefe) http://127.0.0.1:8080/
-  ProxyPassReverse / http://127.0.0.1:8080/
+  ProxyPassReverse /T http://127.0.0.1:8080/
+  ProxyPassReverse /NRM http://127.0.0.1:8080/
+  ProxyPassReverse /MAIN http://127.0.0.1:8080/
+  ProxyPass /siterm-http-status http://127.0.0.1:8124/siterm-http-status
+  ProxyPassReverse /siterm-http-status http://127.0.0.1:8124/siterm-http-status
 
 </VirtualHost>
+
+# Status server for monitoring HTTP
+Listen 127.0.0.1:8123
+ExtendedStatus On
+
+<VirtualHost 127.0.0.1:8123>
+    ServerName localhost
+
+    <Location /server-status>
+        SetHandler server-status
+        Require local
+    </Location>
+
+    ErrorLog /var/log/httpd/error_status.log
+    CustomLog /var/log/httpd/access_status.log combined
+</VirtualHost>
+
 
 MaxRequestWorkers 150
 LimitRequestBody 5242880

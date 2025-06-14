@@ -67,6 +67,14 @@ RUN pip3 install --no-cache-dir --upgrade setuptools pip && \
 
 COPY build_files/etc/supervisord.conf /etc/
 
+# Install apache prometheus exporter
+RUN set -ex && \
+    wget --progress=dot:giga -O /tmp/apache_exporter.tar.gz https://github.com/Lusitaniae/apache_exporter/releases/download/v1.0.10/apache_exporter-1.0.10.linux-amd64.tar.gz && \
+    tar -xvzf /tmp/apache_exporter.tar.gz -C /tmp && \
+    mv /tmp/apache_exporter-1.0.10.linux-amd64/apache_exporter /usr/bin/apache_exporter && \
+    chmod +x /usr/bin/apache_exporter && \
+    rm -rf /tmp/apache_exporter*
+
 # Install CA Certs
 RUN rpm -i https://repo.opensciencegrid.org/osg/24-main/el9/release/x86_64/Packages/o/osg-ca-certs-1.135-1.osg24.el9.noarch.rpm
 # Install InCommon Server CA 2

@@ -21,7 +21,7 @@ Listen ${LISTEN_HTTPS}
   SSLVerifyDepth  10
   SSLOptions +StdEnvVars +ExportCertData +LegacyDNStringFormat
   SSLProtocol -All -SSLv3 -TLSv1 -TLSv1.1 +TLSv1.2
-  SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS !RC4"
+  SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH EDH+aRSA !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS !RC4"
   SSLHonorCipherOrder on
   RequestHeader set SSL_CLIENT_S_DN "%{SSL_CLIENT_S_DN}s"
   RequestHeader set SSL_CLIENT_I_DN "%{SSL_CLIENT_I_DN}s"
@@ -54,8 +54,28 @@ Listen ${LISTEN_HTTPS}
 
   ProxyPreserveHost On
   ProxyPassMatch ^/(T[0-9]_.*_.*/sitefe|NRM_.*/sitefe|MAIN/sitefe) http://127.0.0.1:8080/
-  ProxyPassReverse / http://127.0.0.1:8080/
+  ProxyPassReverse /T http://127.0.0.1:8080/
+  ProxyPassReverse /NRM http://127.0.0.1:8080/
+  ProxyPassReverse /MAIN http://127.0.0.1:8080/
+  ProxyPass /siterm-http-status http://127.0.0.1:8124/siterm-http-status
+  ProxyPassReverse /siterm-http-status http://127.0.0.1:8124/siterm-http-status
 
+</VirtualHost>
+
+# Status server for monitoring HTTP
+Listen 127.0.0.1:8123
+ExtendedStatus On
+
+<VirtualHost 127.0.0.1:8123>
+    ServerName localhost
+
+    <Location /server-status>
+        SetHandler server-status
+        Require local
+    </Location>
+
+    ErrorLog /var/log/httpd/error_status.log
+    CustomLog /var/log/httpd/access_status.log combined
 </VirtualHost>
 
 MaxRequestWorkers 150
