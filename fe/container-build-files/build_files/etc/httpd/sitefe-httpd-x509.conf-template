@@ -57,8 +57,8 @@ Listen ${LISTEN_HTTPS}
   ProxyPassReverse /T http://127.0.0.1:8080/
   ProxyPassReverse /NRM http://127.0.0.1:8080/
   ProxyPassReverse /MAIN http://127.0.0.1:8080/
-  ProxyPass /siterm-http-status http://127.0.0.1:8124/siterm-http-status
-  ProxyPassReverse /siterm-http-status http://127.0.0.1:8124/siterm-http-status
+  ProxyPass /siterm-http-status http://127.0.0.1:8124/metrics
+  ProxyPassReverse /siterm-http-status http://127.0.0.1:8124/metrics
 
 </VirtualHost>
 
