@@ -195,14 +195,47 @@ if [[ ! -d "$(pwd)/../conf/opt/siterm/config/ssh-keys" ]]; then
   mkdir -p $(pwd)/../conf/opt/siterm/config/ssh-keys
 fi
 
+
+# Check SELinux. If enabled, choose correct mount option and enable svirt_sandbox_file_t
+MOUNT_OPT=""
+if selinuxenabled; then
+  MOUNT_OPT=":ro,z"
+else
+  MOUNT_OPT=":ro"
+fi
+
+FILES=(
+  "$(realpath $(pwd)/../conf/etc/siterm.yaml)"
+  "$(pwd)/../conf/etc/ansible-conf.yaml"
+  "$(pwd)/../conf/etc/httpd/certs/cert.pem"
+  "$(pwd)/../conf/etc/httpd/certs/privkey.pem"
+  "$(realpath $(pwd)/../conf/etc/grid-security/hostcert.pem)"
+  "$(realpath $(pwd)/../conf/etc/grid-security/hostkey.pem)"
+)
+
+if selinuxenabled; then
+  # Check and fix file contexts
+  for file in "${FILES[@]}"; do
+    current_context=$(ls -Z "$file" | awk '{print $1}')
+    if [[ "$current_context" != *svirt_sandbox_file_t* && "$current_context" != *container_file_t* ]]; then
+      echo "[FIX] Relabeling $file"
+      chcon -t svirt_sandbox_file_t "$file"
+    else
+      echo "[OK] $file already labeled $current_context"
+    fi
+  done
+  # Restore conf for dir
+  restorecon -Rv "$(realpath $(pwd)/../conf/opt/siterm/config/ssh-keys)"
+fi
+
 docker run \
        -dit --name ${DOCKERNAME} \
-       -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml \
-       -v $(pwd)/../conf/etc/ansible-conf.yaml:/etc/ansible-conf.yaml \
-       -v $(pwd)/../conf/etc/httpd/certs/cert.pem:/etc/httpd/certs/cert.pem \
-       -v $(pwd)/../conf/etc/httpd/certs/privkey.pem:/etc/httpd/certs/privkey.pem \
-       -v $(pwd)/../conf/etc/grid-security/hostcert.pem:/etc/grid-security/hostcert.pem \
-       -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem \
+       -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml$MOUNT_OPT \
+       -v $(pwd)/../conf/etc/ansible-conf.yaml:/etc/ansible-conf.yaml$MOUNT_OPT \
+       -v $(pwd)/../conf/etc/httpd/certs/cert.pem:/etc/httpd/certs/cert.pem$MOUNT_OPT \
+       -v $(pwd)/../conf/etc/httpd/certs/privkey.pem:/etc/httpd/certs/privkey.pem$MOUNT_OPT \
+       -v $(pwd)/../conf/etc/grid-security/hostcert.pem:/etc/grid-security/hostcert.pem$MOUNT_OPT \
+       -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem$MOUNT_OPT \
        -v ${DOCKVOL}:/opt/siterm/config/mysql/ \
        -v ${DOCKVOLLOG}:/var/log/ \
        -v $(pwd)/../conf/opt/siterm/config/ssh-keys:/opt/siterm/config/ssh-keys \
