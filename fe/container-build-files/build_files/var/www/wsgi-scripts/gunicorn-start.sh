@@ -4,7 +4,7 @@ source /etc/environment || true
 set +a
 
 # Default values if not defined in /etc/environment
-GU_WORKERS="${WORKERS:-2}"
+GU_WORKERS="${WORKERS:-1}"
 GU_THREADS="${THREADS:-1}"
 GU_MAX_REQUESTS="${MAX_REQUESTS:-3000}"
 GU_MAX_REQUESTS_JITTER="${MAX_REQUESTS_JITTER:-500}"
@@ -19,6 +19,7 @@ GU_LOG_LEVEL="${LOG_LEVEL:-info}"
 # Start gunicorn
 exec gunicorn sitefe:application \
   -k uvicorn.workers.UvicornWorker \
+  --preload \
   --workers "$GU_WORKERS" \
   --threads "$GU_THREADS" \
   --max-requests "$GU_MAX_REQUESTS" \

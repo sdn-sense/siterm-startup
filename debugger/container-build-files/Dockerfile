@@ -13,7 +13,7 @@ RUN wget -nv https://github.com/fast-data-transfer/fdt/releases/download/0.27.0/
 WORKDIR /opt/siterm/sitermcode
 RUN git clone -b $GITBR https://github.com/$GITORG/$GITREPO
 WORKDIR /opt/siterm/sitermcode/siterm/
-RUN pip3 install --no-cache-dir -r requirements-agent.txt || exit $?
+RUN pip3 install --no-cache-dir -r requirements-agent.txt --upgrade || exit $?
 RUN ./pre-install.sh "$RELEASE" && mv setup-agent.py setup.py && pip3 install --no-cache-dir . -v || exit $?
 # Install all data files needed for Agent, e.g. crons
 RUN cp packaging/general/siterm-crons /etc/cron.d/ && \

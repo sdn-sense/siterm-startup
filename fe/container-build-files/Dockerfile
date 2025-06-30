@@ -15,7 +15,7 @@ ARG GITBRANS=master
 WORKDIR /opt/siterm/sitermcode
 RUN git clone -b $GITBR https://github.com/$GITORG/$GITREPO
 WORKDIR /opt/siterm/sitermcode/siterm/
-RUN pip3 install --no-cache-dir -r requirements-sitefe.txt || exit $?
+RUN pip3 install --no-cache-dir -r requirements-sitefe.txt --upgrade || exit $?
 RUN ./pre-install.sh "$RELEASE" && mv setup-sitefe.py setup.py && pip3 install --no-cache-dir . -v || exit $?
 # Install all data files needed for FE - httpd, cron, web files
 RUN cp packaging/siterm-site-fe/sitefe.py /var/www/wsgi-scripts/ && \

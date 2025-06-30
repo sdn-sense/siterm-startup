@@ -14,7 +14,7 @@ if [ $# == 0 ]; then
 fi
 
 DOCKVOL="siterm-mysql"
-DOCKERNAME="site-fe-sense"
+DOCKERNAME="siterm-fe"
 DOCKERNET=""
 UFLAG=""
 VERSION="latest"
@@ -36,7 +36,7 @@ do
        fi
        DOCKERNET=$PORTS;;
     u) DOCKVOL="siterm-mysql-${OPTARG}"
-       DOCKERNAME="site-fe-sense-${OPTARG}"
+       DOCKERNAME="siterm-fe-${OPTARG}"
        UFLAG=${OPTARG};;
   esac
 done
