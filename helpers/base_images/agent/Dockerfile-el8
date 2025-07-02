@@ -17,7 +17,10 @@ RUN mkdir -p /var/log/siterm-agent/Agent && \
 
 RUN yum -y install epel-release && yum clean all
 
-RUN yum -y install git autoconf automake sudo libcurl-devel libffi-devel python3-lxml openssl-devel curl libuuid-devel lm_sensors ipset make nc python3 zlib-devel python3-devel wget jq iproute cronie python3-pip diffutils procps-ng mariadb-devel libxml2-devel libxslt-devel lldpd gawk iputils iproute iproute-tc automake autoconf gcc make pkgconfig traceroute fetch-crl && yum clean all
+RUN yum -y install git autoconf automake sudo libcurl-devel libffi-devel python3.12-lxml openssl-devel curl libuuid-devel lm_sensors ipset make nc python3.12 zlib-devel python3.12-devel wget jq iproute cronie python3.12-pip diffutils procps-ng mariadb-devel libxml2-devel libxslt-devel lldpd gawk iputils iproute iproute-tc automake autoconf gcc make pkgconfig traceroute fetch-crl && \
+ yum clean all && \
+ alternatives --set python3 /usr/bin/python3.12 && \
+ alternatives --set pip3 /usr/bin/pip3.12
 
 # Install supervisord and superlance to run service, monitor mem usage
 RUN pip3 install --no-cache-dir --upgrade setuptools pip && \
