@@ -30,12 +30,8 @@ RUN cp packaging/general/siterm-crons /etc/cron.d/ && \
     cp packaging/general/siterm-ca-cron.sh /etc/cron-scripts/
 
 # Copy Supervisor.d Config, Script files
-COPY build_files/usr/local/sbin/start-cleanup.sh /usr/local/sbin/start-cleanup.sh
-COPY build_files/usr/local/sbin/docker-healthcheck.sh /usr/local/sbin/docker-healthcheck.sh
-COPY build_files/etc/supervisord.d/00-cleanup.conf /etc/supervisord.d/00-cleanup.conf
-COPY build_files/etc/supervisord.d/11-config-fetcher.conf /etc/supervisord.d/11-config-fetcher.conf
-COPY build_files/etc/supervisord.d/13-siterm-ruler.conf /etc/supervisord.d/13-siterm-ruler.conf
-COPY build_files/etc/supervisord.d/14-siterm-agent.conf /etc/supervisord.d/14-siterm-agent.conf
+COPY build_files/usr/local/sbin/ /usr/local/sbin/
+COPY build_files/etc/supervisord.d/ /etc/supervisord.d/
 
 HEALTHCHECK --retries=3 --start-period=60s --interval=60s --timeout=30s CMD bash /usr/local/sbin/docker-healthcheck.sh  || exit 1
 
