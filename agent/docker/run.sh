@@ -114,13 +114,29 @@ if [ $ISPODMAN -eq 0 ]; then
   LOGOPTIONS="--log-driver=json-file --log-opt max-size=10m --log-opt max-file=10"
 fi
 
+# Check SELinux. If enabled, choose correct mount option and enable svirt_sandbox_file_t
+MOUNT_OPT=""
+if selinuxenabled; then
+  MOUNT_OPT=":ro,z"
+else
+  MOUNT_OPT=":ro"
+fi
+
 # If lldpd daemon running on the host, we pass socket to container.
 # SiteRM Agent will try to get lldpd information (lldpcli show neighbors)
 # So that it can know automatically how things are connected.
 # lldp must be enabled at the site level (host and network)
 LLDPMOUNT=""
 if `test -S /run/lldpd/lldpd.socket`; then
-  LLDPMOUNT="-v /run/lldpd/lldpd.socket:/run/lldpd/lldpd.socket:ro"
+  LLDPMOUNT="-v /run/lldpd/lldpd.socket:/run/lldpd/lldpd.socket${MOUNT_OPT}"
+fi
+
+# If routing table file exists, we pass it to container.
+RTTABLE=""
+if `test -f /etc/iproute2/rt_tables`; then
+  RTTABLE="-v /etc/iproute2/rt_tables:/etc/iproute2/rt_tables${MOUNT_OPT}"
+else
+  echo -e "${RED}WARNING: /etc/iproute2/rt_tables file does not exist."
 fi
 
 # Create docker volume for configuration storage
@@ -151,20 +167,12 @@ else
   fi
 fi
 
-
-# Check SELinux. If enabled, choose correct mount option and enable svirt_sandbox_file_t
-MOUNT_OPT=""
-if selinuxenabled; then
-  MOUNT_OPT=":ro,z"
-else
-  MOUNT_OPT=":ro"
-fi
-
 FILES=(
   "$(realpath $(pwd)/../conf/etc/siterm.yaml)"
   "$(realpath $(pwd)/../conf/etc/grid-security/hostcert.pem)"
   "$(realpath $(pwd)/../conf/etc/grid-security/hostkey.pem)"
   "/etc/iproute2/rt_tables"
+  "/run/lldpd/lldpd.socket"
 )
 
 if selinuxenabled; then
@@ -187,8 +195,8 @@ docker run \
   -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem$MOUNT_OPT \
   -v ${DOCKVOL}:/opt/siterm/config/ \
   -v ${DOCKVOLLOG}:/var/log/ \
-  -v /etc/iproute2/rt_tables:/etc/iproute2/rt_tables$MOUNT_OPT $LLDPMOUNT \
+  ${RTTABLE} ${LLDPMOUNT} \
   --restart always \
   --cap-add=NET_ADMIN \
   --net=host \
-  $LOGOPTIONS docker.io/sdnsense/siterm-agent:$VERSION
+  ${LOGOPTIONS} docker.io/sdnsense/siterm-agent:${VERSION}
