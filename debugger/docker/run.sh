@@ -180,4 +180,4 @@ docker run \
   -v ${DOCKVOLLOG}:/var/log/ \
   --restart always \
   --net=host \
-  $LOGOPTIONS docker.io/sdnsense/siterm-debugger:$VERSION
+  $LOGOPTIONS docker.io/sdnsense/siterm-debugger:${VERSION}-el10

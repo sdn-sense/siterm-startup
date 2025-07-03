@@ -188,6 +188,26 @@ if selinuxenabled; then
   done
 fi
 
+# Identify OS version and set OSVERSION variable
+# Use correct image based on OS version
+# Default to el10 if not detected or unsupported version
+OSVERSION="el10"
+if [ -f /etc/os-release ]; then
+  . /etc/os-release
+  if [[ "$ID_LIKE" == *"rhel"* || "$ID" == *"almalinux"* || "$ID" == *"rocky"* ]]; then
+    ELVER=$(echo "$VERSION_ID" | cut -d '.' -f1)
+    if [[ "$ELVER" =~ ^(8|9|10)$ ]]; then
+      OSVERSION="-el${ELVER}"
+    else
+      echo -e "${RED}Unsupported EL version detected: $VERSION_ID. Defaulting to el10 image...${NC}"
+    fi
+  else
+    echo "Non-EL system detected: $ID. Proceeding with el10 image."
+  fi
+else
+  echo -e "${RED}/etc/os-release not found. Cannot detect OS. Defaulting to el10 image...${NC}"
+fi
+
 docker run \
   -dit --name siterm-agent \
   -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml$MOUNT_OPT \
@@ -199,4 +219,4 @@ docker run \
   --restart always \
   --cap-add=NET_ADMIN \
   --net=host \
-  ${LOGOPTIONS} docker.io/sdnsense/siterm-agent:${VERSION}
+  ${LOGOPTIONS} docker.io/sdnsense/siterm-agent:${VERSION}${OSVERSION}
