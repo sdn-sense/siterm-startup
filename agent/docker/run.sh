@@ -15,7 +15,11 @@ fi
 while getopts i: flag
 do
   case "${flag}" in
-    i) VERSION=${OPTARG};;
+    i) SITERMIMGVERSION=${OPTARG};;
+    *) echo "Usage: `basename $0` [-i imagetag]"
+       echo "  -i imagetag (MANDATORY)"
+       echo "     specify image tag, e.g. latest, dev, v1.3.0... For production deplyoment use latest, unless instructed otherwise by SENSE team"
+       exit 1;;
   esac
 done
 
@@ -115,11 +119,13 @@ if [ $ISPODMAN -eq 0 ]; then
 fi
 
 # Check SELinux. If enabled, choose correct mount option and enable svirt_sandbox_file_t
-MOUNT_OPT=""
-if selinuxenabled; then
-  MOUNT_OPT=":ro,z"
-else
-  MOUNT_OPT=":ro"
+MOUNT_OPT=":ro"
+if command -v selinuxenabled >/dev/null 2>&1; then
+  if selinuxenabled; then
+    MOUNT_OPT=":ro,z"
+  else
+    MOUNT_OPT=":ro"
+  fi
 fi
 
 # If lldpd daemon running on the host, we pass socket to container.
@@ -175,29 +181,30 @@ FILES=(
   "/run/lldpd/lldpd.socket"
 )
 
-if selinuxenabled; then
-  # Check and fix file contexts
-  for file in "${FILES[@]}"; do
-    current_context=$(ls -Z "$file" | awk '{print $1}')
-    if [[ "$current_context" != *svirt_sandbox_file_t* && "$current_context" != *container_file_t* ]]; then
-      echo "[FIX] Relabeling $file"
-      chcon -t svirt_sandbox_file_t "$file"
-    else
-      echo "[OK] $file already labeled $current_context"
-    fi
-  done
+if command -v selinuxenabled >/dev/null 2>&1; then
+  if selinuxenabled; then
+    # Check and fix file contexts
+    for file in "${FILES[@]}"; do
+      current_context=$(ls -Z "$file" | awk '{print $1}')
+      if [[ "$current_context" != *svirt_sandbox_file_t* && "$current_context" != *container_file_t* ]]; then
+        echo "[FIX] Relabeling $file"
+        chcon -t svirt_sandbox_file_t "$file"
+      else
+        echo "[OK] $file already labeled $current_context"
+      fi
+    done
+  fi
 fi
-
-# Identify OS version and set OSVERSION variable
+# Identify OS version and set SITERMOSVERSION variable
 # Use correct image based on OS version
 # Default to el10 if not detected or unsupported version
-OSVERSION="el10"
+SITERMOSVERSION="el10"
 if [ -f /etc/os-release ]; then
   . /etc/os-release
   if [[ "$ID_LIKE" == *"rhel"* || "$ID" == *"almalinux"* || "$ID" == *"rocky"* ]]; then
     ELVER=$(echo "$VERSION_ID" | cut -d '.' -f1)
     if [[ "$ELVER" =~ ^(8|9|10)$ ]]; then
-      OSVERSION="-el${ELVER}"
+      SITERMOSVERSION="-el${ELVER}"
     else
       echo -e "${RED}Unsupported EL version detected: $VERSION_ID. Defaulting to el10 image...${NC}"
     fi
@@ -219,4 +226,4 @@ docker run \
   --restart always \
   --cap-add=NET_ADMIN \
   --net=host \
-  ${LOGOPTIONS} docker.io/sdnsense/siterm-agent:${VERSION}${OSVERSION}
+  ${LOGOPTIONS} docker.io/sdnsense/siterm-agent:${SITERMIMGVERSION}${SITERMOSVERSION}

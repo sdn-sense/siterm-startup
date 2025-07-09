@@ -61,7 +61,7 @@ certchecker () {
   return 0
 }
 
-while getopts i:n:l:p:u: flag
+while getopts i:n:p:u: flag
 do
   echo "Processing flag: ${flag} with argument: ${OPTARG}"
   case "${flag}" in
@@ -82,6 +82,16 @@ do
     u) DOCKVOL="siterm-mysql-${OPTARG}"
        DOCKVOLLOG="sitermfe-log-${OPTARG}"
        DOCKERNAME="siterm-fe-${OPTARG}";;
+    *) echo "Usage: `basename $0` [-i imagetag] [-n networkmode] [-p ports] [-u unique]"
+       echo "  -i imagetag (OPTIONAL). Default latest"
+       echo "     specify image tag, e.g. latest, dev, v1.3.0... For production deplyoment use latest, unless instructed otherwise by SENSE team"
+       echo "  -n networkmode (OPTIONAL). Default port mode"
+       echo "     specify network mode. One of: host,port."
+       echo "     host means it will use --net host for docker startup. Please make sure to open port 80, 443 in firewall. Use this option only if any of your hosts, network devices are IPv6 only (no IPv4 address)."
+       echo "     port means it will use -p 8080:80 -p 8443:443 in docker startup. Docker will open port on system firewall. Default parameter."
+       echo "  -p Overwrite default ports for docker. Default is 8080:80 and 8443:443. Specify in quotes, like -p \"9443:1443 8443:443\""
+       echo "  -u (Optional) Unique volume for docker mysql database (any string)/docker container name. If specified, will use it for docker volume creation and container name"
+       exit 1;;
   esac
 done
 
@@ -197,35 +207,38 @@ fi
 
 
 # Check SELinux. If enabled, choose correct mount option and enable svirt_sandbox_file_t
-MOUNT_OPT=""
-if selinuxenabled; then
-  MOUNT_OPT=":ro,z"
-else
-  MOUNT_OPT=":ro"
+MOUNT_OPT=":ro"
+if command -v selinuxenabled >/dev/null 2>&1; then
+  if selinuxenabled; then
+    MOUNT_OPT=":ro,z"
+  else
+    MOUNT_OPT=":ro"
+  fi
 fi
 
-FILES=(
-  "$(realpath $(pwd)/../conf/etc/siterm.yaml)"
-  "$(pwd)/../conf/etc/ansible-conf.yaml"
-  "$(pwd)/../conf/etc/httpd/certs/cert.pem"
-  "$(pwd)/../conf/etc/httpd/certs/privkey.pem"
-  "$(realpath $(pwd)/../conf/etc/grid-security/hostcert.pem)"
-  "$(realpath $(pwd)/../conf/etc/grid-security/hostkey.pem)"
-)
-
-if selinuxenabled; then
-  # Check and fix file contexts
-  for file in "${FILES[@]}"; do
-    current_context=$(ls -Z "$file" | awk '{print $1}')
-    if [[ "$current_context" != *svirt_sandbox_file_t* && "$current_context" != *container_file_t* ]]; then
-      echo "[FIX] Relabeling $file"
-      chcon -t svirt_sandbox_file_t "$file"
-    else
-      echo "[OK] $file already labeled $current_context"
-    fi
-  done
-  # Restore conf for dir
-  restorecon -Rv "$(realpath $(pwd)/../conf/opt/siterm/config/ssh-keys)"
+if command -v selinuxenabled >/dev/null 2>&1; then
+  FILES=(
+    "$(realpath $(pwd)/../conf/etc/siterm.yaml)"
+    "$(pwd)/../conf/etc/ansible-conf.yaml"
+    "$(pwd)/../conf/etc/httpd/certs/cert.pem"
+    "$(pwd)/../conf/etc/httpd/certs/privkey.pem"
+    "$(realpath $(pwd)/../conf/etc/grid-security/hostcert.pem)"
+    "$(realpath $(pwd)/../conf/etc/grid-security/hostkey.pem)"
+  )
+  if selinuxenabled; then
+    # Check and fix file contexts
+    for file in "${FILES[@]}"; do
+      current_context=$(ls -Z "$file" | awk '{print $1}')
+      if [[ "$current_context" != *svirt_sandbox_file_t* && "$current_context" != *container_file_t* ]]; then
+        echo "[FIX] Relabeling $file"
+        chcon -t svirt_sandbox_file_t "$file"
+      else
+        echo "[OK] $file already labeled $current_context"
+      fi
+    done
+    # Restore conf for dir
+    restorecon -Rv "$(realpath $(pwd)/../conf/opt/siterm/config/ssh-keys)"
+  fi
 fi
 
 docker run \

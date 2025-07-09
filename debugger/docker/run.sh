@@ -16,6 +16,10 @@ while getopts i: flag
 do
   case "${flag}" in
     i) VERSION=${OPTARG};;
+    *) echo "Usage: `basename $0` [-i imagetag]"
+       echo "  -i imagetag (MANDATORY)"
+       echo "     specify image tag, e.g. latest, dev, v1.3.0... For production deplyoment use latest, unless instructed otherwise by SENSE team"
+       exit 1;;
   esac
 done
 
