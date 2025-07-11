@@ -12,6 +12,7 @@ set +a
 
 # Set default Ansible repo (or use one defined in the environment)
 ANSIBLE_REPO="${ANSIBLE_REPO:-origin/master}"
+REMOTE="${ANSIBLE_REPO%%/*}"
 
 # Remove yaml files to prefetch from scratch
 rm -f /tmp/*-mapping.yaml
@@ -46,7 +47,7 @@ if [[ ! -d "/opt/siterm/config/ansible" ]]; then
     cd /opt/siterm/config/ansible/sense || exit 1
     git fetch --all
     git checkout "${ANSIBLE_REPO#origin/}" || git checkout -b "${ANSIBLE_REPO#origin/}" "$ANSIBLE_REPO"
-    git pull "$ANSIBLE_REPO" "${ANSIBLE_REPO#origin/}"
+    git pull "$REMOTE" "${ANSIBLE_REPO#origin/}"
   fi
 else
   cd /opt/siterm/config/ansible/sense
@@ -55,7 +56,7 @@ else
 
   git checkout "${ANSIBLE_REPO#origin/}" || git checkout -b "${ANSIBLE_REPO#origin/}" "$ANSIBLE_REPO"
   git reset --hard "$ANSIBLE_REPO"
-  git pull "$ANSIBLE_REPO" "${ANSIBLE_REPO#origin/}"
+  git pull "$REMOTE" "${ANSIBLE_REPO#origin/}"
 
 fi
 # Run ansible prepare and prepare all ansible configuration files.
