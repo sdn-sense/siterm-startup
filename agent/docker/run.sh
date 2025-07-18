@@ -226,4 +226,4 @@ docker run \
   --restart always \
   --cap-add=NET_ADMIN \
   --net=host \
-  ${LOGOPTIONS} docker.io/sdnsense/siterm-agent:${SITERMIMGVERSION}${SITERMOSVERSION}
+  ${LOGOPTIONS} docker.io/sdnsense/siterm-agent:${SITERMIMGVERSION}-${SITERMOSVERSION}
