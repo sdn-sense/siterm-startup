@@ -3,13 +3,14 @@
 db_backup_sleep () {
   BACKUPDIR="/opt/siterm/config/backups/"
   while true; do
-      TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-      BACKUPPATH="$BACKUPDIR/$TIMESTAMP"
-      mkdir -p "$BACKUPPATH"
-      mysqldump "sitefe" | xz -c > "$BACKUPPATH/sitefe.sql.xz"
+      # TODO: launch as its own container, process;
+      #TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+      #BACKUPPATH="$BACKUPDIR/$TIMESTAMP"
+      #mkdir -p "$BACKUPPATH"
+      #mysqldump "sitefe" | xz -c > "$BACKUPPATH/sitefe.sql.xz"
       # Remove backups while keeping the last 72
       # To use backup file: xzcat sitefe.sql.xz | mysql -u root -p sitefe
-      ls -dt "$BACKUPDIR"/* | tail -n +72 | xargs rm -rf --
+      #ls -dt "$BACKUPDIR"/* | tail -n +72 | xargs rm -rf --
       # Sleep for 1 hour
       sleep 3600
     done
