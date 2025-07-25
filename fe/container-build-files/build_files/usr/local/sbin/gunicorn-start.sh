@@ -3,23 +3,36 @@ set -a
 source /etc/environment || true
 set +a
 
+# Include fast api script location
+export PYTHONPATH="/var/www/wsgi-scripts/:$PYTHONPATH"
+
 # Default values if not defined in /etc/environment
-WORKERS="${WORKERS:-3}"
-THREADS="${THREADS:-1}"
-MAX_REQUESTS="${MAX_REQUESTS:-8000}"
-MAX_REQUESTS_JITTER="${MAX_REQUESTS_JITTER:-2000}"
-TIMEOUT="${TIMEOUT:-120}"
-GRACEFUL_TIMEOUT="${GRACEFUL_TIMEOUT:-60}"
-KEEP_ALIVE="${KEEP_ALIVE:-10}"
+GU_WORKERS="${GU_WORKERS:-2}"
+GU_THREADS="${GU_THREADS:-1}"
+GU_MAX_REQUESTS="${GU_MAX_REQUESTS:-3000}"
+GU_MAX_REQUESTS_JITTER="${GU_MAX_REQUESTS_JITTER:-500}"
+GU_TIMEOUT="${GU_TIMEOUT:-120}"
+GU_GRACEFUL_TIMEOUT="${GU_GRACEFUL_TIMEOUT:-30}"
+GU_KEEP_ALIVE="${GU_KEEP_ALIVE:-5}"
+GU_LIMIT_REQUEST_LINE="${GU_LIMIT_REQUEST_LINE:-8190}"
+GU_LIMIT_REQUEST_FIELDS="${GU_LIMIT_REQUEST_FIELDS:-32768}"
+GU_LIMIT_REQUEST_BODY="${GU_LIMIT_REQUEST_BODY:-104857600}"
+GU_LOG_LEVEL="${LOG_LEVEL:-info}"
 
 # Start gunicorn
-exec gunicorn sitefe:application \
+exec gunicorn sitefe:app \
   -k uvicorn.workers.UvicornWorker \
-  --workers "$WORKERS" \
-  --threads "$THREADS" \
-  --max-requests "$MAX_REQUESTS" \
-  --max-requests-jitter "$MAX_REQUESTS_JITTER" \
-  --timeout "$TIMEOUT" \
-  --graceful-timeout "$GRACEFUL_TIMEOUT" \
-  --keep-alive "$KEEP_ALIVE" \
+  --preload \
+  --workers "$GU_WORKERS" \
+  --threads "$GU_THREADS" \
+  --max-requests "$GU_MAX_REQUESTS" \
+  --max-requests-jitter "$GU_MAX_REQUESTS_JITTER" \
+  --timeout "$GU_TIMEOUT" \
+  --graceful-timeout "$GU_GRACEFUL_TIMEOUT" \
+  --keep-alive "$GU_KEEP_ALIVE" \
+  --limit-request-line "$GU_LIMIT_REQUEST_LINE" \
+  --limit-request-fields "$GU_LIMIT_REQUEST_FIELDS" \
+  --access-logfile "-" \
+  --error-logfile "-" \
+  --log-level "$GU_LOG_LEVEL" \
   --bind 127.0.0.1:8080

@@ -58,7 +58,7 @@ Listen ${LISTEN_HTTPS}
     Require valid-user
   </Location>
 
-  <LocationMatch "^/(T[0-9]_.*_.*/sitefe|NRM_.*/sitefe|MAIN/sitefe|siterm-http-status)">
+  <LocationMatch "^/">
   <If "%{SSL_CLIENT_VERIFY} == 'SUCCESS'">
     Require ssl
   </If>
@@ -68,22 +68,9 @@ Listen ${LISTEN_HTTPS}
   </Else>
   </LocationMatch>
 
-  <Directory "/var/www/html">
-      Options FollowSymLinks
-      AllowOverride None
-      Require all denied 
-  </Directory>
-
-  <LocationMatch "^/$|^/index\.html|^/assets/|^/.*\.html$">
-      AuthType openid-connect
-      Require valid-user
-  </LocationMatch>
-
   ProxyPreserveHost On
-  ProxyPassMatch ^/(T[0-9]_.*_.*/sitefe|NRM_.*/sitefe|MAIN/sitefe) http://127.0.0.1:8080/
-  ProxyPassReverse /T http://127.0.0.1:8080/
-  ProxyPassReverse /NRM http://127.0.0.1:8080/
-  ProxyPassReverse /MAIN http://127.0.0.1:8080/
+  ProxyPassMatch / http://127.0.0.1:8080
+  ProxyPassReverse / http://127.0.0.1:8080
   ProxyPass /siterm-http-status http://127.0.0.1:8124/metrics
   ProxyPassReverse /siterm-http-status http://127.0.0.1:8124/metrics
 

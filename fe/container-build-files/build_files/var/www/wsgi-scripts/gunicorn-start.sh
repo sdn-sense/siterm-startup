@@ -3,6 +3,9 @@ set -a
 source /etc/environment || true
 set +a
 
+# Ensure the script is run with the correct Python environment
+export PYTHONPATH="/var/www/wsgi-scripts/:$PYTHONPATH"
+
 # Default values if not defined in /etc/environment
 GU_WORKERS="${WORKERS:-2}"
 GU_THREADS="${THREADS:-1}"
@@ -17,7 +20,7 @@ GU_LIMIT_REQUEST_BODY="${GU_LIMIT_REQUEST_BODY:-104857600}"
 GU_LOG_LEVEL="${LOG_LEVEL:-info}"
 
 # Start gunicorn
-exec gunicorn sitefe:application \
+exec gunicorn sitefe:app \
   -k uvicorn.workers.UvicornWorker \
   --preload \
   --workers "$GU_WORKERS" \
