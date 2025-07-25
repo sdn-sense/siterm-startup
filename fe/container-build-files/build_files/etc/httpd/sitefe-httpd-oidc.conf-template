@@ -49,10 +49,10 @@ Listen ${LISTEN_HTTPS}
   </LocationMatch>
 
   ProxyPreserveHost On
-  ProxyPassMatch / http://127.0.0.1:8080
-  ProxyPassReverse / http://127.0.0.1:8080
   ProxyPass /siterm-http-status http://127.0.0.1:8124/metrics
   ProxyPassReverse /siterm-http-status http://127.0.0.1:8124/metrics
+  ProxyPassMatch / http://127.0.0.1:8080
+  ProxyPassReverse / http://127.0.0.1:8080
 
 </VirtualHost>
 
