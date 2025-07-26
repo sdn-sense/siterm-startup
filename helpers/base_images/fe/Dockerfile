@@ -67,19 +67,16 @@ RUN pip3 install --no-cache-dir --upgrade setuptools pip && \
 
 COPY build_files/etc/supervisord.conf /etc/
 
-# Install apache prometheus exporter
-RUN set -ex && \
-    wget --progress=dot:giga -O /tmp/apache_exporter.tar.gz https://github.com/Lusitaniae/apache_exporter/releases/download/v1.0.10/apache_exporter-1.0.10.linux-amd64.tar.gz && \
-    tar -xvzf /tmp/apache_exporter.tar.gz -C /tmp && \
-    mv /tmp/apache_exporter-1.0.10.linux-amd64/apache_exporter /usr/bin/apache_exporter && \
-    chmod +x /usr/bin/apache_exporter && \
-    rm -rf /tmp/apache_exporter*
+# Install apache prometheus exporter v1.0.10
+COPY build_files/usr/bin/apache_exporter /usr/bin/apache_exporter
 
 # Install CA Certs
-RUN rpm -i https://repo.opensciencegrid.org/osg/24-main/el9/release/x86_64/Packages/o/osg-ca-certs-1.135-1.osg24.el9.noarch.rpm
+RUN rpm -i https://repo.opensciencegrid.org/osg/24-main/el9/release/x86_64/Packages/o/osg-ca-certs-1.136-1.osg24.el9.noarch.rpm
 # Install InCommon Server CA 2
-RUN wget -q -O /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem "https://spaces.at.internet2.edu/download/attachments/24576265/InCommon%20RSA%20Server%20CA%202.pem?api=v2" && \
-    ln -s /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem /etc/grid-security/certificates/$(openssl x509 -in /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem -noout -hash).0
+COPY build_files/etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem
+RUN chmod 644 "/etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem" && \
+    ln -s "/etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem" "/etc/grid-security/certificates/$(openssl x509 -in /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem -noout -hash).0"
+
 # Install crons to fetch CA Certs
 COPY build_files/etc/cron.d/fetch-crl /etc/cron.d/fetch-crl
 COPY build_files/etc/cron.d/fetch-crl-reboot /etc/cron.d/fetch-crl-reboot

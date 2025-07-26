@@ -22,7 +22,6 @@ RUN yum -y install git autoconf automake sudo libcurl-devel libffi-devel python3
  alternatives --set python3 /usr/bin/python3.12 && \
  python3.12 -m pip install --upgrade pip
 
-
 # Install supervisord and superlance to run service, monitor mem usage
 RUN pip3 install --no-cache-dir --upgrade setuptools pip && \
     pip3 install --no-cache-dir supervisor superlance
@@ -33,8 +32,9 @@ COPY build_files/etc/supervisord.conf /etc/
 # Install CA Certs
 RUN rpm -i https://repo.opensciencegrid.org/osg/24-main/el8/release/x86_64/Packages/o/osg-ca-certs-1.136-1.osg24.el8.noarch.rpm
 # Install InCommon Server CA 2
-RUN wget -q -O /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem "https://spaces.at.internet2.edu/download/attachments/24576265/InCommon%20RSA%20Server%20CA%202.pem?api=v2" && \
-    ln -s /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem /etc/grid-security/certificates/$(openssl x509 -in /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem -noout -hash).0
+COPY build_files/etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem
+RUN chmod 644 "/etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem" && \
+    ln -s "/etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem" "/etc/grid-security/certificates/$(openssl x509 -in /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem -noout -hash).0"
 
 # Install crons to fetch CA Certs
 COPY build_files/etc/cron.d/fetch-crl /etc/cron.d/fetch-crl
