@@ -73,9 +73,9 @@ COPY build_files/usr/bin/apache_exporter /usr/bin/apache_exporter
 # Install CA Certs
 RUN rpm -i https://repo.opensciencegrid.org/osg/24-main/el9/release/x86_64/Packages/o/osg-ca-certs-1.136-1.osg24.el9.noarch.rpm
 # Install InCommon Server CA 2
-COPY build_files/etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem
-RUN chmod 644 "/etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem" && \
-    ln -s "/etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem" "/etc/grid-security/certificates/$(openssl x509 -in /etc/grid-security/certificates/InCommon_RSA_Server_CA_2.pem -noout -hash).0"
+COPY build_files/etc/grid-security/certificates/InCommonRSAServerCA2.pem /etc/grid-security/certificates/InCommonRSAServerCA2.pem
+RUN chmod 644 "/etc/grid-security/certificates/InCommonRSAServerCA2.pem" && \
+    ln -s "/etc/grid-security/certificates/InCommonRSAServerCA2.pem" "/etc/grid-security/certificates/$(openssl x509 -in /etc/grid-security/certificates/InCommonRSAServerCA2.pem -noout -hash).0"
 
 # Install crons to fetch CA Certs
 COPY build_files/etc/cron.d/fetch-crl /etc/cron.d/fetch-crl
