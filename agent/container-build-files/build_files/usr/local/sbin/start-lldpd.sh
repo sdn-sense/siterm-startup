@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sleep_long () {
-    /usr/libexec/platform-python -c '__import__("select").select([], [], [])'
+    python3 -c '__import__("select").select([], [], [])'
 } &> /dev/null
 
 # Check if socket file exists, if yes, then sleep indefinitely
