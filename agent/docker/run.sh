@@ -128,6 +128,24 @@ if command -v selinuxenabled >/dev/null 2>&1; then
   fi
 fi
 
+# Check if modules are loaded:
+MODULES=(sch_htb sch_sfq ifb sch_ingress cls_u32 act_mirred)
+
+echo "[INFO] Checking if required kernel modules are loaded..."
+for mod in "${MODULES[@]}"; do
+    if lsmod | grep -q "^${mod}"; then
+        echo "Module $mod already loaded"
+    else
+        if modprobe "$mod"; then
+            echo "Loaded $mod"
+        else
+            echo -e "${RED}Failed to load $mod${NC}"
+        fi
+    fi
+done
+
+echo "[INFO] All modules processed."
+
 # If lldpd daemon running on the host, we pass socket to container.
 # SiteRM Agent will try to get lldpd information (lldpcli show neighbors)
 # So that it can know automatically how things are connected.
