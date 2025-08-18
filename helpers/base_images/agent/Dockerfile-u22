@@ -1,0 +1,52 @@
+FROM ubuntu:22.04
+ARG ARCH
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN mkdir -p /var/log/siterm-agent/Agent && \
+    mkdir -p /var/log/siterm-agent/Debugger/ && \
+    mkdir -p /var/log/siterm-agent/Ruler/ && \
+    mkdir -p /var/log/siterm-agent/QOS/ && \
+    mkdir -p /var/log/siterm-agent/contentdb/ && \
+    mkdir -p /opt/siterm/config && \
+    mkdir -p sitermcode && \
+    mkdir -p /var/log/supervisor && \
+    mkdir -p /etc/supervisord.d/ && \
+    mkdir -p /usr/local/sbin/ && \
+    mkdir -p /usr/src/ && \
+    mkdir -p /etc/cron.d/ && \
+    mkdir -p /etc/cron-scripts/
+
+RUN apt-get update && apt-get install -y software-properties-common && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Add deadsnakes PPA for Python 3.12
+RUN add-apt-repository ppa:deadsnakes/ppa && apt-get update && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y \
+    git autoconf automake sudo libcurl4-openssl-dev libffi-dev python3-lxml \
+    libssl-dev curl uuid-dev lm-sensors ipset make  netcat python3.12 python3.12-dev \
+    python3-setuptools zlib1g-dev wget jq iproute2 cron diffutils procps libmariadb-dev \
+    libxml2-dev libxslt1-dev lldpd gawk iputils-ping traceroute fetch-crl gcc \
+    pkg-config kmod && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
+    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 && \
+    python3.12 -m pip install --upgrade pip
+
+RUN pip3 install --no-cache-dir --upgrade setuptools pip && \
+    pip3 install --no-cache-dir supervisor superlance
+
+COPY build_files/etc/supervisord.conf /etc/
+
+# Install CA Certs
+# RUN rpm -i https://repo.opensciencegrid.org/osg/24-main/el9/release/x86_64/Packages/o/osg-ca-certs-1.136-1.osg24.el9.noarch.rpm
+
+# Install InCommon Server CA 2
+COPY build_files/etc/grid-security/certificates/InCommonRSAServerCA2.pem /etc/grid-security/certificates/InCommonRSAServerCA2.pem
+RUN chmod 644 "/etc/grid-security/certificates/InCommonRSAServerCA2.pem" && \
+    ln -s "/etc/grid-security/certificates/InCommonRSAServerCA2.pem" "/etc/grid-security/certificates/$(openssl x509 -in /etc/grid-security/certificates/InCommonRSAServerCA2.pem -noout -hash).0"
+
+# Install crons to fetch CA Certs
+COPY build_files/etc/cron.d/fetch-crl /etc/cron.d/fetch-crl
+COPY build_files/etc/cron.d/fetch-crl-reboot /etc/cron.d/fetch-crl-reboot
+
