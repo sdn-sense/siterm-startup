@@ -38,6 +38,10 @@ RUN pip3 install --no-cache-dir --upgrade setuptools pip && \
 
 COPY build_files/etc/supervisord.conf /etc/
 
+# Copy cron startup script
+COPY build_files/usr/local/sbin/cron.sh /usr/local/sbin/cron.sh
+RUN chmod +x /usr/local/sbin/cron.sh
+
 # Install CA Certs
 RUN wget https://repo.opensciencegrid.org/osg/24-main/el9/release/x86_64/Packages/o/osg-ca-certs-1.136-1.osg24.el9.noarch.rpm && \
     alien -d osg-ca-certs-1.136-1.osg24.el9.noarch.rpm && \
