@@ -82,10 +82,10 @@ fi
 # Run in a loop directory creation and chown for apache
 while true; do
     sleep_time=$(( 3600 + RANDOM % 1800 ))
+    python3 /root/dircreate.py
     echo "Sleeping for $sleep_time seconds"
     sleep $sleep_time
     # Run the Python script
-    python3 /root/dircreate.py
 done
 
 # Sleep forever in case exit loop (which should not happen)
