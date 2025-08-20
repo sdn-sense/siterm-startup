@@ -222,7 +222,7 @@ if [ -f /etc/os-release ]; then
   if [[ "$ID_LIKE" == *"rhel"* || "$ID" == *"almalinux"* || "$ID" == *"rocky"* ]]; then
     ELVER=$(echo "$VERSION_ID" | cut -d '.' -f1)
     if [[ "$ELVER" =~ ^(8|9|10)$ ]]; then
-      SITERMOSVERSION="-el${ELVER}"
+      SITERMOSVERSION="el${ELVER}"
     else
       echo -e "${RED}Unsupported EL version detected: $VERSION_ID. Defaulting to el10 image...${NC}"
     fi
