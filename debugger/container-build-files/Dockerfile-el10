@@ -6,9 +6,12 @@ ARG GITREPO=siterm
 ARG GITORG=sdn-sense
 ARG GITBR=master
 
-RUN yum -y install traceroute tcpdump wireshark iperf3 java wget && yum clean all
+RUN yum -y install traceroute tcpdump wireshark iperf3 java wget unzip && yum clean all
+# Install FDT
 RUN wget -nv https://github.com/fast-data-transfer/fdt/releases/download/0.27.0/fdt.jar -O /opt/fdt.jar
-
+# Install Ethr
+RUN wget -nv https://github.com/microsoft/ethr/releases/latest/download/ethr_linux.zip -O /opt/ethr_linux.zip && \
+    unzip /opt/ethr_linux.zip -d /opt/ && rm -f /opt/ethr_linux.zip && chmod +x /opt/ethr
 
 WORKDIR /opt/siterm/sitermcode
 RUN git clone -b $GITBR https://github.com/$GITORG/$GITREPO
