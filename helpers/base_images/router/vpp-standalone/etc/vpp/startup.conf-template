@@ -1,0 +1,64 @@
+unix {
+  nodaemon
+  log /var/log/vpp/vpp.log
+  full-coredump
+  cli-listen /run/vpp/cli.sock
+
+  startup-config /etc/vpp/startup.gate
+  poll-sleep-usec 100
+  gid vpp
+}
+
+api-segment {
+  gid vpp
+}
+
+cpu {
+  main-core ENV_MAIN_CORE
+  corelist-workers ENV_CORELIST_WORKERS
+}
+
+buffers {
+    buffers-per-numa ENV_BUFFERS_PER_NUMA
+}
+
+dpdk {
+   # no-multi-seg  - this one disables mtu?
+   enable-tcp-udp-checksum
+
+
+   dev ENV_PRIVATE_INTF_PCI {
+      name Ethernet1/0/0
+      num-rx-queues ENV_PRIVATE_INTF_RXQ
+      num-tx-queues ENV_PRIVATE_INTF_TXQ
+      num-rx-desc ENV_PRIVATE_INTF_RXDESC
+      num-tx-desc ENV_PRIVATE_INTF_TXDESC
+   }
+   dev ENV_PUBLIC_INTF_PCI {
+      name Ethernet2/0/0
+      num-rx-queues ENV_PUBLIC_INTF_RXQ
+      num-tx-queues ENV_PUBLIC_INTF_TXQ
+      num-rx-desc ENV_PUBLIC_INTF_RXDESC
+      num-tx-desc ENV_PUBLIC_INTF_TXDESC
+   }
+ }
+
+plugins {
+   plugin default { disable }
+   plugin dhcp_plugin.so { enable }
+   plugin dpdk_plugin.so { enable }
+   plugin nat_plugin.so { enable }
+   plugin ping_plugin.so { enable }
+   plugin linux_cp_plugin.so { enable }
+   plugin linux_nl_plugin.so { enable }
+}
+
+logging {
+  size 4096
+  default-log-level debug
+}
+
+linux-cp {
+  lcp-sync
+  lcp-auto-subint
+}

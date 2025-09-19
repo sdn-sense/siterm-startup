@@ -1,0 +1,5 @@
+comment { LAN interface }
+set interface state Ethernet1/0/0 up
+set interface mtu packet 9216 Ethernet1/0/0
+set interface feature gso Ethernet1/0/0 enable
+lcp create Ethernet1/0/0 host-if e1

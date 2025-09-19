@@ -1,0 +1,26 @@
+services:
+  vpp:
+    image: vpp
+    container_name: vpp
+    restart: unless-stopped
+    pid: host
+    privileged: true
+    cap_add:
+      - ALL
+    env_file:
+      - ./env
+    volumes:
+      - /dev/hugepages:/dev/hugepages
+      - /mnt/huge:/mnt/huge
+      - /mnt/huge_1GB:/mnt/huge_1GB
+      - /var/run/netns/:/var/run/netns/
+      - ./etc/vpp/:/etc/vpp/
+      - ./run/vpp/:/run/vpp/
+      - ./var/log/vpp/:/var/log/vpp/
+      - ./root/run.sh:/root/run.sh
+      - ./root/run-routeadd.sh:/root/run-routeadd.sh
+      - /tmp/:/tmp/
+    network_mode: host
+    init: true
+    ulimits:
+      core: -1

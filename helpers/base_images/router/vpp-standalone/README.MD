@@ -1,0 +1,26 @@
+# Info
+
+Requires the following configuration (as environment variables). It requires 2 interfaces to work. 
+
+Env:
+
+```bash
+ENV_MAIN_CORE=0
+ENV_CORELIST_WORKERS="1-60"
+ENV_BUFFERS_PER_NUMA="1310720"
+ENV_PRIVATE_INTF_RXQ=15
+ENV_PRIVATE_INTF_TXQ=15
+ENV_PRIVATE_INTF_RXDESC=4096
+ENV_PRIVATE_INTF_TXDESC=4096
+ENV_PUBLIC_INTF_RXQ=15
+ENV_PUBLIC_INTF_TXQ=15
+ENV_PUBLIC_INTF_RXDESC=4096
+ENV_PUBLIC_INTF_TXDESC=4096
+ENV_PUBLIC_INTF="enp8s0np0"
+ENV_PUBLIC_INTF_PCI="0000:08:00.0"
+ENV_PRIVATE_INTF="enp9s0np0"
+ENV_PRIVATE_INTF_PCI="0000:09:00.0"
+```
+
+TODO:
+Make it dynamic and allow specify N interfaces and dynamically configure as many as specified.
