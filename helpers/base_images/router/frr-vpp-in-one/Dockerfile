@@ -125,6 +125,7 @@ RUN mkdir -p /var/log/vpp
 
 COPY etc/supervisor/conf.d/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY root/run.sh /root/run.sh
+COPY root/default-route.sh /root/default-route.sh
 COPY root/run-monitoring.sh /root/run-monitoring.sh
 COPY etc/vpp/startup.conf-template /etc/vpp/startup.conf-template
 COPY etc/vpp/startup.gate /etc/vpp/startup.gate
