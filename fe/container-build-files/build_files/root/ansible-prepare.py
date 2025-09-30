@@ -114,6 +114,9 @@ def prepareNewInventoryFile(inventory):
     out = {"sense": {"hosts": {}}}
     for name, params in inventory.get("inventory", {}).items():
         out["sense"]["hosts"][name] = {"ansible_host": params["host"]}
+        # port is optional parameter
+        if "port" in params:
+            out["sense"]["hosts"][name]["ansible_port"] = params["port"]
         prepareNewHostFiles(name, params)
     dumpYamlContent(f"{ROOTPATH}/inventory.yaml", out)
 
