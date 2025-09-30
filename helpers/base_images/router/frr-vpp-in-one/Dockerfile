@@ -124,6 +124,7 @@ RUN apt-get update && apt-get install -y vpp vpp-plugin-core vpp-plugin-devtools
 RUN mkdir -p /var/log/vpp
 
 COPY etc/supervisor/conf.d/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY etc/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY root/run.sh /root/run.sh
 COPY root/default-route.sh /root/default-route.sh
 COPY root/run-monitoring.sh /root/run-monitoring.sh
@@ -185,6 +186,4 @@ RUN mkdir -p /var/run/sshd
 COPY root/run-sshd.sh /root/run-sshd.sh
 RUN chmod +x /root/run-sshd.sh
 
-EXPOSE 22
-
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]

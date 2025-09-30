@@ -1,4 +1,5 @@
 #!/bin/bash
+sleep 60
 if [ -z "$SSH_PORT" ]; then
     echo "ERROR: SSH_PORT is not set!"
     exit 1
