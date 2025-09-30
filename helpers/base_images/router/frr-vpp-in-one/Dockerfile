@@ -173,4 +173,18 @@ RUN cd ~/frr && make check || true
 # switch back to root for runtime
 USER root:root
 
+# Allow SiteRM to access the container
+# Install OpenSSH server
+RUN apt-get update && \
+    apt-get install -y openssh-server && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create sshd runtime directory
+RUN mkdir -p /var/run/sshd
+
+COPY root/run-sshd.sh /root/run-sshd.sh
+RUN chmod +x /root/run-sshd.sh
+
+EXPOSE 22
+
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
