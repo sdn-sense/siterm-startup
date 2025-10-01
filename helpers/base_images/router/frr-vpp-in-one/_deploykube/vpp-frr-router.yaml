@@ -1,0 +1,208 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vpp-startup
+  namespace: sense
+data:
+  startup.gate: |
+    # /etc/vpp/startup.gate
+    comment { LAN interface }
+    set interface state Ethernet1/0/0 up
+    set interface mtu packet 9216 Ethernet1/0/0
+    set interface feature gso Ethernet1/0/0 enable
+    lcp create Ethernet1/0/0 host-if e1
+
+    comment { WAN Facing interface }
+    create sub-interfaces Ethernet1/0/0 3999
+    set interface state Ethernet1/0/0.3999 up
+    set interface feature gso Ethernet1/0/0.3999 enable
+    set interface ip address Ethernet1/0/0.3999 2600:9a00:10:7::1/127
+
+    comment { LAN-WAN interface 2540 }
+    create sub-interfaces Ethernet1/0/0 2540
+    set interface state Ethernet1/0/0.2540 up
+    set interface feature gso Ethernet1/0/0.2540 enable
+    set interface ip address Ethernet1/0/0.2540 2600:9a00:10:2010::/64
+
+    comment { LAN-WAN interface 2541 }
+    create sub-interfaces Ethernet1/0/0 2541
+    set interface state Ethernet1/0/0.2541 up
+    set interface feature gso Ethernet1/0/0.2541 enable
+    set interface ip address Ethernet1/0/0.2541 2600:9a00:10:2011::/64
+
+    comment { LAN-WAN interface 2542 }
+    create sub-interfaces Ethernet1/0/0 2542
+    set interface state Ethernet1/0/0.2542 up
+    set interface feature gso Ethernet1/0/0.2542 enable
+    set interface ip address Ethernet1/0/0.2542 2600:9a00:10:2012::/64
+
+    comment { LAN-WAN interface 2543 }
+    create sub-interfaces Ethernet1/0/0 2543
+    set interface state Ethernet1/0/0.2543 up
+    set interface feature gso Ethernet1/0/0.2543 enable
+    set interface ip address Ethernet1/0/0.2543 2600:9a00:10:2013::/64
+---
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: pci-pt-interface-1
+  namespace: sense
+spec:
+  config: '{
+    "cniVersion": "0.4.0",
+    "name": "net1",
+    "plugins": [
+      {
+        "type": "host-device",
+        "pciBusID": "0000:17:00.1",
+        "ipam": {
+          "type": "static",
+          "addresses": [
+            {
+              "address": "10.77.50.10/24",
+              "gateway": "10.77.50.1"
+            }
+          ],
+          "routes": [
+            { "dst": "10.77.50.0/24" }
+          ]
+        }
+      },
+      {
+        "type": "tuning",
+        "sysctl": {
+          "net.ipv6.conf.net1.autoconf": "0",
+          "net.ipv6.conf.net1.accept_ra": "0",
+          "net.ipv6.conf.eth0.disable_ipv6": "1"
+        }
+      }
+    ]
+  }'
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vppfrr-ssh-key
+  namespace: sense
+type: Opaque
+stringData:
+  authorized_keys: |
+    ssh-ed25519...... jbalcas@domainnet
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vpp-frr
+  namespace: sense
+spec:
+  serviceName: "vpp-frr-svc"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vpp-frr
+  template:
+    metadata:
+      labels:
+        app: vpp-frr
+      annotations:
+        k8s.v1.cni.cncf.io/networks: pci-pt-interface-1
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: host1.domainname.net
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - host1.domainname.net
+      tolerations:
+        - key: "node.kubernetes.io/unschedulable"
+          operator: "Exists"
+          effect: "NoExecute"
+      containers:
+      - name: vppfrr
+        image: sdnsense/vppfrr:dev
+        imagePullPolicy: Always
+        stdin: true
+        tty: true
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - NET_ADMIN
+              - SYS_RAWIO
+              - IPC_LOCK
+        resources:
+          requests:
+            cpu: "10"
+            memory: "6Gi"
+            hugepages-1Gi: 1Gi
+            hugepages-2Mi: 20Mi
+          limits:
+            cpu: "10"
+            memory: "6Gi"
+            hugepages-1Gi: 1Gi
+            hugepages-2Mi: 20Mi
+        env:
+          - name: ENV_MAIN_CORE
+            value: "0"
+          - name: ENV_CORELIST_WORKERS
+            value: "1-8"
+          - name: ENV_BUFFERS_PER_NUMA
+            value: "81920"
+          - name: ENV_PRIVATE_INTF_RXQ
+            value: "8"
+          - name: ENV_PRIVATE_INTF_TXQ
+            value: "8"
+          - name: ENV_PRIVATE_INTF_RXDESC
+            value: "1024"
+          - name: ENV_PRIVATE_INTF_TXDESC
+            value: "1024"
+          - name: ENV_PUBLIC_INTF_RXQ
+            value: "8"
+          - name: ENV_PUBLIC_INTF_TXQ
+            value: "8"
+          - name: ENV_PUBLIC_INTF_RXDESC
+            value: "1024"
+          - name: ENV_PUBLIC_INTF_TXDESC
+            value: "1024"
+          - name: ENV_PUBLIC_INTF
+            value: "net1"
+          - name: ENV_PUBLIC_INTF_PCI
+            value: "0000:17:00.1"
+          - name: ENV_DEFAULT_ROUTE
+            value: "2600:9a00:10:7::"
+          - name: SSH_PORT
+            value: "22334"
+          - name: SSH_LISTEN6_ADDRESS
+            value: "[2600:9a00:10:7::1]"
+        volumeMounts:
+          - name: hugepage-1gi
+            mountPath: /dev/hugepages-1Gi
+          - name: hugepage-2mi
+            mountPath: /dev/hugepages-2Mi
+          - name: vpp-config
+            mountPath: /etc/vpp/startup.gate
+            subPath: startup.gate
+          - name: ssh-authorized-keys
+            mountPath: /root/.ssh/authorized_keys
+            subPath: authorized_keys
+            readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: hugepage-1gi
+          emptyDir:
+            medium: HugePages-1Gi
+        - name: hugepage-2mi
+          emptyDir:
+            medium: HugePages-2Mi
+        - name: vpp-config
+          configMap:
+            name: vpp-startup
+        - name: ssh-authorized-keys
+          secret:
+            secretName: vppfrr-ssh-key
