@@ -111,10 +111,15 @@ if [ "$ERROR" = true ]; then
     exit 1
 fi
 
-# Do not use json-file logging if it is podman
-ISPODMAN=`docker --version | grep podman | wc -l`
 LOGOPTIONS=""
-if [ $ISPODMAN -eq 0 ]; then
+# is podman installed?
+podman --version > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+  # allow alias
+  shopt -s expand_aliases
+  # set alias for podman
+  alias docker='podman'
+  # Do not use json-file logging if it is podman
   LOGOPTIONS="--log-driver=json-file --log-opt max-size=10m --log-opt max-file=10"
 fi
 
