@@ -70,7 +70,7 @@ certchecker () {
     then
       echo -e "Certificate $1 is valid. OK"
     else
-      echo -e "${RED}Certificate $1 expired or expires in 1 day. Please update certificate. SiteRM will fail to start"
+      echo -e "${RED}Certificate $1 expired or expires in 1 day. Please update certificate. SiteRM will fail to start.${NC}"
       ERROR=true
     fi
   fi
@@ -111,10 +111,15 @@ if [ "$ERROR" = true ]; then
     exit 1
 fi
 
-# Do not use json-file logging if it is podman
-ISPODMAN=`docker --version | grep podman | wc -l`
 LOGOPTIONS=""
-if [ $ISPODMAN -eq 0 ]; then
+# is podman installed?
+podman --version > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+  # allow alias
+  shopt -s expand_aliases
+  # set alias for podman
+  alias docker='podman'
+  # Do not use json-file logging if it is podman
   LOGOPTIONS="--log-driver=json-file --log-opt max-size=10m --log-opt max-file=10"
 fi
 
@@ -160,7 +165,7 @@ RTTABLE=""
 if `test -f /etc/iproute2/rt_tables`; then
   RTTABLE="-v /etc/iproute2/rt_tables:/etc/iproute2/rt_tables${MOUNT_OPT}"
 else
-  echo -e "${RED}WARNING: /etc/iproute2/rt_tables file does not exist."
+  echo -e "${RED}WARNING: /etc/iproute2/rt_tables file does not exist.${NC}"
 fi
 
 # Create docker volume for configuration storage
