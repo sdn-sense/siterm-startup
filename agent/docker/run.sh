@@ -70,7 +70,7 @@ certchecker () {
     then
       echo -e "Certificate $1 is valid. OK"
     else
-      echo -e "${RED}Certificate $1 expired or expires in 1 day. Please update certificate. SiteRM will fail to start"
+      echo -e "${RED}Certificate $1 expired or expires in 1 day. Please update certificate. SiteRM will fail to start.${NC}"
       ERROR=true
     fi
   fi
@@ -160,7 +160,7 @@ RTTABLE=""
 if `test -f /etc/iproute2/rt_tables`; then
   RTTABLE="-v /etc/iproute2/rt_tables:/etc/iproute2/rt_tables${MOUNT_OPT}"
 else
-  echo -e "${RED}WARNING: /etc/iproute2/rt_tables file does not exist."
+  echo -e "${RED}WARNING: /etc/iproute2/rt_tables file does not exist.${NC}"
 fi
 
 # Create docker volume for configuration storage
