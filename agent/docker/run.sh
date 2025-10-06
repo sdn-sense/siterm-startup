@@ -249,7 +249,7 @@ docker run \
   ${LOGOPTIONS} quay.io/sdnsense/siterm-agent:${SITERMIMGVERSION}-${SITERMOSVERSION}
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
-echo "Starting SiteRM Debugger container with image tag: ${VERSION} and OS version: el10"
+echo "Starting SiteRM Debugger container with image tag: ${SITERMIMGVERSION} and OS version: el10"
 
 docker run \
   -dit --name siterm-debugger \
@@ -260,7 +260,7 @@ docker run \
   -v ${DOCKVOLLOG}:/var/log/ \
   --restart always \
   --net=host \
-  $LOGOPTIONS quay.io/sdnsense/siterm-debugger:${VERSION}-el10
+  $LOGOPTIONS quay.io/sdnsense/siterm-debugger:${SITERMIMGVERSION}-el10
 
   echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
   echo "SiteRM Agent and Debugger should be started. Use 'docker ps' to check. Use 'docker logs -f siterm-agent' to follow agent logs."
