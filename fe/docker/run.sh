@@ -241,6 +241,9 @@ if command -v selinuxenabled >/dev/null 2>&1; then
   fi
 fi
 
+echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+echo "Starting SiteRM FE container version: $VERSION"
+
 docker run \
        -dit --name ${DOCKERNAME} \
        -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml$MOUNT_OPT \
@@ -255,4 +258,9 @@ docker run \
        $DOCKERNET_PARSED \
        --restart always \
        --env-file $ENV_FILE \
-       $LOGOPTIONS docker.io/sdnsense/siterm-fe:$VERSION
+       $LOGOPTIONS quay.io/sdnsense/siterm-fe:$VERSION
+
+echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+echo "SiteRM FE should be started. Use 'docker ps' to check. Use 'docker logs -f ${DOCKERNAME}' to follow FE logs."
+echo "For more details, documentation is available here: https://sdn-sense.github.io/Installation.html"
+echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="

@@ -233,6 +233,8 @@ else
   echo -e "${RED}/etc/os-release not found. Cannot detect OS. Defaulting to el10 image...${NC}"
 fi
 
+echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+echo "Starting SiteRM Agent container with image tag: ${SITERMIMGVERSION} and OS version: ${SITERMOSVERSION}"
 docker run \
   -dit --name siterm-agent \
   -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml$MOUNT_OPT \
@@ -244,4 +246,23 @@ docker run \
   --restart always \
   --cap-add=NET_ADMIN \
   --net=host \
-  ${LOGOPTIONS} docker.io/sdnsense/siterm-agent:${SITERMIMGVERSION}-${SITERMOSVERSION}
+  ${LOGOPTIONS} quay.io/sdnsense/siterm-agent:${SITERMIMGVERSION}-${SITERMOSVERSION}
+
+echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+echo "Starting SiteRM Debugger container with image tag: ${VERSION} and OS version: el10"
+
+docker run \
+  -dit --name siterm-debugger \
+  -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml$MOUNT_OPT \
+  -v $(pwd)/../conf/etc/grid-security/hostcert.pem:/etc/grid-security/hostcert.pem$MOUNT_OPT \
+  -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem$MOUNT_OPT \
+  -v ${DOCKVOL}:/opt/siterm/config/ \
+  -v ${DOCKVOLLOG}:/var/log/ \
+  --restart always \
+  --net=host \
+  $LOGOPTIONS quay.io/sdnsense/siterm-debugger:${VERSION}-el10
+
+  echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+  echo "SiteRM Agent and Debugger should be started. Use 'docker ps' to check. Use 'docker logs -f siterm-agent' to follow agent logs."
+  echo "For more details, documentation is available here: https://sdn-sense.github.io/Installation.html"
+  echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"

@@ -175,6 +175,9 @@ if selinuxenabled; then
   done
 fi
 
+echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+echo "Starting SiteRM debugger container version: $VERSION"
+
 docker run \
   -dit --name siterm-debugger \
   -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml$MOUNT_OPT \
@@ -184,4 +187,9 @@ docker run \
   -v ${DOCKVOLLOG}:/var/log/ \
   --restart always \
   --net=host \
-  $LOGOPTIONS docker.io/sdnsense/siterm-debugger:${VERSION}-el10
+  $LOGOPTIONS quay.io/sdnsense/siterm-debugger:${VERSION}-el10
+
+  echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+  echo "SiteRM Debugger should be started. Use 'docker ps' to check. Use 'docker logs -f siterm-debugger' to follow agent logs."
+  echo "For more details, documentation is available here: https://sdn-sense.github.io/Installation.html"
+  echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
