@@ -19,6 +19,14 @@ do
   esac
 done
 
+# is it podman?
+podman --version > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+  shopt -s expand_aliases
+  alias docker='podman'
+fi
+
+echo "Stoping and removing existing containers and images for siterm-agent"
 for id in `docker ps -a | grep sdnsense/siterm-agent | awk '{print $1}'`
 do
   docker stop $id
@@ -30,4 +38,17 @@ do
   docker image rm $id --force
 done
 
+echo "Stoping and removing existing containers and images for siterm-debugger"
+for id in `docker ps -a | grep sdnsense/siterm-debugger | awk '{print $1}'`
+do
+  docker stop $id
+  docker rm $id
+done
+
+for id in `docker image ls | grep sdnsense/siterm-agent | awk '{print $3}'`
+do
+  docker image rm $id --force
+done
+
+echo "Starting new siterm-agent and debugger image with tag: $VERSION"
 ./run.sh -i $VERSION
