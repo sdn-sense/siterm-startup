@@ -24,30 +24,6 @@ Listen ${LISTEN_HTTPS}
 
   ErrorDocument 403 "You are not authorized to access this URL"
 
-  # OIDC Configuration
-  OIDCProviderMetadataURL ${OIDC_PROVIDER}
-  OIDCClientID ${OIDC_CLIENT_ID}
-  OIDCClientSecret ${OIDC_CLIENT_SECRET}
-  OIDCRedirectURI https://${OIDC_REDIRECT_URI}/oidc/callback
-  OIDCCryptoPassphrase "${OIDC_CRYPTO_PASS}"
-  OIDCScope "openid email profile"
-  OIDCPassClaimsAs both
-  OIDCPassUserInfoAs claims
-  OIDCRemoteUserClaim email
-
-  # Handle callback internally
-  ProxyPass /oidc/callback !
-  <Location /oidc/callback>
-    AuthType openid-connect
-    Require valid-user
-  </Location>
-
-  <LocationMatch "^/">
-      SSLRequireSSL
-      SSLVerifyClient require
-      Require ssl-verify-client
-  </LocationMatch>
-
   ProxyPreserveHost On
   ProxyPass /siterm-http-status http://127.0.0.1:8124/metrics
   ProxyPassReverse /siterm-http-status http://127.0.0.1:8124/metrics

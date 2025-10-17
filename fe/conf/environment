@@ -6,14 +6,10 @@ MARIA_DB_PORT=3306
 MARIA_DB_DATABASE=sitefe
 # HTTPS By default is 443, Change only if needed
 #LISTEN_HTTPS=443
-# AUTH SUPPORT Choose one X509, OIDC, BOTH. By default, this is X509 currently.
+# AUTH SUPPORT Choose one X509, OIDC, By default, this is X509 currently.
 #AUTH_SUPPORT=<REPLACEME>
-# In case OIDC or BOTH, parameters below are required to be set
-#OIDC_PROVIDER=<REPLACEME>
-#OIDC_CLIENT_ID=<REPLACEME>
-#OIDC_CLIENT_SECRET=<REPLACEME>
+# In case OIDC, parameters below are required to be set
+#OIDC_AUDIENCE=<REPLACEME>
+#OIDC_ISSUER=<REPLACEME>
+#OIDC_JWKS=<REPLACEME>
 #OIDC_REDIRECT_URI=<REPLACEME>
-#OIDC_CRYPTO_PASS=<REPLACEME>
-# Required, if using not sdn-sense.net resolver!
-#OIDC_REQUIRED_ISSUER=<REPLACEME>
-#OIDC_PERMISSIONS_CLAIM=<REPLACEME>

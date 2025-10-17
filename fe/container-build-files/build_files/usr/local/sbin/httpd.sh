@@ -21,7 +21,7 @@ set +a
 # Set defaults for HTTPS
 export LISTEN_HTTPS="${LISTEN_HTTPS:-443}"
 
-# AUTH_SUPPORT should be one of: X509, OIDC, BOTH. Default X509
+# AUTH_SUPPORT should be one of: X509, OIDC. Default X509
 case "$AUTH_SUPPORT" in
   X509)
     TEMPLATE_FILE="/etc/httpd/sitefe-httpd-x509.conf-template"
@@ -29,21 +29,17 @@ case "$AUTH_SUPPORT" in
   OIDC)
     TEMPLATE_FILE="/etc/httpd/sitefe-httpd-oidc.conf-template"
     ;;
-  BOTH)
-    TEMPLATE_FILE="/etc/httpd/sitefe-httpd-x509-oidc.conf-template"
-    ;;
   *)
     TEMPLATE_FILE="/etc/httpd/sitefe-httpd-x509.conf-template"
     ;;
 esac
 
-if [[ "$AUTH_SUPPORT" == "OIDC" || "$AUTH_SUPPORT" == "BOTH" ]]; then
+if [[ "$AUTH_SUPPORT" == "OIDC" ]]; then
   REQUIRED_VARS=(
-    OIDC_PROVIDER
-    OIDC_CLIENT_ID
-    OIDC_CLIENT_SECRET
+    OIDC_AUDIENCE
+    OIDC_ISSUER
+    OIDC_JWKS
     OIDC_REDIRECT_URI
-    OIDC_CRYPTO_PASS
   )
 
   MISSING_VARS=()
