@@ -14,8 +14,6 @@ Listen ${LISTEN_HTTPS}
   SSLHonorCipherOrder on
 
   Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains"
-  RewriteEngine On
-  RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
   RewriteRule .* - [F]
 
   LogFormat "%h %{X-Forwarded-For}i %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined

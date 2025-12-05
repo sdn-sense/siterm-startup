@@ -8,8 +8,6 @@ Listen ${LISTEN_HTTPS}
 <VirtualHost *:${LISTEN_HTTPS}>
   Header always set Strict-Transport-Security "max-age=63072000; includeSubdomains;"
   RewriteEngine on
-  RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
-  RewriteRule .* - [F]
   LimitRequestFieldSize 131040
   LimitRequestLine 131040
   LogFormat "%h %{X-Forwarded-For}i %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
