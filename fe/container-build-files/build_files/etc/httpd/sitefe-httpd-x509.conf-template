@@ -44,9 +44,16 @@ Listen ${LISTEN_HTTPS}
       SSLRequireSSL
       SSLVerifyClient require
       Require ssl-verify-client
+      <Limit GET POST PUT DELETE>
+        Require all granted
+      </Limit>
+      <LimitExcept GET POST PUT DELETE>
+        Require all denied
+      </LimitExcept>
   </LocationMatch>
 
   ProxyPreserveHost On
+  ProxyErrorOverride Off
   ProxyPass /siterm-http-status http://127.0.0.1:8124/metrics
   ProxyPassReverse /siterm-http-status http://127.0.0.1:8124/metrics
   ProxyPassMatch / http://127.0.0.1:8080

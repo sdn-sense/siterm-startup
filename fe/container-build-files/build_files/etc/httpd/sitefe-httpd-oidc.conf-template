@@ -24,6 +24,15 @@ Listen ${LISTEN_HTTPS}
 
   ErrorDocument 403 "You are not authorized to access this URL"
 
+  <LocationMatch "^/">
+      <Limit GET POST PUT DELETE>
+        Require all granted
+      </Limit>
+      <LimitExcept GET POST PUT DELETE>
+        Require all denied
+      </LimitExcept>
+  </LocationMatch>
+
   ProxyPreserveHost On
   ProxyPass /siterm-http-status http://127.0.0.1:8124/metrics
   ProxyPassReverse /siterm-http-status http://127.0.0.1:8124/metrics
