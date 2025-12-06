@@ -37,6 +37,7 @@ Listen ${LISTEN_HTTPS}
   SSLCACertificatePath /etc/grid-security/certificates/
 
   ErrorDocument 403 "You are not authorized to access this URL"
+  ErrorDocument 404 /api-error-404
 
   <LocationMatch "^/">
       SSLRequireSSL
@@ -49,6 +50,17 @@ Listen ${LISTEN_HTTPS}
         Require all denied
       </LimitExcept>
   </LocationMatch>
+
+  <LocationMatch "^/api/">
+    ErrorDocument 404 /api-error-404
+  </LocationMatch>
+
+  Alias /api-error-404 /var/www/html/json-404.json
+
+  <Location /api-error-404>
+    ForceType application/json
+  </Location>
+
 
   ProxyPreserveHost On
   ProxyErrorOverride Off

@@ -21,6 +21,8 @@ Listen ${LISTEN_HTTPS}
   CustomLog "|/sbin/rotatelogs -n 7 /var/log/httpd/access_ssl_log 86400" combined
 
   ErrorDocument 403 "You are not authorized to access this URL"
+  ErrorDocument 404 /api-error-404
+
 
   <LocationMatch "^/">
       <Limit GET POST PUT DELETE>
@@ -30,6 +32,16 @@ Listen ${LISTEN_HTTPS}
         Require all denied
       </LimitExcept>
   </LocationMatch>
+
+  <LocationMatch "^/api/">
+    ErrorDocument 404 /api-error-404
+  </LocationMatch>
+
+  Alias /api-error-404 /var/www/html/json-404.json
+
+  <Location /api-error-404>
+    ForceType application/json
+  </Location>
 
   ProxyPreserveHost On
   ProxyPass /siterm-http-status http://127.0.0.1:8124/metrics
