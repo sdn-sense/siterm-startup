@@ -36,7 +36,7 @@ copy_tls() {
 
 if [[ "$AUTO_TLS_RENEWAL" != "true" ]]; then
     echo "[tls-watch] AUTO_TLS_RENEWAL disabled"
-    while true; dosleep "$CHECK_INTERVAL"; done
+    while true; do sleep "$CHECK_INTERVAL"; done
 fi
 echo "[tls-watch] TLS watcher started"
 while true; do
@@ -50,6 +50,7 @@ while true; do
     changed=false
     # Detect source change
     if [[ "$current_hash" != "$last_hash" ]]; then
+        echo "[tls-watch] Source TLS change detected"
         changed=true
     fi
     # Periodic forced comparison
