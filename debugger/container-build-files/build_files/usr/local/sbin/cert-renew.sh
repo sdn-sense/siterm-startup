@@ -9,8 +9,6 @@ SRC_CERT="/etc/secret-mount/tls.crt"
 SRC_KEY="/etc/secret-mount/tls.key"
 GRID_CERT="/etc/grid-security/hostcert.pem"
 GRID_KEY="/etc/grid-security/hostkey.pem"
-HTTPD_CERT="/etc/httpd/certs/cert.pem"
-HTTPD_KEY="/etc/httpd/certs/privkey.pem"
 
 CHECK_INTERVAL=3600
 FORCE_COMPARE_INTERVAL=10800
@@ -30,8 +28,6 @@ files_diff() {
 copy_tls() {
     cp -f "$SRC_CERT" "$GRID_CERT"
     cp -f "$SRC_KEY"  "$GRID_KEY"
-    cp -f "$SRC_CERT" "$HTTPD_CERT"
-    cp -f "$SRC_KEY"  "$HTTPD_KEY"
 }
 
 if [[ "$AUTO_TLS_RENEWAL" != "true" ]]; then
@@ -59,9 +55,7 @@ while true; do
 
         for pair in \
             "$SRC_CERT:$GRID_CERT" \
-            "$SRC_KEY:$GRID_KEY" \
-            "$SRC_CERT:$HTTPD_CERT" \
-            "$SRC_KEY:$HTTPD_KEY"
+            "$SRC_KEY:$GRID_KEY";
         do
             IFS=: read -r src dst <<< "$pair"
             if [[ ! -f "$dst" ]] || files_diff "$src" "$dst"; then
