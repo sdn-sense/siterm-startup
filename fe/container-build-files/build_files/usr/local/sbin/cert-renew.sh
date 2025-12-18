@@ -39,6 +39,7 @@ if [[ "$AUTO_TLS_RENEWAL" != "true" ]]; then
     while true; do sleep "$CHECK_INTERVAL"; done
 fi
 echo "[tls-watch] TLS watcher started"
+copy_tls
 while true; do
 
     now=$(date +%s)
@@ -72,14 +73,13 @@ while true; do
     fi
     if [[ "$changed" == "true" ]]; then
         echo "[tls-watch] TLS change detected, syncing certs"
-        copy_tls
         last_hash="$current_hash"
         if [[ "$baseline" == "true" ]]; then
-            echo "[tls-watch] Post-baseline change → forcing restart"
-            supervisorctl shutdown
+            echo "[tls-watch] TLS change present, please restart container"
         else
             echo "[tls-watch] Baseline established (no restart)"
             baseline=true
+            changed=false
         fi
     fi
     sleep "$CHECK_INTERVAL"

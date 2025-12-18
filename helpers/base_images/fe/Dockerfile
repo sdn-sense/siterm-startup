@@ -56,7 +56,7 @@ RUN chown mysql:mysql /var/log/mariadb/ && \
     chmod -R g+ws /var/log/siterm-site-fe/*
 
 # Install all required packages
-RUN yum -y install git autoconf sudo mod_auth_openidc gettext libcurl-devel libffi-devel openssl-devel automake curl gcc libuuid-devel lm_sensors make nc pkgconfig zlib-devel python3-devel httpd httpd-devel python3-mod_wsgi mod_ssl cronie python3-pip python3 python3-pyOpenSSL mariadb-server python3-mysqlclient MariaDB-devel procps-ng redhat-rpm-config net-snmp-devel sshpass fetch-crl --allowerasing && yum clean all
+RUN yum -y install git autoconf sudo mod_auth_openidc gettext libcurl-devel libffi-devel openssl-devel automake curl gcc libuuid-devel lm_sensors diffutils make nc pkgconfig zlib-devel python3-devel httpd httpd-devel python3-mod_wsgi mod_ssl cronie python3-pip python3 python3-pyOpenSSL mariadb-server python3-mysqlclient MariaDB-devel procps-ng redhat-rpm-config net-snmp-devel sshpass fetch-crl --allowerasing && yum clean all
 
 # Remove ssl.conf file (siterm write's own httpd conf file)
 RUN rm -f /etc/httpd/conf.d/ssl.conf
