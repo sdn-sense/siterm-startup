@@ -1,20 +1,10 @@
 #!/bin/sh
 
-db_backup_sleep () {
-  BACKUPDIR="/opt/siterm/config/backups/"
-  while true; do
-      # TODO: launch as its own container, process;
-      #TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-      #BACKUPPATH="$BACKUPDIR/$TIMESTAMP"
-      #mkdir -p "$BACKUPPATH"
-      #mysqldump "sitefe" | xz -c > "$BACKUPPATH/sitefe.sql.xz"
-      # Remove backups while keeping the last 72
-      # To use backup file: xzcat sitefe.sql.xz | mysql -u root -p sitefe
-      #ls -dt "$BACKUPDIR"/* | tail -n +72 | xargs rm -rf --
-      # Sleep for 1 hour
-      sleep 3600
-    done
-} &> /dev/null
+sleep_long () {
+  while :; do sleep 3600; done
+}
+
+echo "`date -u +"%Y-%m-%d %H:%M:%S"` Starting MariaDB initialization script."
 
 # Create temp file for initialization (hold off other processes)
 touch /tmp/siterm-mariadb-init
@@ -26,7 +16,7 @@ set +a
 
 # Check if all env variables are available and set
 if [[ -z $MARIA_DB_HOST || -z $MARIA_DB_USER || -z $MARIA_DB_DATABASE || -z $MARIA_DB_PASSWORD || -z $MARIA_DB_PORT ]]; then
-    echo 'DB Configuration file not available. exiting.'
+    echo "`date -u +"%Y-%m-%d %H:%M:%S"` DB Configuration file not available. exiting."
     exit 1
 fi
 
@@ -34,10 +24,10 @@ fi
 if [[ "$MARIA_DB_PORT" != "3306" && -n "$MARIA_DB_PORT" ]]; then
     cp /etc/my.cnf.d/server.cnf /etc/my.cnf.d/server.cnf.bak
     if grep -q "^port=" /etc/my.cnf.d/server.cnf; then
-        echo "MariaDB Port is already defined in /etc/my.cnf.d/server.cnf"
+        echo "`date -u +"%Y-%m-%d %H:%M:%S"` MariaDB Port is already defined in /etc/my.cnf.d/server.cnf"
     else
         echo "port=${MARIA_DB_PORT}" >> /etc/my.cnf.d/server.cnf
-        echo "Port ${MARIA_DB_PORT} added to /etc/my.cnf.d/server.cnf."
+        echo "`date -u +"%Y-%m-%d %H:%M:%S"` Port ${MARIA_DB_PORT} added to /etc/my.cnf.d/server.cnf."
     fi
 fi
 
@@ -53,13 +43,15 @@ while true; do
     if [ $? -eq 0 ]; then
         break
     fi
-    echo "Retrying mysql sql in 5 seconds..."
+    echo "`date -u +"%Y-%m-%d %H:%M:%S"` Retrying mysql sql in 5 seconds..."
     sleep 5
 done
 
+echo "`date -u +"%Y-%m-%d %H:%M:%S"` MariaDB initialization script executed successfully."
 # Create/Update all databases needed for SiteRM
 python3 /usr/local/sbin/dbstart.py
 
+echo "`date -u +"%Y-%m-%d %H:%M:%S"` Site-RM database setup completed."
 # create file under /var/lib/mysql which is only unique for Site-RM.
 # This ensures that we are not repeating same steps during docker restart
 echo $(date) >> /opt/siterm/config/mysql/site-rm-db-initialization
@@ -68,4 +60,4 @@ echo $(date) >> /opt/siterm/config/mysql/site-rm-db-initialization
 rm -f /tmp/siterm-mariadb-init
 
 # Process is over, sleep long
-db_backup_sleep
+sleep_long

@@ -1,15 +1,15 @@
 #!/bin/bash
-
+echo "`date -u +"%Y-%m-%d %H:%M:%S"` Starting httpd initialization script."
 # Check if upgrade is in progress and loop until it is completed
 if [ -f /tmp/siterm-mariadb-init ]; then
   while [ -f /tmp/siterm-mariadb-init ]; do
-    echo "Upgrade in progress. Waiting for it to complete."
+    echo "`date -u +"%Y-%m-%d %H:%M:%S"` Upgrade in progress. Waiting for it to complete."
     sleep 5
   done
 fi
 if [ ! -f /tmp/config-fetcher-ready ]; then
   while [ ! -f /tmp/config-fetcher-ready ]; do
-    echo "Config fetch not finished yet. Waiting for it to start."
+    echo "`date -u +"%Y-%m-%d %H:%M:%S"` Config fetch not finished yet. Waiting for it to start."
     sleep 1
   done
 fi
@@ -50,7 +50,7 @@ if [[ "$AUTH_SUPPORT" == "OIDC" ]]; then
   done
 
   if [[ ${#MISSING_VARS[@]} -gt 0 ]]; then
-    echo "Error: Missing required environment variables:"
+    echo "`date -u +"%Y-%m-%d %H:%M:%S"` Error: Missing required environment variables:"
     for var in "${MISSING_VARS[@]}"; do
       echo "  - $var"
     done
@@ -58,9 +58,7 @@ if [[ "$AUTH_SUPPORT" == "OIDC" ]]; then
   fi
 fi
 
-
-# Generate apache config from template
 envsubst < "$TEMPLATE_FILE" > /etc/httpd/conf.d/sitefe-httpd.conf
 
-# Lets run it!
+echo "`date -u +"%Y-%m-%d %H:%M:%S"` Starting httpd server"
 exec /usr/sbin/httpd -k start -DFOREGROUND

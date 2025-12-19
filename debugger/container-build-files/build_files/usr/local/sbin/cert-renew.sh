@@ -30,11 +30,15 @@ copy_tls() {
     cp -f "$SRC_KEY"  "$GRID_KEY"
 }
 
+print_dateline() {
+    echo "`date -u +"%Y-%m-%d %H:%M:%S"` $1 "
+}
+
 if [[ "$AUTO_TLS_RENEWAL" != "true" ]]; then
-    echo "[tls-watch] AUTO_TLS_RENEWAL disabled"
+    print_dateline "[tls-watch] AUTO_TLS_RENEWAL disabled"
     while true; do sleep "$CHECK_INTERVAL"; done
 fi
-echo "[tls-watch] TLS watcher started"
+print_dateline "[tls-watch] TLS watcher started"
 copy_tls
 while true; do
 
@@ -43,11 +47,12 @@ while true; do
         sleep "$CHECK_INTERVAL"
         continue
     }
+    print_dateline "[tls-watch] Checking TLS certs"
     current_hash="$(hash_sources)"
     changed=false
     # Detect source change
     if [[ "$current_hash" != "$last_hash" ]]; then
-        echo "[tls-watch] Source TLS change detected"
+        print_dateline "[tls-watch] Source TLS change detected"
         changed=true
     fi
     # Periodic forced comparison
@@ -66,12 +71,12 @@ while true; do
         done
     fi
     if [[ "$changed" == "true" ]]; then
-        echo "[tls-watch] TLS change detected, syncing certs"
+        print_dateline "[tls-watch] TLS change detected, syncing certs"
         last_hash="$current_hash"
         if [[ "$baseline" == "true" ]]; then
-            echo "[tls-watch] TLS change present, please restart container"
+            print_dateline "[tls-watch] TLS change present, please restart container"
         else
-            echo "[tls-watch] Baseline established (no restart)"
+            print_dateline "[tls-watch] Baseline established (no restart)"
             baseline=true
             changed=false
         fi

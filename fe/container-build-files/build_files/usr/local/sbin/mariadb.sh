@@ -1,4 +1,5 @@
 #!/bin/sh
+echo "`date -u +"%Y-%m-%d %H:%M:%S"` Starting MariaDB initialization script."
 
 # Source the environment variables
 set -a
@@ -7,7 +8,7 @@ set +a
 
 # Check if all env variables are available and set
 if [[ -z $MARIA_DB_HOST || -z $MARIA_DB_USER || -z $MARIA_DB_DATABASE || -z $MARIA_DB_PASSWORD || -z $MARIA_DB_PORT ]]; then
-    echo 'DB Configuration file missing MARIADB Connection variables;'
+    echo "`date -u +"%Y-%m-%d %H:%M:%S"` DB Configuration file missing MARIADB Connection variables;"
     exit 1
 fi
 
@@ -15,10 +16,10 @@ fi
 if [[ "$MARIA_DB_PORT" != "3306" && -n "$MARIA_DB_PORT" ]]; then
     cp /etc/my.cnf.d/server.cnf /etc/my.cnf.d/server.cnf.bak
     if grep -q "^port=" /etc/my.cnf.d/server.cnf; then
-        echo "MariaDB Port is already defined in /etc/my.cnf.d/server.cnf"
+        echo "`date -u +"%Y-%m-%d %H:%M:%S"` MariaDB Port is already defined in /etc/my.cnf.d/server.cnf"
     else
         echo "port=${MARIA_DB_PORT}" >> /etc/my.cnf.d/server.cnf
-        echo "Port ${MARIA_DB_PORT} added to /etc/my.cnf.d/server.cnf."
+        echo "`date -u +"%Y-%m-%d %H:%M:%S"` Port ${MARIA_DB_PORT} added to /etc/my.cnf.d/server.cnf."
     fi
 fi
 
@@ -28,6 +29,7 @@ rm -f /opt/siterm/config/mysql/aria_log.*
 rm -f /opt/siterm/config/mysql/*.pid
 
 if [ ! -f /opt/siterm/config/mysql/site-rm-db-initialization ]; then
+  echo "`date -u +"%Y-%m-%d %H:%M:%S"` First time start of MariaDB detected."
   # First time start of mysql, ensure dirs are present
   mkdir -p /opt/siterm/config/mysql/
   mkdir -p /var/log/mariadb
@@ -37,9 +39,9 @@ if [ ! -f /opt/siterm/config/mysql/site-rm-db-initialization ]; then
   # Initialize the mysql data directory and create system tables
   mysql_install_db --user mysql > /dev/null
 else
-  echo "Seems this is not the first time start."
+  echo "`date -u +"%Y-%m-%d %H:%M:%S"` Seems this is not the first time start."
   chown -R mysql:mysql /opt/siterm/config/mysql/
 fi
-
+echo "`date -u +"%Y-%m-%d %H:%M:%S"` Starting MariaDB server..."
 # Start MariaDB in the foreground using exec
 exec mysqld_safe --user=mysql

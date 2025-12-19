@@ -3,6 +3,7 @@ set -a
 source /etc/environment || true
 set +a
 
+echo "`date -u +"%Y-%m-%d %H:%M:%S"` Starting gunicorn server"
 # Include fast api script location
 export PYTHONPATH="/var/www/wsgi-scripts/:$PYTHONPATH"
 
@@ -18,6 +19,19 @@ GU_LIMIT_REQUEST_LINE="${GU_LIMIT_REQUEST_LINE:-8190}"
 GU_LIMIT_REQUEST_FIELDS="${GU_LIMIT_REQUEST_FIELDS:-32768}"
 GU_LIMIT_REQUEST_BODY="${GU_LIMIT_REQUEST_BODY:-104857600}"
 GU_LOG_LEVEL="${LOG_LEVEL:-info}"
+
+echo "`date -u +"%Y-%m-%d %H:%M:%S"` Gunicorn configuration:"
+echo "  Workers:                $GU_WORKERS"
+echo "  Threads:                $GU_THREADS"
+echo "  Max requests:           $GU_MAX_REQUESTS"
+echo "  Max requests jitter:    $GU_MAX_REQUESTS_JITTER"
+echo "  Timeout:                $GU_TIMEOUT"
+echo "  Graceful timeout:       $GU_GRACEFUL_TIMEOUT"
+echo "  Keep alive:             $GU_KEEP_ALIVE"
+echo "  Limit request line:     $GU_LIMIT_REQUEST_LINE"
+echo "  Limit request fields:   $GU_LIMIT_REQUEST_FIELDS"
+echo "  Limit request body:     $GU_LIMIT_REQUEST_BODY"
+echo "  Log level:              $GU_LOG_LEVEL"
 
 # Start gunicorn
 exec gunicorn sitefe:app \

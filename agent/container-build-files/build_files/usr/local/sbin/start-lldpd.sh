@@ -6,9 +6,9 @@ sleep_long () {
 
 # Check if socket file exists, if yes, then sleep indefinitely
 if [ -S /run/lldpd/lldpd.socket ]; then
-    echo "LLDP daemon is already running. Sleeping indefinitely."
+    echo "`date -u +"%Y-%m-%d %H:%M:%S"` LLDP daemon is already running. Sleeping indefinitely."
     sleep_long
 fi
 # If socket file does not exist, start lldpd daemon
-echo "Starting lldpd daemon..."
+echo "`date -u +"%Y-%m-%d %H:%M:%S"` Starting lldpd daemon..."
 exec /usr/sbin/lldpd -d
