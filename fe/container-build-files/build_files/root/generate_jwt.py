@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 """Generate a new RSA key pair"""
 import os
+import pwd
+import grp
 import sys
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
+
+# Get UID and GID for Apache user and group (as long as we use apache)
+APACHE_USER = os.getenv("APACHE_USER", "apache")
+APACHE_GROUP = os.getenv("APACHE_GROUP", "apache")
+uid = pwd.getpwnam(APACHE_USER).pw_uid
+gid = grp.getgrnam(APACHE_GROUP).gr_gid
 
 # Read environment variables for all key and save directory parameters
 key_size = int(os.getenv("RSA_KEY_SIZE", "3072"))
@@ -13,6 +21,8 @@ private_key_path = os.path.join(save_dir, "private_key.pem")
 public_key_path = os.path.join(save_dir, "public_key.pem")
 
 os.makedirs(save_dir, exist_ok=True)
+os.chown(save_dir, uid, gid)
+os.chmod(save_dir, 0o700)
 
 # Check if private key or public key already exists
 if os.path.exists(private_key_path) and os.path.exists(public_key_path):
@@ -40,10 +50,14 @@ os.chmod(save_dir, 0o700)
 print("Saving private key to:", private_key_path)
 with open(private_key_path, "wb") as f:
     f.write(private_pem)
+os.chown(private_key_path, uid, gid)
 os.chmod(private_key_path, 0o600)
+
 
 print("Saving public key to:", public_key_path)
 with open(public_key_path, "wb") as f:
     f.write(public_pem)
+os.chown(public_key_path, uid, gid)
+os.chmod(public_key_path, 0o644)
 
 print("RSA key pair generation completed.")
