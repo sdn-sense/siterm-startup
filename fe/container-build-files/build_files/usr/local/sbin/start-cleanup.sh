@@ -64,6 +64,10 @@ else
 
 fi
 
+# Generate JWT keys if they do not exist
+echo "`date -u +"%Y-%m-%d %H:%M:%S"` Generating JWT keys."
+python3 /root/generate_jwt.py
+
 # Run ansible prepare and prepare all ansible configuration files.
 echo "`date -u +"%Y-%m-%d %H:%M:%S"` Preparing Ansible configuration files."
 python3 /root/ansible-prepare.py

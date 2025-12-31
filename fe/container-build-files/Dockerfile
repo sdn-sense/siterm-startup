@@ -2,9 +2,10 @@ ARG RELEASE=latest
 ARG ARCH="x86_64"
 FROM sdnsense/sitermfebase:$RELEASE
 
-COPY build_files/ssh-keygen.py /root/ssh-keygen.py
+COPY build_files/root/ssh-keygen.py /root/ssh-keygen.py
 COPY build_files/root/ansible-prepare.py /root/ansible-prepare.py
-COPY build_files/dircreate.py /root/dircreate.py
+COPY build_files/root/dircreate.py /root/dircreate.py
+COPY build_files/root/generate_jwt.py /root/generate_jwt.py
 
 # Configuration which repo to use for build
 ARG GITREPO=siterm
