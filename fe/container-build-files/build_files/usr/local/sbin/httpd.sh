@@ -22,6 +22,10 @@ set +a
 export LISTEN_HTTPS="${LISTEN_HTTPS:-443}"
 
 TEMPLATE_FILE="/etc/httpd/sitefe-httpd.conf-template"
+# if KUBERNETES_PORT env is set, then use /etc/httpd/sitefe-httpd-kube.conf-template
+if [ -n "${KUBERNETES_PORT:-}" ]; then
+  TEMPLATE_FILE="/etc/httpd/sitefe-httpd-kube.conf-template"
+fi
 
 envsubst < "$TEMPLATE_FILE" > /etc/httpd/conf.d/sitefe-httpd.conf
 
