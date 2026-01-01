@@ -1,28 +1,31 @@
 LoadModule headers_module modules/mod_headers.so
-LoadModule auth_openidc_module modules/mod_auth_openidc.so
 
+# Use the defined ports in the Listen directives
 # This will be overwritten by /usr/local/sbin/httpd.sh
 Listen ${LISTEN_HTTPS}
 
+#Define the behaviour for our SSL-encypted host
 <VirtualHost *:${LISTEN_HTTPS}>
+  Header always set Strict-Transport-Security "max-age=63072000; includeSubdomains;"
+  RewriteEngine on
+  LimitRequestFieldSize 131040
+  LimitRequestLine 131040
+  LogFormat "%h %{X-Forwarded-For}i %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+  ErrorLog    "|/sbin/rotatelogs -n 7 /var/log/httpd/error_ssl_log 86400"
+  CustomLog   "|/sbin/rotatelogs -n 7 /var/log/httpd/access_ssl_log 86400" combined
+  # Enable SSL and define some host-specific settings
   SSLEngine on
+  SSLProtocol -All -SSLv3 -TLSv1 -TLSv1.1 +TLSv1.2
+  SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH EDH+aRSA !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS !RC4"
+  SSLHonorCipherOrder on
+
   SSLCertificateFile /etc/httpd/certs/cert.pem
   SSLCertificateKeyFile /etc/httpd/certs/privkey.pem
   SSLCACertificatePath /etc/grid-security/certificates/
-  SSLProtocol -All -SSLv3 -TLSv1 -TLSv1.1 +TLSv1.2
-  SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS !RC4"
-  SSLHonorCipherOrder on
 
-  Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains"
-  RewriteRule .* - [F]
-
-  LogFormat "%h %{X-Forwarded-For}i %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
-  ErrorLog "|/sbin/rotatelogs -n 7 /var/log/httpd/error_ssl_log 86400"
-  CustomLog "|/sbin/rotatelogs -n 7 /var/log/httpd/access_ssl_log 86400" combined
 
   ErrorDocument 403 "You are not authorized to access this URL"
   ErrorDocument 404 /api-error-404
-
 
   <LocationMatch "^/">
       <Limit GET POST PUT DELETE>
@@ -44,6 +47,7 @@ Listen ${LISTEN_HTTPS}
   </Location>
 
   ProxyPreserveHost On
+  ProxyErrorOverride Off
   ProxyPass /siterm-http-status http://127.0.0.1:8124/metrics
   ProxyPassReverse /siterm-http-status http://127.0.0.1:8124/metrics
   ProxyPassMatch / http://127.0.0.1:8080
@@ -67,9 +71,9 @@ ExtendedStatus On
     CustomLog /var/log/httpd/access_status.log combined
 </VirtualHost>
 
-
 MaxRequestWorkers 150
 LimitRequestBody 5242880
+# KeepAlive: Whether or not to allow persistent connections (more than one request per connection).
 KeepAlive On
 MaxKeepAliveRequests 500
 KeepAliveTimeout 60

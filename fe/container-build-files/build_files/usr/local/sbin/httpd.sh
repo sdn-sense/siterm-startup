@@ -21,42 +21,7 @@ set +a
 # Set defaults for HTTPS
 export LISTEN_HTTPS="${LISTEN_HTTPS:-443}"
 
-# AUTH_SUPPORT should be one of: X509, OIDC. Default X509
-case "$AUTH_SUPPORT" in
-  X509)
-    TEMPLATE_FILE="/etc/httpd/sitefe-httpd-x509.conf-template"
-    ;;
-  OIDC)
-    TEMPLATE_FILE="/etc/httpd/sitefe-httpd-oidc.conf-template"
-    ;;
-  *)
-    TEMPLATE_FILE="/etc/httpd/sitefe-httpd-x509.conf-template"
-    ;;
-esac
-
-if [[ "$AUTH_SUPPORT" == "OIDC" ]]; then
-  REQUIRED_VARS=(
-    OIDC_AUDIENCE
-    OIDC_ISSUER
-    OIDC_JWKS
-    OIDC_REDIRECT_URI
-  )
-
-  MISSING_VARS=()
-  for var in "${REQUIRED_VARS[@]}"; do
-    if [[ -z "${!var:-}" ]]; then
-      MISSING_VARS+=("$var")
-    fi
-  done
-
-  if [[ ${#MISSING_VARS[@]} -gt 0 ]]; then
-    echo "`date -u +"%Y-%m-%d %H:%M:%S"` Error: Missing required environment variables:"
-    for var in "${MISSING_VARS[@]}"; do
-      echo "  - $var"
-    done
-    exit 1
-  fi
-fi
+TEMPLATE_FILE="/etc/httpd/sitefe-httpd.conf-template"
 
 envsubst < "$TEMPLATE_FILE" > /etc/httpd/conf.d/sitefe-httpd.conf
 

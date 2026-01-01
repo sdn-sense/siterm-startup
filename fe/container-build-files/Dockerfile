@@ -43,8 +43,7 @@ COPY build_files/var/www/wsgi-scripts/ /var/www/wsgi-scripts/
 
 # Copy all HTTP Templates
 COPY build_files/etc/httpd/httpd.conf /etc/httpd/conf/httpd.conf
-COPY build_files/etc/httpd/sitefe-httpd-oidc.conf-template /etc/httpd/sitefe-httpd-oidc.conf-template
-COPY build_files/etc/httpd/sitefe-httpd-x509.conf-template /etc/httpd/sitefe-httpd-x509.conf-template
+COPY build_files/etc/httpd/sitefe-httpd.conf-template /etc/httpd/sitefe-httpd.conf-template
 COPY build_files/etc/httpd/welcome.conf /etc/httpd/conf.d/welcome.conf
 
 EXPOSE 443
