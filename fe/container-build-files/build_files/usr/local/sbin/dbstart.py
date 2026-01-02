@@ -115,6 +115,7 @@ class DBStarter:
             print("Database not ready, waiting for 1 second. See error above. If continous, check the mariadb process.")
             sleep(1)
         self.db.createdb()
+        self.db.upgradedb()
         self.dboptimize()
         version = self._getversion()
         if version != self._getversionfloat(runningVersion):
