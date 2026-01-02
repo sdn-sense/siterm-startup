@@ -40,12 +40,17 @@ print_dateline() {
 
 if [[ "$AUTO_TLS_RENEWAL" != "true" ]]; then
     print_dateline "[tls-watch] AUTO_TLS_RENEWAL disabled"
-    while true; do sleep "$CHECK_INTERVAL"; done
+    while true; do
+        # Run keystore build script
+        /usr/local/sbin/build-keystore.py
+        sleep "$CHECK_INTERVAL";
+    done
 fi
 print_dateline "[tls-watch] TLS watcher started"
 copy_tls
 while true; do
-
+    # Run keystore build script
+    /usr/local/sbin/build-keystore.py
     now=$(date +%s)
     [[ -f "$SRC_CERT" && -f "$SRC_KEY" ]] || {
         sleep "$CHECK_INTERVAL"
@@ -88,5 +93,6 @@ while true; do
         fi
     fi
     sleep "$CHECK_INTERVAL"
+
 done
 
