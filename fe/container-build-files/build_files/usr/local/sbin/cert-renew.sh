@@ -43,6 +43,7 @@ if [[ "$AUTO_TLS_RENEWAL" != "true" ]]; then
     while true; do
         # Run keystore build script
         /usr/local/sbin/build-keystore.py
+        openssl rehash /etc/grid-security/truststore
         sleep "$CHECK_INTERVAL";
     done
 fi
@@ -51,6 +52,7 @@ copy_tls
 while true; do
     # Run keystore build script
     /usr/local/sbin/build-keystore.py
+    openssl rehash /etc/grid-security/truststore
     now=$(date +%s)
     [[ -f "$SRC_CERT" && -f "$SRC_KEY" ]] || {
         sleep "$CHECK_INTERVAL"
