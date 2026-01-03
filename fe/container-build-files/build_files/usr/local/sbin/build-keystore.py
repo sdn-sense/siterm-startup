@@ -26,13 +26,7 @@ warnings.filterwarnings("ignore", category=CryptographyDeprecationWarning)
 GRID_CA_DIR = "/etc/grid-security/certificates"
 OUT_DIR = "/etc/grid-security/truststore"
 
-ALLOWED_ISSUER_PATTERNS = [
-    #re.compile(r"^/C=US/O=Let's Encrypt/CN=R\d+$"),
-    re.compile(r"^/C=US/O=Internet2/CN=InCommon RSA Server CA 2$"),
-    re.compile(r"^/C=US/O=Internet2/CN=InCommon RSA IGTF Server CA 3$"),
-    re.compile(r"^/DC=ch/DC=cern/CN=CERN Grid Certification Authority$"),
-    re.compile(r"^/C=ch/O=CERN/CN=CERN Root Certification Authority 2$"),
-]
+ALLOWED_ISSUER_PATTERNS = []
 
 ALLOWED_TRUSTSTORE_FILE = "/etc/grid-security/allowed_truststore.yaml"
 if os.path.exists(ALLOWED_TRUSTSTORE_FILE):
@@ -40,6 +34,16 @@ if os.path.exists(ALLOWED_TRUSTSTORE_FILE):
         data = yaml.safe_load(f) or {}
         for pattern in data.get("allowed_issuers", []):
             ALLOWED_ISSUER_PATTERNS.append(re.compile(pattern))
+else:
+    print(f"Allowed truststore file {ALLOWED_TRUSTSTORE_FILE} does not exist, using default patterns.")
+    ALLOWED_ISSUER_PATTERNS = [
+        re.compile(r"^/C=US/O=Let's Encrypt/CN=R\d+$"),
+        re.compile(r"^/C=US/O=Internet2/CN=InCommon RSA Server CA 2$"),
+        re.compile(r"^/C=US/O=Internet2/CN=InCommon RSA IGTF Server CA 3$"),
+        re.compile(r"^/DC=ch/DC=cern/CN=CERN Grid Certification Authority$"),
+        re.compile(r"^/C=ch/O=CERN/CN=CERN Root Certification Authority 2$"),
+    ]
+print(f"Using allowed issuer patterns: {ALLOWED_ISSUER_PATTERNS}")
 
 OID_SHORT_NAMES = {
     NameOID.COUNTRY_NAME: "C",
