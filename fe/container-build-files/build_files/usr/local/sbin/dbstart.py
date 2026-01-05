@@ -68,6 +68,7 @@ class DBStarter:
             sleep(1)
         self.db.createdb()
         self.dboptimize()
+        self.db.upgradedb("/opt/siterm/config/dbupgrade/")
         self._insupdversion(runningVersion)
 
 

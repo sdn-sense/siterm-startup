@@ -76,15 +76,16 @@ python3 /root/ansible-prepare.py
 echo "`date -u +"%Y-%m-%d %H:%M:%S"` Generating SSH keys and populating known_hosts."
 python3 /root/ssh-keygen.py
 
+TEMP_DIR=$(python3 -c "from SiteRMLibs.MainUtilities import getTempDir; print(getTempDir())")
 # Check if upgrade is in progress and loop until it is completed
-if [ -f /tmp/siterm-mariadb-init ]; then
-  while [ -f /tmp/siterm-mariadb-init ]; do
+if [ -f $TEMP_DIR/siterm-mariadb-init ]; then
+  while [ -f $TEMP_DIR/siterm-mariadb-init ]; do
     echo "`date -u +"%Y-%m-%d %H:%M:%S"` Upgrade in progress. Waiting for it to complete."
     sleep 1
   done
 fi
-if [ ! -f /tmp/config-fetcher-ready ]; then
-  while [ ! -f /tmp/config-fetcher-ready ]; do
+if [ ! -f $TEMP_DIR/config-fetcher-ready ]; then
+  while [ ! -f $TEMP_DIR/config-fetcher-ready ]; do
     echo "`date -u +"%Y-%m-%d %H:%M:%S"` Config fetch not started yet. Waiting for it to start."
     sleep 1
   done

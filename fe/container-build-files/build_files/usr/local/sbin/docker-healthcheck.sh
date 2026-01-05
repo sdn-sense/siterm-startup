@@ -1,11 +1,12 @@
 #!/bin/bash
 
+TEMP_DIR=$(python3 -c "from SiteRMLibs.MainUtilities import getTempDir; print(getTempDir())")
 # If upgrade is in progress, exit 0
-if [ -f /tmp/siterm-mariadb-init ]; then
+if [ -f $TEMP_DIR/siterm-mariadb-init ]; then
   exit 0
 fi
 
-if [ ! -f /tmp/config-fetcher-ready ]; then
+if [ ! -f $TEMP_DIR/config-fetcher-ready ]; then
   exit 0
 fi
 

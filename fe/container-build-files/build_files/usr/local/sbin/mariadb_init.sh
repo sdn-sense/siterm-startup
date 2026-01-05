@@ -5,11 +5,11 @@ sleep_long () {
 }
 
 echo "`date -u +"%Y-%m-%d %H:%M:%S"` Starting MariaDB initialization script."
-
 # Create temp file for initialization (hold off other processes)
-touch /tmp/siterm-mariadb-init
-echo `date` > /tmp/siterm-mariadb-init
-
+TEMP_DIR=$(python3 -c "from SiteRMLibs.MainUtilities import getTempDir; print(getTempDir())")
+touch $TEMP_DIR/siterm-mariadb-init
+echo `date` > $TEMP_DIR/siterm-mariadb-init
+# Source environment variables
 set -a
 source /etc/environment || true
 set +a
@@ -57,7 +57,7 @@ echo "`date -u +"%Y-%m-%d %H:%M:%S"` Site-RM database setup completed."
 echo $(date) >> /opt/siterm/config/mysql/site-rm-db-initialization
 
 # Remove temp file for initialization
-rm -f /tmp/siterm-mariadb-init
+rm -f $TEMP_DIR/siterm-mariadb-init
 
 # Process is over, sleep long
 sleep_long

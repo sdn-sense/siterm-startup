@@ -14,7 +14,7 @@ import re
 import shutil
 import warnings
 from datetime import timezone
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Set, Tuple
 
 import yaml
 from cryptography import x509
@@ -153,6 +153,7 @@ def chain_close(
 
 
 def build_truststore():
+    """Build the truststore by selecting allowed CA certificates and their chains."""
     os.makedirs(OUT_DIR, exist_ok=True)
 
     ca_index = build_ca_index()

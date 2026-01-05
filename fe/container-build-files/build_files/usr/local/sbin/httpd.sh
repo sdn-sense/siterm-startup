@@ -1,14 +1,15 @@
 #!/bin/bash
 echo "`date -u +"%Y-%m-%d %H:%M:%S"` Starting httpd initialization script."
+TEMP_DIR=$(python3 -c "from SiteRMLibs.MainUtilities import getTempDir; print(getTempDir())")
 # Check if upgrade is in progress and loop until it is completed
-if [ -f /tmp/siterm-mariadb-init ]; then
-  while [ -f /tmp/siterm-mariadb-init ]; do
+if [ -f $TEMP_DIR/siterm-mariadb-init ]; then
+  while [ -f $TEMP_DIR/siterm-mariadb-init ]; do
     echo "`date -u +"%Y-%m-%d %H:%M:%S"` Upgrade in progress. Waiting for it to complete."
     sleep 5
   done
 fi
-if [ ! -f /tmp/config-fetcher-ready ]; then
-  while [ ! -f /tmp/config-fetcher-ready ]; do
+if [ ! -f $TEMP_DIR/config-fetcher-ready ]; then
+  while [ ! -f $TEMP_DIR/config-fetcher-ready ]; do
     echo "`date -u +"%Y-%m-%d %H:%M:%S"` Config fetch not finished yet. Waiting for it to start."
     sleep 1
   done
