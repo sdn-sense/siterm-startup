@@ -5,6 +5,7 @@ source /etc/environment || true
 set +a
 
 AUTO_TLS_RENEWAL="${AUTO_TLS_RENEWAL:-true}"
+AUTO_TLS_RENEW_RESTART="${AUTO_TLS_RENEW_RESTART:-false}"
 SRC_CERT="/etc/secret-mount/tls.crt"
 SRC_KEY="/etc/secret-mount/tls.key"
 GRID_CERT="/etc/grid-security/hostcert.pem"
@@ -88,6 +89,10 @@ while true; do
         last_hash="$current_hash"
         if [[ "$baseline" == "true" ]]; then
             print_dateline "[tls-watch] TLS change present, please restart container"
+            if [[ "$AUTO_TLS_RENEW_RESTART" == "true" ]]; then
+                print_dateline "[tls-watch] AUTO_TLS_RENEW_RESTART enabled, restarting container"
+                supervisorctl shutdown
+            fi
         else
             print_dateline "[tls-watch] Baseline established (no restart)"
             baseline=true
