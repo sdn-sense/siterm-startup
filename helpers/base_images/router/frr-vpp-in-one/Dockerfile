@@ -128,6 +128,8 @@ COPY etc/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY root/run.sh /root/run.sh
 COPY root/default-route.sh /root/default-route.sh
 COPY root/run-monitoring.sh /root/run-monitoring.sh
+COPY root/vppmonpy.py /root/vppmonpy.py
+RUN chmod +x /root/run.sh /root/default-route.sh /root/run-monitoring.sh
 COPY etc/vpp/startup.conf-template /etc/vpp/startup.conf-template
 COPY etc/vpp/startup.gate /etc/vpp/startup.gate
 
