@@ -132,7 +132,11 @@ if [ $ISPODMAN -eq 0 ]; then
   LOGOPTIONS="--log-driver=json-file --log-opt max-size=10m --log-opt max-file=10"
 fi
 
-declare -a ARRAY=("becac06c584d32f066fc3e13795aed0b8c75e93171ff357da77053976a890a07  ../conf/etc/siterm.yaml" "fae5fe7ea1fb2366d90cdd851fe1692260f4a74bca16afea13e9999feaa34874  ../conf/etc/ansible-conf.yaml" "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ../conf/etc/httpd/certs/cert.pem" "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ../conf/etc/httpd/certs/privkey.pem" "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ../conf/etc/grid-security/hostcert.pem" "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ../conf/etc/grid-security/hostkey.pem" "bfaaddc288a2d2e8299660439b16ca3b1abdb924b417206c24ebab6ad7186a71  ../conf/environment")
+declare -a ARRAY=("becac06c584d32f066fc3e13795aed0b8c75e93171ff357da77053976a890a07  ../conf/etc/siterm.yaml"
+                  "fae5fe7ea1fb2366d90cdd851fe1692260f4a74bca16afea13e9999feaa34874  ../conf/etc/ansible-conf.yaml"
+                  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ../conf/etc/secrets-mount/tls.crt"
+                  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ../conf/etc/secrets-mount/tls.key"
+                  "bfaaddc288a2d2e8299660439b16ca3b1abdb924b417206c24ebab6ad7186a71  ../conf/environment")
 
 length=${#ARRAY[@]}
 
@@ -145,21 +149,14 @@ do
     read -ra strarr <<< "${ARRAY[$j]}"
     echo -e "${RED}ERROR: Configuration file ${strarr[1]} was not modified. SiteRM Will fail to start.${NC}"
     echo "Please modify file and set correct values"
-    echo "For more details, documentation is available here: https://sdn-sense.github.io/Installation.html"
+    echo "For more details, documentation is available here: https://sdn-sense.github.io/"
     ERROR=true
   fi
 done
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
-echo "Testing certificates ../conf/etc/httpd/certs/{cert,privkey}.pem"
-certchecker ../conf/etc/httpd/certs/cert.pem ../conf/etc/httpd/certs/privkey.pem
-if [ $? != 0 ]; then
-  ERROR=true
-fi
-
-echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
-echo "Testing certificates ../conf/etc/grid-security/{hostcert,hostkey}.pem"
-certchecker ../conf/etc/grid-security/hostcert.pem ../conf/etc/grid-security/hostkey.pem
+echo "Testing certificates ../conf/etc/secrets-mount/tls.{crt,key}"
+certchecker ../conf/etc/secrets-mount/tls.crt ../conf/etc/secrets-mount/tls.key
 if [ $? != 0 ]; then
   ERROR=true
 fi
@@ -220,10 +217,8 @@ if command -v selinuxenabled >/dev/null 2>&1; then
   FILES=(
     "$(realpath $(pwd)/../conf/etc/siterm.yaml)"
     "$(pwd)/../conf/etc/ansible-conf.yaml"
-    "$(pwd)/../conf/etc/httpd/certs/cert.pem"
-    "$(pwd)/../conf/etc/httpd/certs/privkey.pem"
-    "$(realpath $(pwd)/../conf/etc/grid-security/hostcert.pem)"
-    "$(realpath $(pwd)/../conf/etc/grid-security/hostkey.pem)"
+    "$(pwd)/../conf/etc/secrets-mount/tls.crt"
+    "$(pwd)/../conf/etc/secrets-mount/tls.key"
   )
   if selinuxenabled; then
     # Check and fix file contexts
@@ -248,10 +243,7 @@ docker run \
        -dit --name ${DOCKERNAME} \
        -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml$MOUNT_OPT \
        -v $(pwd)/../conf/etc/ansible-conf.yaml:/etc/ansible-conf.yaml$MOUNT_OPT \
-       -v $(pwd)/../conf/etc/httpd/certs/cert.pem:/etc/httpd/certs/cert.pem$MOUNT_OPT \
-       -v $(pwd)/../conf/etc/httpd/certs/privkey.pem:/etc/httpd/certs/privkey.pem$MOUNT_OPT \
-       -v $(pwd)/../conf/etc/grid-security/hostcert.pem:/etc/grid-security/hostcert.pem$MOUNT_OPT \
-       -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem$MOUNT_OPT \
+       -v $(pwd)/../conf/etc/secrets-mount/:/etc/secrets-mount/ \
        -v ${DOCKVOL}:/opt/siterm/config/mysql/ \
        -v ${DOCKVOLLOG}:/var/log/ \
        -v $(pwd)/../conf/opt/siterm/config/ssh-keys:/opt/siterm/config/ssh-keys \
@@ -262,5 +254,5 @@ docker run \
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
 echo "SiteRM FE should be started. Use 'docker ps' to check. Use 'docker logs -f ${DOCKERNAME}' to follow FE logs."
-echo "For more details, documentation is available here: https://sdn-sense.github.io/Installation.html"
+echo "For more details, documentation is available here: https://sdn-sense.github.io/"
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="

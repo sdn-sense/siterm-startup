@@ -80,7 +80,9 @@ certchecker () {
   return 0
 }
 
-declare -a ARRAY=("becac06c584d32f066fc3e13795aed0b8c75e93171ff357da77053976a890a07  ../conf/etc/siterm.yaml" "48120fbe195337ee5b54a2284a33e4280da9c1ddc5dfdf8a0cf0f807be4e089a  ../conf/etc/grid-security/hostcert.pem" "48120fbe195337ee5b54a2284a33e4280da9c1ddc5dfdf8a0cf0f807be4e089a  ../conf/etc/grid-security/hostkey.pem")
+declare -a ARRAY=("becac06c584d32f066fc3e13795aed0b8c75e93171ff357da77053976a890a07  ../conf/etc/siterm.yaml"
+                  "48120fbe195337ee5b54a2284a33e4280da9c1ddc5dfdf8a0cf0f807be4e089a  ../conf/etc/secrets-mount/tls.crt"
+                  "48120fbe195337ee5b54a2284a33e4280da9c1ddc5dfdf8a0cf0f807be4e089a  ../conf/etc/secrets-mount/tls.key")
 
 length=${#ARRAY[@]}
 
@@ -93,14 +95,14 @@ do
     read -ra strarr <<< "${ARRAY[$j]}"
     echo -e "${RED}ERROR: Configuration file ${strarr[1]} was not modified. SiteRM Will fail to start.${NC}"
     echo "Please modify file and set correct values"
-    echo "For more details, documentation is available here: https://sdn-sense.github.io/Installation.html"
+    echo "For more details, documentation is available here: https://sdn-sense.github.io/"
     ERROR=true
   fi
 done
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
-echo "Testing certificates ../conf/etc/httpd/certs/{cert,privkey}.pem"
-certchecker ../conf/etc/grid-security/hostcert.pem ../conf/etc/grid-security/hostkey.pem
+echo "Testing certificates ../conf/etc/secrets-mount/tls.{crt,key}"
+certchecker ../conf/etc/secrets-mount/tls.crt ../conf/etc/secrets-mount/tls.key
 if [ $? != 0 ]; then
   ERROR=true
 fi
@@ -158,8 +160,8 @@ fi
 
 FILES=(
   "$(realpath $(pwd)/../conf/etc/siterm.yaml)"
-  "$(realpath $(pwd)/../conf/etc/grid-security/hostcert.pem)"
-  "$(realpath $(pwd)/../conf/etc/grid-security/hostkey.pem)"
+  "$(realpath $(pwd)/../conf/etc/secrets-mount/tls.crt)"
+  "$(realpath $(pwd)/../conf/etc/secrets-mount/tls.key)"
 )
 
 if selinuxenabled; then
@@ -181,8 +183,7 @@ echo "Starting SiteRM debugger container version: $VERSION"
 docker run \
   -dit --name siterm-debugger \
   -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml$MOUNT_OPT \
-  -v $(pwd)/../conf/etc/grid-security/hostcert.pem:/etc/grid-security/hostcert.pem$MOUNT_OPT \
-  -v $(pwd)/../conf/etc/grid-security/hostkey.pem:/etc/grid-security/hostkey.pem$MOUNT_OPT \
+  -v $(pwd)/../conf/etc/secrets-mount/:/etc/secrets-mount/ \
   -v ${DOCKVOL}:/opt/siterm/config/ \
   -v ${DOCKVOLLOG}:/var/log/ \
   --restart always \
@@ -191,5 +192,5 @@ docker run \
 
   echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
   echo "SiteRM Debugger should be started. Use 'docker ps' to check. Use 'docker logs -f siterm-debugger' to follow agent logs."
-  echo "For more details, documentation is available here: https://sdn-sense.github.io/Installation.html"
+  echo "For more details, documentation is available here: https://sdn-sense.github.io/"
   echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"

@@ -33,6 +33,15 @@ dpdk {
       num-rx-desc ENV_PUBLIC_INTF_RXDESC
       num-tx-desc ENV_PUBLIC_INTF_TXDESC
    }
+
+   dev ENV_PRIVATE_INTF_PCI {
+      name Ethernet2/0/0
+      num-rx-queues ENV_PRIVATE_INTF_RXQ
+      num-tx-queues ENV_PRIVATE_INTF_TXQ
+      num-rx-desc ENV_PRIVATE_INTF_RXDESC
+      num-tx-desc ENV_PRIVATE_INTF_TXDESC
+   }
+
  }
 
 plugins {
@@ -43,6 +52,7 @@ plugins {
    plugin ping_plugin.so { enable }
    plugin linux_cp_plugin.so { enable }
    plugin linux_nl_plugin.so { enable }
+   plugin lacp_plugin.so { enable }
 }
 
 logging {

@@ -1,8 +1,5 @@
-agent/conf/etc/grid-security/hostcert.pem*
-agent/conf/etc/grid-security/hostkey.pem*
-fe/conf/etc/grid-security/hostcert.pem*
-fe/conf/etc/grid-security/hostkey.pem*
-fe/conf/etc/httpd/certs/cert.pem*
-fe/conf/etc/httpd/certs/fullchain.pem*
-fe/conf/etc/httpd/certs/privkey.pem*
+agent/conf/etc/secrets-mount/tls.crt*
+agent/conf/etc/secrets-mount/tls.key*
+fe/conf/etc/secrets-mount/tls.crt*
+fe/conf/etc/secrets-mount/tls.key*
 fe/conf/environment-*
