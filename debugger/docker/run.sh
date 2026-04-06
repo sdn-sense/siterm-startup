@@ -81,8 +81,8 @@ certchecker () {
 }
 
 declare -a ARRAY=("becac06c584d32f066fc3e13795aed0b8c75e93171ff357da77053976a890a07  ../conf/etc/siterm.yaml"
-                  "48120fbe195337ee5b54a2284a33e4280da9c1ddc5dfdf8a0cf0f807be4e089a  ../conf/etc/secrets-mount/tls.crt"
-                  "48120fbe195337ee5b54a2284a33e4280da9c1ddc5dfdf8a0cf0f807be4e089a  ../conf/etc/secrets-mount/tls.key")
+                  "48120fbe195337ee5b54a2284a33e4280da9c1ddc5dfdf8a0cf0f807be4e089a  ../conf/etc/secret-mount/tls.crt"
+                  "48120fbe195337ee5b54a2284a33e4280da9c1ddc5dfdf8a0cf0f807be4e089a  ../conf/etc/secret-mount/tls.key")
 
 length=${#ARRAY[@]}
 
@@ -101,8 +101,8 @@ do
 done
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
-echo "Testing certificates ../conf/etc/secrets-mount/tls.{crt,key}"
-certchecker ../conf/etc/secrets-mount/tls.crt ../conf/etc/secrets-mount/tls.key
+echo "Testing certificates ../conf/etc/secret-mount/tls.{crt,key}"
+certchecker ../conf/etc/secret-mount/tls.crt ../conf/etc/secret-mount/tls.key
 if [ $? != 0 ]; then
   ERROR=true
 fi
@@ -160,8 +160,8 @@ fi
 
 FILES=(
   "$(realpath $(pwd)/../conf/etc/siterm.yaml)"
-  "$(realpath $(pwd)/../conf/etc/secrets-mount/tls.crt)"
-  "$(realpath $(pwd)/../conf/etc/secrets-mount/tls.key)"
+  "$(realpath $(pwd)/../conf/etc/secret-mount/tls.crt)"
+  "$(realpath $(pwd)/../conf/etc/secret-mount/tls.key)"
 )
 
 if selinuxenabled; then
@@ -183,7 +183,7 @@ echo "Starting SiteRM debugger container version: $VERSION"
 docker run \
   -dit --name siterm-debugger \
   -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml$MOUNT_OPT \
-  -v $(pwd)/../conf/etc/secrets-mount/:/etc/secrets-mount/ \
+  -v $(pwd)/../conf/etc/secret-mount/:/etc/secret-mount/ \
   -v ${DOCKVOL}:/opt/siterm/config/ \
   -v ${DOCKVOLLOG}:/var/log/ \
   --restart always \

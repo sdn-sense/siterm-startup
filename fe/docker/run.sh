@@ -134,8 +134,8 @@ fi
 
 declare -a ARRAY=("becac06c584d32f066fc3e13795aed0b8c75e93171ff357da77053976a890a07  ../conf/etc/siterm.yaml"
                   "fae5fe7ea1fb2366d90cdd851fe1692260f4a74bca16afea13e9999feaa34874  ../conf/etc/ansible-conf.yaml"
-                  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ../conf/etc/secrets-mount/tls.crt"
-                  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ../conf/etc/secrets-mount/tls.key"
+                  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ../conf/etc/secret-mount/tls.crt"
+                  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ../conf/etc/secret-mount/tls.key"
                   "bfaaddc288a2d2e8299660439b16ca3b1abdb924b417206c24ebab6ad7186a71  ../conf/environment")
 
 length=${#ARRAY[@]}
@@ -155,8 +155,8 @@ do
 done
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
-echo "Testing certificates ../conf/etc/secrets-mount/tls.{crt,key}"
-certchecker ../conf/etc/secrets-mount/tls.crt ../conf/etc/secrets-mount/tls.key
+echo "Testing certificates ../conf/etc/secret-mount/tls.{crt,key}"
+certchecker ../conf/etc/secret-mount/tls.crt ../conf/etc/secret-mount/tls.key
 if [ $? != 0 ]; then
   ERROR=true
 fi
@@ -217,8 +217,8 @@ if command -v selinuxenabled >/dev/null 2>&1; then
   FILES=(
     "$(realpath $(pwd)/../conf/etc/siterm.yaml)"
     "$(pwd)/../conf/etc/ansible-conf.yaml"
-    "$(pwd)/../conf/etc/secrets-mount/tls.crt"
-    "$(pwd)/../conf/etc/secrets-mount/tls.key"
+    "$(pwd)/../conf/etc/secret-mount/tls.crt"
+    "$(pwd)/../conf/etc/secret-mount/tls.key"
   )
   if selinuxenabled; then
     # Check and fix file contexts
@@ -243,7 +243,7 @@ docker run \
        -dit --name ${DOCKERNAME} \
        -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml$MOUNT_OPT \
        -v $(pwd)/../conf/etc/ansible-conf.yaml:/etc/ansible-conf.yaml$MOUNT_OPT \
-       -v $(pwd)/../conf/etc/secrets-mount/:/etc/secrets-mount/ \
+       -v $(pwd)/../conf/etc/secret-mount/:/etc/secret-mount/ \
        -v ${DOCKVOL}:/opt/siterm/config/mysql/ \
        -v ${DOCKVOLLOG}:/var/log/ \
        -v $(pwd)/../conf/opt/siterm/config/ssh-keys:/opt/siterm/config/ssh-keys \
