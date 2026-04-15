@@ -1,5 +1,11 @@
-agent/conf/etc/secrets-mount/tls.crt*
-agent/conf/etc/secrets-mount/tls.key*
-fe/conf/etc/secrets-mount/tls.crt*
-fe/conf/etc/secrets-mount/tls.key*
+agent/conf/etc/secret-mount/tls.crt*
+agent/conf/etc/secret-mount/tls.key*
+fe/conf/etc/secret-mount/tls.crt*
+fe/conf/etc/secret-mount/tls.key*
+debugger/conf/etc/secret-mount/tls.crt*
+debugger/conf/etc/secret-mount/tls.key*
+fe/conf/opt/siterm/config/ssh-keys/*
 fe/conf/environment-*
+fe/docker/.last_run_cmd
+agent/docker/.last_run_cmd
+debugger/docker/.last_run_cmd
