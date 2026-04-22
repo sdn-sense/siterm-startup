@@ -3,3 +3,8 @@ GIT_REPO: "sdn-sense/rm-configs"
 BRANCH: master
 MD5: <MD5> # This you received from GIT Configuration Repo
 SITENAME: <SITENAME> # This you received from GIT Configuration Repo
+
+# Optional manual configuration mode. If MAIN_CONFIG_FILE is set, SiteRM reads
+# this file directly and skips cloning/pulling the Git configuration repo.
+# MAPPING_TYPE: Agent
+# MAIN_CONFIG_FILE: /etc/siterm-config/main.yaml

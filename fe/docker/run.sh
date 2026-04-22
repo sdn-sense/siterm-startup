@@ -1,7 +1,7 @@
 #!/bin/bash
 # Check if parameters are defined. If not, print usage and exit 1.
 if [ $# == 0 ]; then
-    echo "Usage: `basename $0` [-i imagetag] [-n networkmode]"
+    echo "Usage: `basename $0` [-i imagetag] [-n networkmode] [-m main.yaml] [-a auth.yaml] [-r auth-re.yaml]"
     echo "  -i imagetag (OPTIONAL). Default latest"
     echo "     specify image tag, e.g. latest, dev, v1.3.0... For production deplyoment use latest, unless instructed otherwise by SENSE team"
     echo "  -n networkmode (OPTIONAL). Default port mode"
@@ -10,6 +10,9 @@ if [ $# == 0 ]; then
     echo "     port means it will use -p 8080:80 -p 8443:443 in docker startup. Docker will open port on system firewall. Default parameter."
     echo "  -p Overwrite default ports for docker. Default is 8080:80 and 8443:443. Specify in quotes, like -p \"9443:1443 8443:443\""
     echo "  -u (Optional) Unique volume for docker mysql database (any string)/docker container name. If specified, will use it for docker volume creation and container name"
+    echo "  -m main.yaml (OPTIONAL). Use this frontend main.yaml file directly instead of Git configuration"
+    echo "  -a auth.yaml (OPTIONAL). Use this frontend auth.yaml file directly instead of Git configuration"
+    echo "  -r auth-re.yaml (OPTIONAL). Use this frontend auth-re.yaml file directly instead of Git configuration"
     exit 1
 fi
 
@@ -23,6 +26,9 @@ DOCKVOLLOG="sitermfe-log"
 DOCKERNAME="siterm-fe"
 ENV_FILE="$(pwd)/../conf/environment"
 VERSION="latest"
+MAIN_CONFIG_FILE=""
+AUTH_CONFIG_FILE=""
+AUTH_RE_CONFIG_FILE=""
 
 certchecker () {
   local ERROR=false
@@ -61,7 +67,7 @@ certchecker () {
   return 0
 }
 
-while getopts i:n:p:u: flag
+while getopts i:n:p:u:m:a:r: flag
 do
   echo "Processing flag: ${flag} with argument: ${OPTARG}"
   case "${flag}" in
@@ -82,7 +88,10 @@ do
     u) DOCKVOL="siterm-mysql-${OPTARG}"
        DOCKVOLLOG="sitermfe-log-${OPTARG}"
        DOCKERNAME="siterm-fe-${OPTARG}";;
-    *) echo "Usage: `basename $0` [-i imagetag] [-n networkmode] [-p ports] [-u unique]"
+    m) MAIN_CONFIG_FILE=${OPTARG};;
+    a) AUTH_CONFIG_FILE=${OPTARG};;
+    r) AUTH_RE_CONFIG_FILE=${OPTARG};;
+    *) echo "Usage: `basename $0` [-i imagetag] [-n networkmode] [-p ports] [-u unique] [-m main.yaml] [-a auth.yaml] [-r auth-re.yaml]"
        echo "  -i imagetag (OPTIONAL). Default latest"
        echo "     specify image tag, e.g. latest, dev, v1.3.0... For production deplyoment use latest, unless instructed otherwise by SENSE team"
        echo "  -n networkmode (OPTIONAL). Default port mode"
@@ -91,9 +100,22 @@ do
        echo "     port means it will use -p 8080:80 -p 8443:443 in docker startup. Docker will open port on system firewall. Default parameter."
        echo "  -p Overwrite default ports for docker. Default is 8080:80 and 8443:443. Specify in quotes, like -p \"9443:1443 8443:443\""
        echo "  -u (Optional) Unique volume for docker mysql database (any string)/docker container name. If specified, will use it for docker volume creation and container name"
+       echo "  -m main.yaml (OPTIONAL). Use this frontend main.yaml file directly instead of Git configuration"
+       echo "  -a auth.yaml (OPTIONAL). Use this frontend auth.yaml file directly instead of Git configuration"
+       echo "  -r auth-re.yaml (OPTIONAL). Use this frontend auth-re.yaml file directly instead of Git configuration"
        exit 1;;
   esac
 done
+
+if [ -n "$MAIN_CONFIG_FILE" ] && [ -z "$AUTH_CONFIG_FILE" ]; then
+  echo -e "${RED}ERROR: -a auth.yaml must be specified when -m main.yaml is used for the Frontend.${NC}"
+  exit 1
+fi
+
+if [ -z "$MAIN_CONFIG_FILE" ] && { [ -n "$AUTH_CONFIG_FILE" ] || [ -n "$AUTH_RE_CONFIG_FILE" ]; }; then
+  echo -e "${RED}ERROR: -m main.yaml must be specified when auth files are specified.${NC}"
+  exit 1
+fi
 
 # Save cmd line arguments to file
 CMD_FILE=".last_run_cmd"
@@ -213,6 +235,29 @@ if command -v selinuxenabled >/dev/null 2>&1; then
   fi
 fi
 
+MANUAL_CONFIG_DOCKER_ARGS=""
+if [ -n "$MAIN_CONFIG_FILE" ]; then
+  if [ ! -f "$MAIN_CONFIG_FILE" ]; then
+    echo -e "${RED}ERROR: Manual main config file $MAIN_CONFIG_FILE does not exist.${NC}"
+    exit 1
+  fi
+  MANUAL_CONFIG_DOCKER_ARGS="$MANUAL_CONFIG_DOCKER_ARGS -v $(realpath "$MAIN_CONFIG_FILE"):/etc/siterm-config/main.yaml$MOUNT_OPT -e MAIN_CONFIG_FILE=/etc/siterm-config/main.yaml -e MAPPING_TYPE=FE"
+fi
+if [ -n "$AUTH_CONFIG_FILE" ]; then
+  if [ ! -f "$AUTH_CONFIG_FILE" ]; then
+    echo -e "${RED}ERROR: Manual auth config file $AUTH_CONFIG_FILE does not exist.${NC}"
+    exit 1
+  fi
+  MANUAL_CONFIG_DOCKER_ARGS="$MANUAL_CONFIG_DOCKER_ARGS -v $(realpath "$AUTH_CONFIG_FILE"):/etc/siterm-config/auth.yaml$MOUNT_OPT -e AUTH_CONFIG_FILE=/etc/siterm-config/auth.yaml"
+fi
+if [ -n "$AUTH_RE_CONFIG_FILE" ]; then
+  if [ ! -f "$AUTH_RE_CONFIG_FILE" ]; then
+    echo -e "${RED}ERROR: Manual auth refresh config file $AUTH_RE_CONFIG_FILE does not exist.${NC}"
+    exit 1
+  fi
+  MANUAL_CONFIG_DOCKER_ARGS="$MANUAL_CONFIG_DOCKER_ARGS -v $(realpath "$AUTH_RE_CONFIG_FILE"):/etc/siterm-config/auth-re.yaml$MOUNT_OPT -e AUTH_RE_CONFIG_FILE=/etc/siterm-config/auth-re.yaml"
+fi
+
 if command -v selinuxenabled >/dev/null 2>&1; then
   FILES=(
     "$(realpath $(pwd)/../conf/etc/siterm.yaml)"
@@ -220,6 +265,15 @@ if command -v selinuxenabled >/dev/null 2>&1; then
     "$(pwd)/../conf/etc/secret-mount/tls.crt"
     "$(pwd)/../conf/etc/secret-mount/tls.key"
   )
+  if [ -n "$MAIN_CONFIG_FILE" ]; then
+    FILES+=("$(realpath "$MAIN_CONFIG_FILE")")
+  fi
+  if [ -n "$AUTH_CONFIG_FILE" ]; then
+    FILES+=("$(realpath "$AUTH_CONFIG_FILE")")
+  fi
+  if [ -n "$AUTH_RE_CONFIG_FILE" ]; then
+    FILES+=("$(realpath "$AUTH_RE_CONFIG_FILE")")
+  fi
   if selinuxenabled; then
     # Check and fix file contexts
     for file in "${FILES[@]}"; do
@@ -247,6 +301,7 @@ docker run \
        -v ${DOCKVOL}:/opt/siterm/config/mysql/ \
        -v ${DOCKVOLLOG}:/var/log/ \
        -v $(pwd)/../conf/opt/siterm/config/ssh-keys:/opt/siterm/config/ssh-keys \
+       $MANUAL_CONFIG_DOCKER_ARGS \
        $DOCKERNET_PARSED \
        --restart always \
        --env-file $ENV_FILE \

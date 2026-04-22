@@ -6,19 +6,24 @@
 
 # Check if parameters are defined. If not, print usage and exit 1.
 if [ $# == 0 ]; then
-    echo "Usage: `basename $0` [-i imagetag]"
+    echo "Usage: `basename $0` [-i imagetag] [-m main.yaml]"
     echo "  -i imagetag (MANDATORY)"
     echo "     specify image tag, e.g. latest, dev, v1.3.0... For production deplyoment use latest, unless instructed otherwise by SENSE team"
+    echo "  -m main.yaml (OPTIONAL). Use this agent main.yaml file directly instead of Git configuration"
     exit 1
 fi
 
-while getopts i: flag
+MAIN_CONFIG_FILE=""
+
+while getopts i:m: flag
 do
   case "${flag}" in
     i) SITERMIMGVERSION=${OPTARG};;
-    *) echo "Usage: `basename $0` [-i imagetag]"
+    m) MAIN_CONFIG_FILE=${OPTARG};;
+    *) echo "Usage: `basename $0` [-i imagetag] [-m main.yaml]"
        echo "  -i imagetag (MANDATORY)"
        echo "     specify image tag, e.g. latest, dev, v1.3.0... For production deplyoment use latest, unless instructed otherwise by SENSE team"
+       echo "  -m main.yaml (OPTIONAL). Use this agent main.yaml file directly instead of Git configuration"
        exit 1;;
   esac
 done
@@ -135,6 +140,15 @@ if command -v selinuxenabled >/dev/null 2>&1; then
   fi
 fi
 
+MANUAL_CONFIG_DOCKER_ARGS=""
+if [ -n "$MAIN_CONFIG_FILE" ]; then
+  if [ ! -f "$MAIN_CONFIG_FILE" ]; then
+    echo -e "${RED}ERROR: Manual main config file $MAIN_CONFIG_FILE does not exist.${NC}"
+    exit 1
+  fi
+  MANUAL_CONFIG_DOCKER_ARGS="$MANUAL_CONFIG_DOCKER_ARGS -v $(realpath "$MAIN_CONFIG_FILE"):/etc/siterm-config/main.yaml$MOUNT_OPT -e MAIN_CONFIG_FILE=/etc/siterm-config/main.yaml -e MAPPING_TYPE=Agent"
+fi
+
 # Check if modules are loaded:
 MODULES=(sch_htb sch_sfq ifb sch_ingress cls_u32 act_mirred)
 
@@ -205,6 +219,9 @@ FILES=(
   "/etc/iproute2/rt_tables"
   "/run/lldpd/lldpd.socket"
 )
+if [ -n "$MAIN_CONFIG_FILE" ]; then
+  FILES+=("$(realpath "$MAIN_CONFIG_FILE")")
+fi
 
 if command -v selinuxenabled >/dev/null 2>&1; then
   if selinuxenabled; then
@@ -249,6 +266,7 @@ docker run \
   -v ${DOCKVOL}:/opt/siterm/config/ \
   -v ${DOCKVOLLOG}:/var/log/ \
   ${RTTABLE} ${LLDPMOUNT} \
+  ${MANUAL_CONFIG_DOCKER_ARGS} \
   --restart always \
   --cap-add=NET_ADMIN \
   --net=host \
@@ -263,6 +281,7 @@ docker run \
   -v $(pwd)/../conf/etc/secret-mount/:/etc/secret-mount/ \
   -v ${DOCKVOL}:/opt/siterm/config/ \
   -v ${DOCKVOLLOG}:/var/log/ \
+  ${MANUAL_CONFIG_DOCKER_ARGS} \
   --restart always \
   --net=host \
   $LOGOPTIONS quay.io/sdnsense/siterm-debugger:${SITERMIMGVERSION}-el10
