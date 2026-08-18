@@ -7,7 +7,7 @@ COPY build_files/mariadb.sql /root/mariadb.sql
 COPY build_files/server.cnf /etc/my.cnf.d/server.cnf
 # Import GPG Keys for MariaDB and EPEL
 WORKDIR /etc/pki/rpm-gpg/
-RUN wget --progress=dot:giga https://yum.mariadb.org/RPM-GPG-KEY-MariaDB && rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-MariaDB
+RUN wget --progress=dot:giga https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY -O RPM-GPG-KEY-MariaDB && rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-MariaDB
 
 RUN adduser apache -U -u 48 && adduser mysql -U -u 4000
 
