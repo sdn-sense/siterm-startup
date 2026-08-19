@@ -205,6 +205,9 @@ def prepareNewHostFiles(name, params):
     specParams = special_params(params["network_os"])
     if specParams:
         hostinfo.update(specParams)
+    # 10. Add per-host ansible params (e.g. vlanmode, vlanip, routing_instance)
+    if "ansparams" in params:
+        hostinfo["ansparams"] = params["ansparams"]
     dumpYamlContent(f"{ROOTPATH}/host_vars/{name}.yaml", hostinfo)
 
 def writeState(state):
