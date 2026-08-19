@@ -52,4 +52,4 @@ EXPOSE 443
 
 HEALTHCHECK --retries=3 --start-period=60s --interval=60s --timeout=30s CMD bash /usr/local/sbin/docker-healthcheck.sh || exit 1
 
-CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]
+CMD ["/bin/bash", "/usr/local/sbin/entrypoint.sh"]

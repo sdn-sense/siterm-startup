@@ -70,7 +70,10 @@ python3 /root/generate_jwt.py
 
 # Run ansible prepare and prepare all ansible configuration files.
 echo "`date -u +"%Y-%m-%d %H:%M:%S"` Preparing Ansible configuration files."
-python3 /root/ansible-prepare.py
+if ! python3 /root/ansible-prepare.py; then
+  echo "`date -u +"%Y-%m-%d %H:%M:%S"` FATAL: Ansible configuration invalid. See errors above."
+  exit 1
+fi
 
 # Make sure all ansible hosts are defined in ~/.ssh/known_hosts
 echo "`date -u +"%Y-%m-%d %H:%M:%S"` Generating SSH keys and populating known_hosts."

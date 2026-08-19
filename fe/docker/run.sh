@@ -183,6 +183,14 @@ if [ $? != 0 ]; then
   ERROR=true
 fi
 
+echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
+echo "Validating ../conf/etc/ansible-conf.yaml"
+if ! docker run --rm -v $(pwd)/../conf/etc/ansible-conf.yaml:/etc/ansible-conf.yaml:ro \
+       quay.io/sdnsense/siterm-fe:$VERSION python3 /root/ansible-prepare.py --check; then
+  echo -e "${RED}ERROR: ../conf/etc/ansible-conf.yaml failed validation. SiteRM will fail to start.${NC}"
+  ERROR=true
+fi
+
 if [ "$ERROR" = true ]; then
     echo -e "${RED}------------------------------------------------------------------------"
     echo -e "Due to Errors, SiteRM container will not be started. Please fix issues highlighted above and try again.${NC}"
