@@ -34,25 +34,6 @@ class DBStarter:
             return False
         return True
 
-    def applyColumnMigrations(self):
-        """Idempotent column additions for schema upgrades.
-        Each ALTER TABLE is safe to run on every container restart —
-        MariaDB raises 'Duplicate column name' if the column already
-        exists, which we catch and treat as a no-op.
-        """
-        # Issue #1000: exccode on servicestates (added in v1.6.x)
-        try:
-            self.db.executeRaw(
-                "ALTER TABLE servicestates "
-                "ADD COLUMN exccode INT NOT NULL DEFAULT -100"
-            )
-            print("Added exccode column to servicestates.")
-        except pymysql.OperationalError as ex:
-            if "Duplicate column name" in str(ex):
-                print("exccode column already exists, skipping.")
-            else:
-                raise
-
     def _insupdversion(self, vval):
         version = self.db.get("dbversion", limit=1)
         # If no version is found, write the current version
@@ -87,8 +68,7 @@ class DBStarter:
             sleep(1)
         self.db.createdb()
         self.dboptimize()
-        self.applyColumnMigrations()
-        self.db.upgradedb("/opt/siterm/config/dbupgrade/")
+        self.db.upgradedb("/usr/local/share/siterm/dbupgrade/")
         self._insupdversion(runningVersion)
 
 
