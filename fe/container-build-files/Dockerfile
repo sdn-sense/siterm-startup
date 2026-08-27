@@ -37,6 +37,7 @@ RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-ari
 # Add all supervisord configs
 # Copy Supervisor.d Config, Script files
 COPY build_files/etc/alembic.ini /etc/alembic.ini
+COPY build_files/usr/local/share/siterm/dbupgrade/ /usr/local/share/siterm/dbupgrade/
 COPY build_files/usr/local/sbin/ /usr/local/sbin/
 COPY build_files/etc/supervisord.d/ /etc/supervisord.d/
 COPY build_files/root/.ansible.cfg /root/.ansible.cfg
