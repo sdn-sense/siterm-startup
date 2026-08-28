@@ -50,6 +50,12 @@ done
 echo "`date -u +"%Y-%m-%d %H:%M:%S"` MariaDB initialization script executed successfully."
 # Create/Update all databases needed for SiteRM
 python3 /usr/local/sbin/dbstart.py
+DBSTART_RC=$?
+if [ $DBSTART_RC -ne 0 ]; then
+    echo "`date -u +"%Y-%m-%d %H:%M:%S"` dbstart.py failed (exit code $DBSTART_RC). Site-RM database setup did NOT complete -- see traceback above."
+    rm -f $TEMP_DIR/siterm-mariadb-init
+    exit $DBSTART_RC
+fi
 
 echo "`date -u +"%Y-%m-%d %H:%M:%S"` Site-RM database setup completed."
 # create file under /var/lib/mysql which is only unique for Site-RM.
