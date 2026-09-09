@@ -6,10 +6,19 @@ MARIA_DB_PORT=3306
 MARIA_DB_DATABASE=sitefe
 # HTTPS By default is 443, Change only if needed
 #LISTEN_HTTPS=443
-# AUTH SUPPORT Choose one X509, OIDC, By default, this is X509 currently.
-#AUTH_SUPPORT=<REPLACEME>
-# In case OIDC, parameters below are required to be set
-#OIDC_AUDIENCE=<REPLACEME>
+# Authentication: the Frontend always issues JWT tokens (M2M X.509 cert-challenge and
+# user/password). The signing key pair is auto-generated at startup and the issuer/audience
+# default to general.webdomain, so none of the settings below are required. Override only
+# if you need to.
 #OIDC_ISSUER=<REPLACEME>
-#OIDC_JWKS=<REPLACEME>
-#OIDC_REDIRECT_URI=<REPLACEME>
+#OIDC_AUDIENCE=<REPLACEME>
+#OIDC_ALGORITHM=RS256
+#OIDC_TOKEN_LIFETIME_MINUTES=60
+#OIDC_LEEWAY=60
+#OIDC_CA_DIR=/etc/grid-security/truststore/
+# Persist / supply the signing keys instead of auto-generating them:
+#OIDC_PUBLIC_KEY=<REPLACEME>
+#OIDC_PRIVATE_KEY=<REPLACEME>
+# Previous key pair, kept valid during a key rotation (both must be set together):
+#OIDC_PREV_PUBLIC_KEY=<REPLACEME>
+#OIDC_PREV_PRIVATE_KEY=<REPLACEME>
