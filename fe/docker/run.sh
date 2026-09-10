@@ -185,10 +185,16 @@ fi
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 echo "Validating ../conf/etc/ansible-conf.yaml"
-if ! docker run --rm -v $(pwd)/../conf/etc/ansible-conf.yaml:/etc/ansible-conf.yaml:ro \
-       quay.io/sdnsense/siterm-fe:$VERSION python3 /root/ansible-prepare.py --check; then
-  echo -e "${RED}ERROR: ../conf/etc/ansible-conf.yaml failed validation. SiteRM will fail to start.${NC}"
-  ERROR=true
+if docker run --rm quay.io/sdnsense/siterm-fe:$VERSION \
+     grep -q -- '--check' /root/ansible-prepare.py 2>/dev/null; then
+  if ! docker run --rm -v $(pwd)/../conf/etc/ansible-conf.yaml:/etc/ansible-conf.yaml:ro \
+         quay.io/sdnsense/siterm-fe:$VERSION python3 /root/ansible-prepare.py --check; then
+    echo -e "${RED}ERROR: ../conf/etc/ansible-conf.yaml failed validation. SiteRM will fail to start.${NC}"
+    ERROR=true
+  fi
+else
+  echo "WARNING: image tag '$VERSION' predates host-side ansible-conf.yaml validation (no --check)."
+  echo "         Skipping this step; the container validates ../conf/etc/ansible-conf.yaml on startup."
 fi
 
 if [ "$ERROR" = true ]; then

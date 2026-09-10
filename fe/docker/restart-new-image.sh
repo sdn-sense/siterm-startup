@@ -76,4 +76,14 @@ do
   docker image rm $id --force
 done
 echo "================================================"
-./run.sh -i $VERSION -n $NETMODE -p "$DOCKERNET" -u $UFLAG
+# Forward only the options that were actually set. -p and -u are optional;
+# passing an empty "-u" made run.sh's getopts fail with
+# "option requires an argument -- u".
+RUN_ARGS=(-i "$VERSION" -n "$NETMODE")
+if [ -n "$DOCKERNET" ]; then
+  RUN_ARGS+=(-p "$DOCKERNET")
+fi
+if [ -n "$UFLAG" ]; then
+  RUN_ARGS+=(-u "$UFLAG")
+fi
+./run.sh "${RUN_ARGS[@]}"
