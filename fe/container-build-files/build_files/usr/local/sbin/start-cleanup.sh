@@ -10,9 +10,14 @@ set -a
 source /etc/environment || true
 set +a
 
-# Set default Ansible repo (or use one defined in the environment)
+# Set default Ansible repo (or use one defined in the environment).
+# ANSIBLE_REPO accepts either a bare ref ("1.6.4", "master") or an
+# "origin/<ref>" form (the historical default) -- either way, REMOTE is
+# always "origin", since this script only ever clones from the one remote
+# set up by the `git clone` below.
+#
 ANSIBLE_REPO="${ANSIBLE_REPO:-origin/master}"
-REMOTE="${ANSIBLE_REPO%%/*}"
+REMOTE="origin"
 
 echo "`date -u +"%Y-%m-%d %H:%M:%S"` Removing temporary files."
 # Remove yaml files to prefetch from scratch
