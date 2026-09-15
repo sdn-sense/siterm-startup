@@ -137,6 +137,7 @@ def getYamlContent(filename, raiseError=False):
 
 def dumpYamlContent(filename, outContent):
     """Dump outContent in Yaml format to filename"""
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, "w", encoding="utf-8") as fd:
         yaml.dump(
             outContent,

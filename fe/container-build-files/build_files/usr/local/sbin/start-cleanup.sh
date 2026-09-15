@@ -41,32 +41,47 @@ echo "`date -u +"%Y-%m-%d %H:%M:%S"` Cleanup script finished."
 # Create dynamic directories for apache write/read
 python3 /root/dircreate.py
 
-# Make sure ansible dir exists (Kubernetes has it empty once PVC is created)
-if [[ ! -d "/opt/siterm/config/ansible" ]]; then
-  echo "`date -u +"%Y-%m-%d %H:%M:%S"` Directory /opt/siterm/config/ansible DOES NOT exists."
-  echo "`date -u +"%Y-%m-%d %H:%M:%S"` Cloning git repo and add default ansible config."
+# Clone the ansible-templates repo fresh into /opt/siterm/config/ansible/sense
+# and switch to $ANSIBLE_REPO if it isn't the default branch. Used both for
+# the first-ever clone and as the recovery path when an existing checkout
+# turns out to be corrupted (see below) -- a corrupted git repo on a PVC
+# survives pod restarts and even image redeploys, so falling back to a full
+# re-clone is the only way to self-heal rather than failing forever.
+cloneAnsibleRepo () {
   mkdir -p /opt/siterm/config/ansible/sense
   git clone https://github.com/sdn-sense/ansible-templates /opt/siterm/config/ansible/sense
-
-  # Pull another branch if defined via environment variable
+  cd /opt/siterm/config/ansible/sense || exit 1
   if [[ "$ANSIBLE_REPO" != "origin/master" ]]; then
     echo "`date -u +"%Y-%m-%d %H:%M:%S"` Switching to branch: $ANSIBLE_REPO"
-    cd /opt/siterm/config/ansible/sense || exit 1
     git fetch --all
     git checkout "${ANSIBLE_REPO#origin/}" || git checkout -b "${ANSIBLE_REPO#origin/}" "$ANSIBLE_REPO"
     git pull "$REMOTE" "${ANSIBLE_REPO#origin/}"
   fi
+}
+
+# Make sure ansible dir exists (Kubernetes has it empty once PVC is created)
+if [[ ! -d "/opt/siterm/config/ansible" ]]; then
+  echo "`date -u +"%Y-%m-%d %H:%M:%S"` Directory /opt/siterm/config/ansible DOES NOT exists."
+  echo "`date -u +"%Y-%m-%d %H:%M:%S"` Cloning git repo and add default ansible config."
+  cloneAnsibleRepo
 else
   echo "`date -u +"%Y-%m-%d %H:%M:%S"` Directory /opt/siterm/config/ansible exists."
   echo "`date -u +"%Y-%m-%d %H:%M:%S"` Updating git repo to the latest version."
   cd /opt/siterm/config/ansible/sense
-  git fetch --all
-  git branch backup-master-`date +%s`
+  # A previous run may have been killed mid-git-operation (OOM, pod
+  # eviction, etc.), leaving a stale index.lock that would make every git
+  # command below fail immediately with "Unable to create ... index.lock".
+  rm -f .git/index.lock
 
-  git checkout "${ANSIBLE_REPO#origin/}" || git checkout -b "${ANSIBLE_REPO#origin/}" "$ANSIBLE_REPO"
-  git reset --hard "$ANSIBLE_REPO"
-  git pull "$REMOTE" "${ANSIBLE_REPO#origin/}"
-
+  if ! { git fetch --all \
+         && { git checkout "${ANSIBLE_REPO#origin/}" || git checkout -b "${ANSIBLE_REPO#origin/}" "$ANSIBLE_REPO"; } \
+         && git reset --hard "$ANSIBLE_REPO" \
+         && git pull "$REMOTE" "${ANSIBLE_REPO#origin/}"; }; then
+    echo "`date -u +"%Y-%m-%d %H:%M:%S"` Git repo update failed -- local checkout is likely corrupted. Re-cloning from scratch."
+    cd /
+    rm -rf /opt/siterm/config/ansible/sense
+    cloneAnsibleRepo
+  fi
 fi
 
 # Generate JWT keys if they do not exist

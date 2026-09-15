@@ -23,6 +23,7 @@ RUN mkdir -p /var/log/siterm-site-fe/LookUpService/ && \
     mkdir -p /var/log/siterm-site-fe/contentdb && \
     mkdir -p /var/log/siterm-site-fe/http-api && \
     mkdir -p /var/log/siterm-site-fe/SNMPMonitoring && \
+    mkdir -p /var/log/siterm-site-fe/BGPMonitoring && \
     mkdir -p /var/log/siterm-site-fe/DBCleaner && \
     mkdir -p /var/log/mariadb/ && mkdir -p /opt/siterm/config/mysql/ && \
     mkdir -p /var/log/supervisor && mkdir -p /etc/supervisord.d/ && \
@@ -41,7 +42,8 @@ RUN touch /var/log/siterm-site-fe/LookUpService/api.log && \
     touch /var/log/siterm-site-fe/DBCleaner/api.log && \
     touch /var/log/siterm-site-fe/contentdb/api.log && \
     touch /var/log/siterm-site-fe/http-api/api.log && \
-    touch /var/log/siterm-site-fe/SNMPMonitoring/api.log
+    touch /var/log/siterm-site-fe/SNMPMonitoring/api.log && \
+    touch /var/log/siterm-site-fe/BGPMonitoring/api.log
 
 RUN mkdir -p /opt/siterm/config && \
     mkdir -p /opt/siterm/sitermcode && \
