@@ -183,11 +183,20 @@ if [ $? != 0 ]; then
   ERROR=true
 fi
 
+# Precreate ssh-keys empty directory if it does not exist. Needed before
+# validation below, since a sshkey-based host entry is checked against
+# this same mount path.
+if [[ ! -d "$(pwd)/../conf/opt/siterm/config/ssh-keys" ]]; then
+  mkdir -p $(pwd)/../conf/opt/siterm/config/ssh-keys
+fi
+
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 echo "Validating ../conf/etc/ansible-conf.yaml"
 if docker run --rm quay.io/sdnsense/siterm-fe:$VERSION \
      grep -q -- '--check' /root/ansible-prepare.py 2>/dev/null; then
   if ! docker run --rm -v $(pwd)/../conf/etc/ansible-conf.yaml:/etc/ansible-conf.yaml:ro \
+         -v $(pwd)/../conf/opt/siterm/config/ssh-keys:/opt/siterm/config/ssh-keys:ro \
+         -v $(pwd)/../conf/etc/siterm.yaml:/etc/siterm.yaml:ro \
          quay.io/sdnsense/siterm-fe:$VERSION python3 /root/ansible-prepare.py --check; then
     echo -e "${RED}ERROR: ../conf/etc/ansible-conf.yaml failed validation. SiteRM will fail to start.${NC}"
     ERROR=true
@@ -229,13 +238,6 @@ else
     echo -e "${RED}There was a failure creating docker volume. See error above. SiteRM will not start${NC}"
     exit 1
   fi
-fi
-
-
-# Precreate mysql and ssh-keys empty directories if do not exist.
-# That might be an issue of non existing dirs on podman installation
-if [[ ! -d "$(pwd)/../conf/opt/siterm/config/ssh-keys" ]]; then
-  mkdir -p $(pwd)/../conf/opt/siterm/config/ssh-keys
 fi
 
 

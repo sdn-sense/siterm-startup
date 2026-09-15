@@ -13,6 +13,7 @@ import sys
 import traceback
 
 import yaml
+from SiteRMLibs.GitConfig import GitConfig
 
 ROOTPATH = "/opt/siterm/config/ansible/sense/inventory"
 
@@ -49,12 +50,14 @@ def _osTemplateMappings():
             "before": "sonic_before.j2",
             "ping": "sonic_ping.j2",
             "traceroute": "sonic_traceroute.j2",
+            "bgpsummary": "sonic_bgpsummary.j2",
         },
         "sense.frr.frr": {
             "main": "frr.j2",
             "before": "frr_before.j2",
             "ping": "frr_ping.j2",
             "traceroute": "frr_traceroute.j2",
+            "bgpsummary": "frr_bgpsummary.j2",
         },
         "sense.cisconx9.cisconx9": {
             "main": "cisconx9.j2",
@@ -241,7 +244,8 @@ def prepareNewHostFiles(name, params):
         macparse = key_mac_mappings(params["network_os"])
         if macparse:
             hostinfo["snmp_monitoring"]["mac_parser"] = macparse
-    # 8. Add template parameter
+    # 8. Add template parameter (required -- every supported network_os
+    # must have one, so absence here is a real misconfiguration)
     for key, anskey in {
         "main": "template_name",
         "before": "template_before_name",
@@ -255,6 +259,22 @@ def prepareNewHostFiles(name, params):
             print(
                 f"ERROR! {name} does not availabe template for {key}. Unsupported Device?!"
             )
+    # 8b. Add optional per-capability templates -- present only for the
+    # network_os values that actually use a template for that capability
+    # (e.g. BGP summary only applies to FRR/SONiC, which run it via an
+    # on-device script + template; other supported NOS's get it through a
+    # dedicated Ansible module instead and have no template at all).
+    # Absence is expected here, unlike the required templates above, so it
+    # is not treated as an error -- and any stale value from a previous
+    # mapping is cleared rather than left behind.
+    for key, anskey in {
+        "bgpsummary": "template_name_bgpsummary",
+    }.items():
+        template = template_mapping(params["network_os"], key)
+        if template:
+            hostinfo[anskey] = template
+        else:
+            hostinfo.pop(anskey, None)
     # 9. Add special Ansible params (known as needed)
     specParams = special_params(params["network_os"])
     if specParams:
@@ -269,7 +289,7 @@ def prepareNewHostFiles(name, params):
 
 
 def validateInventory(inventory):
-    """Validate inventory entries (network_os) without writing any files"""
+    """Validate inventory entries (network_os, credentials) without writing any files"""
     errors = []
     for name, params in inventory.get("inventory", {}).items():
         if "network_os" not in params:
@@ -280,9 +300,67 @@ def validateInventory(inventory):
             errors.append(
                 f"Host '{name}' has unsupported network_os '{params['network_os']}'. Supported: {SUPPORTED_NETWORK_OS}"
             )
+        user = params.get("user")
+        passwd = params.get("pass")
+        sshkey = params.get("sshkey")
+        if not user:
+            errors.append(
+                f"Host '{name}' does not have a non-empty 'user' parameter defined!"
+            )
+        if not passwd and not sshkey:
+            errors.append(
+                f"Host '{name}' must have either a non-empty 'pass' or 'sshkey' parameter defined!"
+            )
+        if sshkey and not os.path.isfile(sshkey):
+            errors.append(
+                f"Host '{name}' has 'sshkey' set to '{sshkey}' but that file does not exist!"
+            )
     if errors:
         details = "\n".join(f"  - {err}" for err in errors)
         raise Exception(f"ERROR! Ansible configuration validation failed:\n{details}")
+
+
+def getSiteDeviceConfig():
+    """Fetch the site's Git-managed configuration (rm-configs) and return its
+    (sitename, ansible control plugin, switch/device name list)."""
+    gitObj = GitConfig()
+    if not gitObj.manualConfigEnabled():
+        gitObj.getGitRepo()
+    gitObj.getGitConfig()
+    sitename = gitObj.config["MAIN"]["general"]["sitename"]
+    siteConfig = gitObj.config["MAIN"].get(sitename, {})
+    plugin = siteConfig.get("plugin", "ansible")
+    switchNames = siteConfig.get("switch", [])
+    return sitename, plugin, switchNames
+
+
+def validateDeviceNames(inventory):
+    """Cross-check device names between the Git-managed site configuration
+    (rm-configs FE main.yaml 'switch' list) and /etc/ansible-conf.yaml.
+    Skipped entirely when the site's ansible control 'plugin' is 'raw'."""
+    try:
+        sitename, plugin, switchNames = getSiteDeviceConfig()
+    except Exception as ex:
+        raise Exception(
+            f"ERROR! Could not fetch Git site configuration to validate device names: {ex}"
+        ) from ex
+    if plugin == "raw":
+        print(f"OK! Site '{sitename}' ansible control is 'raw', skipping device name cross-check.")
+        return
+    switchNames = set(switchNames)
+    ansibleNames = set(inventory.get("inventory", {}).keys())
+    errors = []
+    for name in sorted(switchNames - ansibleNames):
+        errors.append(
+            f"Device '{name}' is listed in rm-configs (site '{sitename}') but missing from /etc/ansible-conf.yaml inventory!"
+        )
+    for name in sorted(ansibleNames - switchNames):
+        errors.append(
+            f"Device '{name}' is defined in /etc/ansible-conf.yaml but missing from rm-configs (site '{sitename}') switch list!"
+        )
+    if errors:
+        details = "\n".join(f"  - {err}" for err in errors)
+        raise Exception(f"ERROR! Device name validation failed:\n{details}")
 
 
 def checkConfig():
@@ -290,6 +368,7 @@ def checkConfig():
     try:
         inventory = getYamlContent("/etc/ansible-conf.yaml", True)
         validateInventory(inventory)
+        validateDeviceNames(inventory)
     except Exception as ex:
         print(f"{ex}")
         return False
