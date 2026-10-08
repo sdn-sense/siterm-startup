@@ -204,7 +204,7 @@ docker run \
   -v ${DOCKVOL}:/opt/siterm/config/ \
   -v ${DOCKVOLLOG}:/var/log/ \
   $MANUAL_CONFIG_DOCKER_ARGS \
-  --restart always \
+  --restart unless-stopped \
   --net=host \
   $LOGOPTIONS quay.io/sdnsense/siterm-debugger:${VERSION}-el10
 

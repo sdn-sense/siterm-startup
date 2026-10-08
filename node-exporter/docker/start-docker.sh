@@ -26,7 +26,7 @@ docker run -d \
   -v "/proc:/host/proc:ro" \
   -v "/sys:/host/sys:ro" \
   -v "/:/host:ro,rslave" \
-  --restart always \
+  --restart unless-stopped \
   $LOGOPTIONS \
   prom/node-exporter \
   --path.rootfs=/host \

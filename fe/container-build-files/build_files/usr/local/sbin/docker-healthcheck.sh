@@ -1,6 +1,12 @@
 #!/bin/bash
 
 TEMP_DIR=$(python3 -c "from SiteRMLibs.MainUtilities import getTempDir; print(getTempDir())")
+# If DB init/upgrade failed, report the reason (checked first: the init file is kept on failure)
+if [ -f $TEMP_DIR/siterm-mariadb-init-failed ]; then
+  echo "`date -u +"%Y-%m-%d %H:%M:%S"` MariaDB init failed: `cat $TEMP_DIR/siterm-mariadb-init-failed`"
+  echo "`date -u +"%Y-%m-%d %H:%M:%S"` See /var/log/supervisor/siterm_mariadb_init.log"
+  exit 1
+fi
 # If upgrade is in progress, exit 0
 if [ -f $TEMP_DIR/siterm-mariadb-init ]; then
   exit 0

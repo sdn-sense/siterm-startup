@@ -267,7 +267,7 @@ docker run \
   -v ${DOCKVOLLOG}:/var/log/ \
   ${RTTABLE} ${LLDPMOUNT} \
   ${MANUAL_CONFIG_DOCKER_ARGS} \
-  --restart always \
+  --restart unless-stopped \
   --cap-add=NET_ADMIN \
   --net=host \
   ${LOGOPTIONS} quay.io/sdnsense/siterm-agent:${SITERMIMGVERSION}-${SITERMOSVERSION}
@@ -282,7 +282,7 @@ docker run \
   -v ${DOCKVOL}:/opt/siterm/config/ \
   -v ${DOCKVOLLOG}:/var/log/ \
   ${MANUAL_CONFIG_DOCKER_ARGS} \
-  --restart always \
+  --restart unless-stopped \
   --net=host \
   $LOGOPTIONS quay.io/sdnsense/siterm-debugger:${SITERMIMGVERSION}-el10
 

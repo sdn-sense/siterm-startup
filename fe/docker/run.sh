@@ -319,7 +319,7 @@ docker run \
        -v $(pwd)/../conf/opt/siterm/config/ssh-keys:/opt/siterm/config/ssh-keys \
        $MANUAL_CONFIG_DOCKER_ARGS \
        $DOCKERNET_PARSED \
-       --restart always \
+       --restart unless-stopped \
        --env-file $ENV_FILE \
        $LOGOPTIONS quay.io/sdnsense/siterm-fe:$VERSION
 
