@@ -34,6 +34,13 @@ RUN ansible-galaxy collection install git+https://github.com/sdn-sense/sense-ari
     ansible-galaxy collection install git+https://github.com/sdn-sense/sense-frr-collection,"$GITBRANS" && \
     ansible-galaxy collection install git+https://github.com/sdn-sense/sense-junos-collection,"$GITBRANS"
 
+# Install Archify renderer for the topology page (pinned commit; only the self-contained archify/ dir is kept)
+ARG ARCHIFY_REF=f325d86230553e1dd15d3464324f1fcd01f02352
+RUN git init -q /tmp/archify && \
+    git -C /tmp/archify fetch -q --depth 1 https://github.com/tt-a1i/archify "$ARCHIFY_REF" && \
+    git -C /tmp/archify checkout -q FETCH_HEAD && \
+    mkdir -p /opt/archify && mv /tmp/archify/archify /opt/archify/archify && rm -rf /tmp/archify
+
 # Add all supervisord configs
 # Copy Supervisor.d Config, Script files
 COPY build_files/etc/alembic.ini /etc/alembic.ini
