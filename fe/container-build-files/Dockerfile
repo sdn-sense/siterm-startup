@@ -16,7 +16,10 @@ ARG GITBRANS=master
 WORKDIR /opt/siterm/sitermcode
 RUN git clone -b $GITBR https://github.com/$GITORG/$GITREPO
 WORKDIR /opt/siterm/sitermcode/siterm/
-RUN pip3 install --no-cache-dir -r requirements-sitefe.txt --upgrade || exit $?
+# The base image's rpm python3-dateutil has no pip RECORD file, so pip cannot upgrade it in place;
+# install a pip-managed copy into /usr/local first (it shadows the rpm one) so the upgrade below can manage it.
+RUN pip3 install --no-cache-dir --ignore-installed python-dateutil && \
+    pip3 install --no-cache-dir -r requirements-sitefe.txt --upgrade || exit $?
 RUN ./pre-install.sh "$RELEASE" && mv setup-sitefe.py setup.py && pip3 install --no-cache-dir . -v || exit $?
 # Install all data files needed for FE - httpd, cron, web files
 RUN cp packaging/siterm-site-fe/sitefe.py /var/www/wsgi-scripts/ && \
