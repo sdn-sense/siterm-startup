@@ -23,6 +23,7 @@ DOCKERNET=""
 NETMODE="port"
 DOCKVOL="siterm-mysql"
 DOCKVOLLOG="sitermfe-log"
+DOCKVOLJWT="sitermfe-jwt"
 DOCKERNAME="siterm-fe"
 ENV_FILE="$(pwd)/../conf/environment"
 VERSION="latest"
@@ -87,6 +88,7 @@ do
        DOCKERNET=$PORTS;;
     u) DOCKVOL="siterm-mysql-${OPTARG}"
        DOCKVOLLOG="sitermfe-log-${OPTARG}"
+       DOCKVOLJWT="sitermfe-jwt-${OPTARG}"
        DOCKERNAME="siterm-fe-${OPTARG}";;
     m) MAIN_CONFIG_FILE=${OPTARG};;
     a) AUTH_CONFIG_FILE=${OPTARG};;
@@ -240,6 +242,21 @@ else
   fi
 fi
 
+# Create docker volume for the JWT signing keys. Without it every new container generates new keys
+# and rejects all tokens issued before the restart until they expire.
+cmd="docker volume inspect ${DOCKVOLJWT} &> /dev/null"
+if eval "$cmd"
+then
+  echo "Docker volume available for JWT keys. Will use ${DOCKVOLJWT} for JWT keys"
+else
+  echo "Docker volume not available for JWT keys. Will create ${DOCKVOLJWT} for JWT keys"
+  docker volume create ${DOCKVOLJWT}
+  if [ $? != 0 ]; then
+    echo -e "${RED}There was a failure creating docker volume. See error above. SiteRM will not start${NC}"
+    exit 1
+  fi
+fi
+
 
 # Check SELinux. If enabled, choose correct mount option and enable svirt_sandbox_file_t
 MOUNT_OPT=":ro"
@@ -316,6 +333,7 @@ docker run \
        -v $(pwd)/../conf/etc/secret-mount/:/etc/secret-mount/ \
        -v ${DOCKVOL}:/opt/siterm/config/mysql/ \
        -v ${DOCKVOLLOG}:/var/log/ \
+       -v ${DOCKVOLJWT}:/opt/siterm/jwt_secrets/ \
        -v $(pwd)/../conf/opt/siterm/config/ssh-keys:/opt/siterm/config/ssh-keys \
        $MANUAL_CONFIG_DOCKER_ARGS \
        $DOCKERNET_PARSED \
