@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """Database starter to create and update database"""
-import os
 from time import sleep
 import pymysql
 import sqlalchemy.exc
 from SiteRMLibs.DBBackend import dbinterface
-from SiteRMLibs.DBState import setDBInitState
 from SiteRMLibs import __version__ as runningVersion
 
 
@@ -85,22 +83,14 @@ class DBStarter:
             raise
 
     def start(self):
-        """Start the database creation; the init state recorded in the database gates all FE services."""
+        """Start the database creation"""
         while not self.db.isDBReady():
             print("Database not ready, waiting for 1 second. See error above. If continous, check the mariadb process.")
             sleep(1)
-        # Tables first, so the init state (kvstore) can be recorded before anything else touches the data.
         self.db.createdb()
-        setDBInitState(self.db, "running", runningVersion)
-        try:
-            self.dboptimize()
-            self.db.upgradedb("/usr/local/share/siterm/dbupgrade/")
-            self._insupdversion(runningVersion)
-        except Exception as ex:
-            msg = str(ex).replace(os.getenv("MARIA_DB_PASSWORD", "") or "\0", "<redacted>")[:1000]
-            setDBInitState(self.db, "failed", runningVersion, msg)
-            raise
-        setDBInitState(self.db, "done", runningVersion)
+        self.dboptimize()
+        self.db.upgradedb("/usr/local/share/siterm/dbupgrade/")
+        self._insupdversion(runningVersion)
 
 
 if __name__ == "__main__":

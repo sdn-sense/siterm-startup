@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-  Prepare the SiteRM site private directory /opt/siterm/config/{SITENAME} owned by apache:apache.
-  Components share data through the database; this directory only holds local scratch
-  (ansible run artifacts, background debug process output).
+  Prepare SiteRM directories (mainly where apache will be allowed to write/read delete files
+  This is dynamic, as site might be configured to support multiple sites.
+  It will create dir /opt/siterm/config/{SITENAME}/{LookUpService,PolicyService} and make it
+  owned by apache:apache.
 Authors:
   Justas Balcas jbalcas (at) caltech.edu
 Date: 2022/11/22
@@ -34,6 +35,13 @@ def dircreate():
     if gitObj.config.get('SITENAME', None):
         path = f'/opt/siterm/config/{gitObj.config["SITENAME"]}'
         pathcreate(path, uid, gid)
+        for subpath in ['LookUpService', 'PolicyService', 'HostData', 'ServiceData']:
+            newpath = f'{path}/{subpath}'
+            pathcreate(newpath, uid, gid)
+        # create httpnew and httpfinished dirs owned by apache
+        for subpath in ['httpnew', 'httpfinished']:
+            newpath = f'{path}/PolicyService/{subpath}'
+            pathcreate(newpath, uid, gid)
 
 if __name__ == "__main__":
     dircreate()

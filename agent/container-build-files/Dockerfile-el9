@@ -23,10 +23,7 @@ RUN touch /etc/firehol/fireqos.conf
 WORKDIR /opt/siterm/sitermcode
 RUN git clone -b $GITBR https://github.com/$GITORG/$GITREPO
 WORKDIR /opt/siterm/sitermcode/siterm/
-# The base image's distro python3-dateutil has no pip RECORD file, so pip cannot upgrade it in place;
-# install a pip-managed copy into /usr/local first (it shadows the distro one) so the upgrade below can manage it.
-RUN pip3 install --no-cache-dir --ignore-installed python-dateutil && \
-    pip3 install --no-cache-dir -r requirements-agent.txt --upgrade || exit $?
+RUN pip3 install --no-cache-dir -r requirements-agent.txt --upgrade || exit $?
 RUN ./pre-install.sh "$RELEASE" && mv setup-agent.py setup.py && pip3 install --no-cache-dir . -v || exit $?
 # Install all data files needed for Agent, e.g. crons
 RUN cp packaging/general/siterm-crons /etc/cron.d/ && \
