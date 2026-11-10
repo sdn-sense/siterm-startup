@@ -84,10 +84,11 @@ else
   fi
 fi
 
-# Generate JWT keys if they do not exist (only the frontend signs/validates tokens)
+# Install JWT keys (only the frontend signs/validates tokens): split frontends share one key through the database,
+# the single container generates it once into RSA_DIR.
 case "${SITERM_COMPONENT:-all}" in
   all|frontend)
-    echo "`date -u +"%Y-%m-%d %H:%M:%S"` Generating JWT keys."
+    echo "`date -u +"%Y-%m-%d %H:%M:%S"` Installing JWT keys."
     python3 /root/generate_jwt.py
     ;;
 esac

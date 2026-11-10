@@ -1,6 +1,6 @@
 # SiteRM Frontend split into one container per component.
-# Components talk only through MariaDB; no volume is shared between them (except the JWT keys
-# volume, written once by dbinit and read by the frontend).
+# Components talk only through MariaDB (frontends also share the JWT signing
+# key through it); no volume is shared between them.
 #
 # Usage (from this directory, after filling ../conf/environment, ../conf/etc/siterm.yaml,
 # ../conf/etc/ansible-conf.yaml, ../conf/etc/secret-mount/tls.{crt,key}):
@@ -49,8 +49,7 @@ services:
     <<: *siterm
     restart: "no"
     environment: {SITERM_COMPONENT: dbinit, MARIA_DB_HOST: mariadb}
-    volumes:
-      - siterm-jwt:/opt/siterm/jwt_secrets
+    volumes: []
     depends_on:
       mariadb:
         condition: service_healthy
@@ -61,12 +60,6 @@ services:
     ports:
       - "8080:80"
       - "8443:443"
-    volumes:
-      - ../conf/etc/siterm.yaml:/etc/siterm.yaml:ro
-      - ../conf/etc/ansible-conf.yaml:/etc/ansible-conf.yaml:ro
-      - ../conf/etc/secret-mount/:/etc/secret-mount/:ro
-      - ../conf/opt/siterm/config/ssh-keys:/opt/siterm/config/ssh-keys:ro
-      - siterm-jwt:/opt/siterm/jwt_secrets
 
   configfetcher:
     <<: *siterm
@@ -110,4 +103,3 @@ services:
 
 volumes:
   siterm-mysql:
-  siterm-jwt:
