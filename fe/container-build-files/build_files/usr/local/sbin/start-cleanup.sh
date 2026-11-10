@@ -33,12 +33,12 @@ rm -f /tmp/siterm-git-fetch-lockfile
 mkdir -p /var/log/siterm-site-fe/
 chown apache:apache /var/log/siterm-site-fe/
 chmod g+s /var/log/siterm-site-fe/
-mkdir -p /var/log/siterm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api,HostData,ServiceData}/
+mkdir -p /var/log/siterm-site-fe/{LookUpService,ProvisioningService,PolicyService,SwitchBackends,contentdb,http-api}/
 chown apache:apache /var/log/siterm-site-fe/*
 chmod g+s /var/log/siterm-site-fe/*
 
 echo "`date -u +"%Y-%m-%d %H:%M:%S"` Cleanup script finished."
-# Create dynamic directories for apache write/read
+# Create the site private directory (local scratch only; shared data lives in the database)
 python3 /root/dircreate.py
 
 # Clone the ansible-templates repo fresh into /opt/siterm/config/ansible/sense
@@ -84,9 +84,13 @@ else
   fi
 fi
 
-# Generate JWT keys if they do not exist
-echo "`date -u +"%Y-%m-%d %H:%M:%S"` Generating JWT keys."
-python3 /root/generate_jwt.py
+# Generate JWT keys if they do not exist (only the frontend signs/validates tokens)
+case "${SITERM_COMPONENT:-all}" in
+  all|frontend)
+    echo "`date -u +"%Y-%m-%d %H:%M:%S"` Generating JWT keys."
+    python3 /root/generate_jwt.py
+    ;;
+esac
 
 # Run ansible prepare and prepare all ansible configuration files.
 echo "`date -u +"%Y-%m-%d %H:%M:%S"` Preparing Ansible configuration files."
@@ -99,29 +103,5 @@ fi
 echo "`date -u +"%Y-%m-%d %H:%M:%S"` Generating SSH keys and populating known_hosts."
 python3 /root/ssh-keygen.py
 
-TEMP_DIR=$(python3 -c "from SiteRMLibs.MainUtilities import getTempDir; print(getTempDir())")
-# Check if upgrade is in progress and loop until it is completed
-if [ -f $TEMP_DIR/siterm-mariadb-init ]; then
-  while [ -f $TEMP_DIR/siterm-mariadb-init ]; do
-    echo "`date -u +"%Y-%m-%d %H:%M:%S"` Upgrade in progress. Waiting for it to complete."
-    sleep 1
-  done
-fi
-if [ ! -f $TEMP_DIR/config-fetcher-ready ]; then
-  while [ ! -f $TEMP_DIR/config-fetcher-ready ]; do
-    echo "`date -u +"%Y-%m-%d %H:%M:%S"` Config fetch not started yet. Waiting for it to start."
-    sleep 1
-  done
-fi
-
-# Run in a loop directory creation and chown for apache
-while true; do
-    sleep_time=$(( 3600 + RANDOM % 1800 ))
-    python3 /root/dircreate.py
-    echo "`date -u +"%Y-%m-%d %H:%M:%S"` Sleeping for $sleep_time seconds"
-    sleep $sleep_time
-    # Run the Python script
-done
-
-# Sleep forever in case exit loop (which should not happen)
+# Services wait for the database themselves (init state is recorded in the database); nothing left to do.
 sleep_long

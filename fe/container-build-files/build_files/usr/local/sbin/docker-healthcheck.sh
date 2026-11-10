@@ -12,10 +12,6 @@ if [ -f $TEMP_DIR/siterm-mariadb-init ]; then
   exit 0
 fi
 
-if [ ! -f $TEMP_DIR/config-fetcher-ready ]; then
-  exit 0
-fi
-
 echo "`date -u +"%Y-%m-%d %H:%M:%S"` Running siterm-liveness check"
 siterm-liveness
 if [ $? -ne 0 ]; then

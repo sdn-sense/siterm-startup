@@ -24,6 +24,23 @@ os.makedirs(save_dir, exist_ok=True)
 os.chown(save_dir, uid, gid)
 os.chmod(save_dir, 0o700)
 
+# A private key supplied by a mounted secret (shared by all frontend replicas) wins: install it, derive the public key.
+source_private = os.path.join(os.getenv("RSA_SOURCE_DIR", "/etc/siterm-jwt"), "private_key.pem")
+if os.path.isfile(source_private):
+    with open(source_private, "rb") as f:
+        source_pem = f.read()
+    source_key = serialization.load_pem_private_key(source_pem, password=None)
+    print("Installing JWT signing key from:", source_private)
+    with open(private_key_path, "wb") as f:
+        f.write(source_pem)
+    os.chown(private_key_path, uid, gid)
+    os.chmod(private_key_path, 0o600)
+    with open(public_key_path, "wb") as f:
+        f.write(source_key.public_key().public_bytes(encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo))
+    os.chown(public_key_path, uid, gid)
+    os.chmod(public_key_path, 0o644)
+    sys.exit(0)
+
 # Check if private key or public key already exists
 if os.path.exists(private_key_path) and os.path.exists(public_key_path):
     print("Private key and public key already exist. Skipping key generation.")

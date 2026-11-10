@@ -322,12 +322,17 @@ def validateInventory(inventory):
 
 
 def getSiteDeviceConfig():
-    """Fetch the site's Git-managed configuration (rm-configs) and return its
-    (sitename, ansible control plugin, switch/device name list)."""
+    """Return (sitename, ansible control plugin, switch/device name list) of the site configuration:
+    the copy ConfigFetcher published to the database, else manual files, else a fresh git fetch."""
     gitObj = GitConfig()
-    if not gitObj.manualConfigEnabled():
+    try:
+        gitObj.getGitConfig()
+    except Exception:  # pylint: disable=broad-except
+        if gitObj.manualConfigEnabled():
+            raise
+        gitObj = GitConfig()
         gitObj.getGitRepo()
-    gitObj.getGitConfig()
+        gitObj.getGitConfig(fromdb=False)
     sitename = gitObj.config["MAIN"]["general"]["sitename"]
     siteConfig = gitObj.config["MAIN"].get(sitename, {})
     plugin = siteConfig.get("plugin", "ansible")

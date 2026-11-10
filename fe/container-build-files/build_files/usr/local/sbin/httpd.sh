@@ -1,19 +1,26 @@
 #!/bin/bash
 echo "`date -u +"%Y-%m-%d %H:%M:%S"` Starting httpd initialization script."
 TEMP_DIR=$(python3 -c "from SiteRMLibs.MainUtilities import getTempDir; print(getTempDir())")
-# Check if upgrade is in progress and loop until it is completed
+# All-in-one image only: wait for mariadb_init.sh in this same container
 if [ -f $TEMP_DIR/siterm-mariadb-init ]; then
   while [ -f $TEMP_DIR/siterm-mariadb-init ]; do
     echo "`date -u +"%Y-%m-%d %H:%M:%S"` Upgrade in progress. Waiting for it to complete."
     sleep 5
   done
 fi
-if [ ! -f $TEMP_DIR/config-fetcher-ready ]; then
-  while [ ! -f $TEMP_DIR/config-fetcher-ready ]; do
-    echo "`date -u +"%Y-%m-%d %H:%M:%S"` Config fetch not finished yet. Waiting for it to start."
-    sleep 1
-  done
-fi
+# Wait until the database is initialized and the site configuration is available (state lives in the database)
+until python3 -c "
+import sys
+from SiteRMLibs import __version__ as version
+from SiteRMLibs.DBState import feStartupState
+from SiteRMLibs.GitConfig import publishedConfigRequired
+state, msg = feStartupState(version, publishedConfigRequired())
+print(msg)
+sys.exit(0 if state == 'ready' else 1)
+"; do
+  echo "`date -u +"%Y-%m-%d %H:%M:%S"` Startup not ready yet. Waiting."
+  sleep 5
+done
 
 set -a
 source /etc/environment
